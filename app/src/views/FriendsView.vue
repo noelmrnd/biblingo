@@ -8,7 +8,7 @@
           <h3 class="font-extrabold text-white text-lg">Tu código de invitación</h3>
           <p class="text-slate-300 text-base font-medium">Muestra tu QR a un amigo para conectarte</p>
         </div>
-        <span class="text-3xl">📱</span>
+        <QrCode class="w-8 h-8 text-emerald-400 stroke-[2.5]" />
       </div>
 
       <!-- Contenedor del QR Code visible desde el inicio -->
@@ -20,6 +20,7 @@
           </div>
         </div>
       </div>
+
       <!-- Código de texto y Botón de Compartir -->
       <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
         <div class="text-left pl-2">
@@ -30,8 +31,9 @@
         </div>
         <button 
           @click="shareInvite" 
-          class="btn-3d-green text-base py-3 px-5 font-extrabold"
+          class="btn-3d-green text-base py-3 px-5 font-extrabold flex items-center gap-2"
         >
+          <Share2 class="w-5 h-5 stroke-[2.5]" />
           <span>Compartir</span>
         </button>
       </div>
@@ -43,7 +45,10 @@
 
     <!-- Agregar Amigo por Código -->
     <div class="card-duo space-y-3">
-      <h4 class="font-extrabold text-white text-lg">Añadir a un amigo</h4>
+      <h4 class="font-extrabold text-white text-lg flex items-center gap-2">
+        <UserRoundPlus class="w-5 h-5 text-sky-400 stroke-[2.5]" />
+        <span>Añadir a un amigo</span>
+      </h4>
 
       <div class="flex gap-2">
         <input 
@@ -70,11 +75,12 @@
     <!-- Tabla de Clasificación de Amigos -->
     <div class="space-y-3">
       <h3 class="font-extrabold text-white text-lg flex items-center gap-2">
-        <span>🏆</span> Ranking de rachas
+        <Trophy class="w-6 h-6 text-amber-400 stroke-[2.5]" />
+        <span>Ranking de rachas</span>
       </h3>
 
       <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
-        <span class="text-4xl block">🦉</span>
+        <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
         <p class="text-lg font-extrabold text-white">Aún no tienes amigos agregados.</p>
         <p class="text-base text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
       </div>
@@ -107,7 +113,7 @@
 
           <!-- Racha del amigo -->
           <div class="flex items-center gap-1.5 font-extrabold text-amber-400 text-base bg-amber-500/10 px-3.5 py-1.5 rounded-xl border border-amber-500/20">
-            <span>🔥</span>
+            <Flame class="w-4 h-4 text-amber-400 stroke-[2.5]" />
             <span>{{ friend.streak_count }}d</span>
           </div>
         </div>
@@ -118,6 +124,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';

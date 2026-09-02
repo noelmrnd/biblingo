@@ -3,13 +3,13 @@
   <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
     <div class="relative w-16 h-16 flex items-center justify-center">
       <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-green animate-spin"></div>
-      <span class="text-2xl">🦉</span>
+      <BookOpen class="w-6 h-6 text-brand-green stroke-[2.5]" />
     </div>
     <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
   </div>
 
   <div v-else class="space-y-4">
-    <!-- Header Racha Hero -->
+    <!-- Header Racha Hero (Emoji de fuego permitido) -->
     <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,150,0,0.22),_transparent_65%)] border-amber-500/30 text-center py-8 px-6 overflow-hidden">
       <!-- Llama animada -->
       <div class="inline-block relative my-3">
@@ -31,8 +31,9 @@
       </div>
 
       <!-- Subtítulo / Badge de Estado -->
-      <div v-if="hasReadToday" class="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
-        <span>✅</span> ¡Perfecto, ya leíste hoy!
+      <div v-if="hasReadToday" class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
+        <CheckCircle2 class="w-5 h-5 text-emerald-400 stroke-[2.5]" />
+        <span>¡Perfecto, ya leíste hoy!</span>
       </div>
       <p v-else class="text-slate-200 text-base mt-3">
         Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
@@ -46,7 +47,7 @@
         :disabled="loading"
         class="btn-3d-green w-full text-lg py-5 font-black rounded-2xl flex items-center justify-center gap-3 transition-transform"
       >
-        <span class="text-2xl">📖</span>
+        <BookOpen class="w-6 h-6 stroke-[2.5]" />
         <span>Marcar lectura de hoy</span>
       </button>
     </div>
@@ -54,7 +55,8 @@
     <!-- Tracker semanal de 7 días (Lun - Dom) -->
     <div class="card-duo space-y-4">
       <h3 class="font-extrabold text-white text-lg flex items-center gap-2">
-        <span>📅</span> Esta semana
+        <Calendar class="w-5 h-5 text-amber-400 stroke-[2.5]" />
+        <span>Esta semana</span>
       </h3>
       <div class="grid grid-cols-7 gap-1.5 text-center">
         <div 
@@ -115,6 +117,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { BookOpen, CheckCircle2, Calendar } from '@lucide/vue';
 import confetti from 'canvas-confetti';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
