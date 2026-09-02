@@ -87,7 +87,7 @@ const saveReminder = async () => {
     await StorageService.set('biblingo_reminder_time', reminderTime.value);
     await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
-    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count);
+    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
     
     ToastService.success('¡Recordatorio guardado! ⏰');
   } catch (e) {

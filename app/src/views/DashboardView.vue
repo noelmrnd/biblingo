@@ -202,8 +202,9 @@ const logReadingToday = async () => {
         colors: ['#58CC02', '#FF9600', '#1CB0F6', '#FFD700']
       });
 
-      // Programar ráfaga de 7 días de notificaciones locales
-      NotificationService.schedule7DayBurst('20:00', res.streak_count);
+      // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy)
+      const savedTime = (await StorageService.get('biblingo_reminder_time')) || props.user.reminder_time || '20:00';
+      NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
       ToastService.success('¡Lectura de hoy registrada! 🔥📖');
     }
   } catch (e) {
@@ -214,9 +215,9 @@ const logReadingToday = async () => {
 };
 
 onMounted(async () => {
-  loadReadingStatus();
+  await loadReadingStatus();
   const savedTime = (await StorageService.get('biblingo_reminder_time')) || props.user.reminder_time || '20:00';
-  NotificationService.schedule7DayBurst(savedTime, props.user.streak_count);
+  NotificationService.schedule7DayBurst(savedTime, props.user.streak_count, hasReadToday.value);
 });
 
 
