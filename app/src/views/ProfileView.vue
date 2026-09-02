@@ -7,7 +7,7 @@
       </div>
       <div>
         <h2 class="text-2xl font-extrabold text-white">{{ user.display_name }}</h2>
-        <p class="text-slate-300 text-sm font-medium">Código: <span class="font-mono text-amber-400 font-bold">{{ user.invite_code }}</span></p>
+        <p class="text-slate-300 text-base font-medium">Código: <span class="font-mono text-amber-400 font-bold">{{ user.invite_code }}</span></p>
       </div>
     </div>
 
@@ -16,12 +16,12 @@
       <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-1">
         <span class="text-2xl">🔥</span>
         <div class="text-2xl font-extrabold text-amber-400">{{ user.streak_count }}</div>
-        <div class="text-slate-300 text-xs font-extrabold uppercase tracking-wider">Racha actual</div>
+        <div class="text-slate-300 text-base font-black uppercase tracking-wider">Racha actual</div>
       </div>
       <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-1">
         <span class="text-2xl">⚡</span>
         <div class="text-2xl font-extrabold text-purple-400">{{ user.max_streak_count }}</div>
-        <div class="text-slate-300 text-xs font-extrabold uppercase tracking-wider">Racha máxima</div>
+        <div class="text-slate-300 text-base font-black uppercase tracking-wider">Racha máxima</div>
       </div>
     </div>
 
@@ -30,13 +30,13 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="font-extrabold text-white text-lg">Recordatorio diario</h3>
-          <p class="text-slate-300 text-sm mt-0.5 font-medium">Te notificaremos cada día para proteger tu racha</p>
+          <p class="text-slate-300 text-base mt-0.5 font-medium">Te notificaremos cada día para proteger tu racha</p>
         </div>
         <span class="text-2xl">🔔</span>
       </div>
 
       <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
-        <span class="text-sm font-bold text-slate-200">Hora de lectura:</span>
+        <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
         <input 
           v-model="reminderTime" 
           type="time" 
@@ -50,9 +50,6 @@
       >
         <span>Guardar recordatorio</span>
       </button>
-      <p v-if="savedMsg" class="text-emerald-400 text-sm font-extrabold text-center">
-        {{ savedMsg }}
-      </p>
     </div>
 
     <!-- Botón Cerrar Sesión -->
@@ -72,6 +69,7 @@
 import { ref, onMounted } from 'vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
+import { ToastService } from '../services/toast';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -80,7 +78,6 @@ const props = defineProps({
 const emit = defineEmits(['logout']);
 
 const reminderTime = ref('20:00');
-const savedMsg = ref('');
 
 const saveReminder = async () => {
   try {
@@ -88,11 +85,10 @@ const saveReminder = async () => {
     await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count);
-    savedMsg.value = `¡Recordatorio guardado para las ${reminderTime.value}! ⏰`;
+    
+    ToastService.success('¡Recordatorio guardado! ⏰');
   } catch (e) {
-    savedMsg.value = `¡Recordatorio guardado para las ${reminderTime.value}! ⏰`;
-  } finally {
-    setTimeout(() => { savedMsg.value = ''; }, 4000);
+    ToastService.error('No se pudo guardar el recordatorio.');
   }
 };
 

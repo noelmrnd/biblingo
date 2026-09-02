@@ -1,5 +1,8 @@
 <template>
-  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white">
+  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white relative">
+    <!-- Componente Toast Flotante Global -->
+    <ToastNotification />
+
     <!-- Si no está autenticado, mostrar Login -->
     <LoginView v-if="!currentUser" @login-success="onLoginSuccess" />
 
@@ -16,8 +19,8 @@
 
         <!-- Racha activa en la barra superior -->
         <div class="flex items-center gap-1.5 bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full shadow-inner">
-          <span class="text-base animate-flame-pulse">🔥</span>
-          <span class="font-black text-amber-400 text-sm">{{ currentUser.streak_count || 0 }}</span>
+          <span class="text-lg animate-flame-pulse">🔥</span>
+          <span class="font-black text-amber-400 text-base">{{ currentUser.streak_count || 0 }}</span>
         </div>
       </header>
 
@@ -42,33 +45,33 @@
       </main>
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
-      <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2.5 px-4 pb-safe">
+      <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2 px-4 pb-safe">
         <div class="max-w-md mx-auto flex justify-between items-center gap-2">
           <button 
             @click="currentTab = 'dashboard'"
             :class="currentTab === 'dashboard' ? 'text-brand-green bg-brand-green/15 border-brand-green/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
             <span class="text-2xl pointer-events-none">🔥</span>
-            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Racha</span>
+            <span class="text-base font-extrabold tracking-wide pointer-events-none">Racha</span>
           </button>
 
           <button 
             @click="currentTab = 'friends'"
             :class="currentTab === 'friends' ? 'text-brand-blue bg-brand-blue/15 border-brand-blue/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
             <span class="text-2xl pointer-events-none">👥</span>
-            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Amigos</span>
+            <span class="text-base font-extrabold tracking-wide pointer-events-none">Amigos</span>
           </button>
 
           <button 
             @click="currentTab = 'profile'"
             :class="currentTab === 'profile' ? 'text-brand-purple bg-brand-purple/15 border-brand-purple/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
             <span class="text-2xl pointer-events-none">🦉</span>
-            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Perfil</span>
+            <span class="text-base font-extrabold tracking-wide pointer-events-none">Perfil</span>
           </button>
         </div>
       </nav>
@@ -82,8 +85,10 @@ import LoginView from './views/LoginView.vue';
 import DashboardView from './views/DashboardView.vue';
 import FriendsView from './views/FriendsView.vue';
 import ProfileView from './views/ProfileView.vue';
+import ToastNotification from './components/ToastNotification.vue';
 import { DeepLinkService } from './services/deepLinks';
 import { ApiService } from './services/api';
+import { ToastService } from './services/toast';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
@@ -91,6 +96,7 @@ const currentTab = ref('dashboard');
 const onLoginSuccess = (user) => {
   currentUser.value = user;
   localStorage.setItem('biblingo_user', JSON.stringify(user));
+  ToastService.success(`¡Bienvenido de nuevo, ${user.display_name}! 👋`);
 };
 
 const onUserUpdated = (updatedUser) => {
@@ -101,6 +107,7 @@ const onUserUpdated = (updatedUser) => {
 const onLogout = () => {
   currentUser.value = null;
   localStorage.removeItem('biblingo_user');
+  ToastService.info('Sesión cerrada correctamente.');
 };
 
 onMounted(() => {
@@ -120,11 +127,11 @@ onMounted(() => {
       try {
         const res = await ApiService.addFriend(currentUser.value.id, inviteCode);
         if (res.success) {
-          alert(`¡Has aceptado la invitación de ${res.friend.display_name}! 👥🎉`);
+          ToastService.success(`¡Has aceptado la invitación de ${res.friend.display_name}! 👥🎉`);
           currentTab.value = 'friends';
         }
       } catch (e) {
-        console.warn('Error al procesar deep link:', e.message);
+        ToastService.error(e.message || 'Error al procesar la invitación.');
       }
     }
   });

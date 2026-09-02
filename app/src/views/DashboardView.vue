@@ -9,14 +9,14 @@
         <div class="text-7xl animate-flame-pulse inline-block filter drop-shadow-[0_0_20px_rgba(255,150,0,0.8)]">
           🔥
         </div>
-        <div class="absolute -bottom-2 right-0 bg-amber-400 text-slate-950 font-black text-xs px-2 py-0.5 rounded-full shadow">
+        <div class="absolute -bottom-2 right-0 bg-amber-400 text-slate-950 font-black text-base px-2.5 py-0.5 rounded-full shadow">
           x{{ user.streak_count }}
         </div>
       </div>
 
       <div class="mt-2 space-y-1">
         <h2 class="text-4xl font-extrabold text-white tracking-tight">
-          {{ user.streak_count }} {{ user.streak_count === 1 ? 'Día' : 'Días' }}
+          {{ user.streak_count }} {{ user.streak_count === 1 ? 'día' : 'días' }}
         </h2>
         <p class="text-amber-400 font-extrabold text-base uppercase tracking-wider">
           Racha de lectura activa
@@ -55,13 +55,13 @@
           :key="index"
           class="flex flex-col items-center space-y-2"
         >
-          <span class="text-xs font-bold text-slate-400">{{ day.label }}</span>
+          <span class="text-base font-extrabold text-slate-300">{{ day.label }}</span>
           <div 
             :class="[
               day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-800 text-slate-600 border-slate-700',
               day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
             ]"
-            class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-sm font-extrabold shadow-md transition-all"
+            class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
           >
             <span v-if="day.isRead">✓</span>
             <span v-else>{{ day.dateNum }}</span>
@@ -111,6 +111,7 @@ import { ref, computed, onMounted } from 'vue';
 import confetti from 'canvas-confetti';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
+import { ToastService } from '../services/toast';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -189,9 +190,10 @@ const logReadingToday = async () => {
 
       // Programar ráfaga de 7 días de notificaciones locales
       NotificationService.schedule7DayBurst('20:00', res.streak_count);
+      ToastService.success('¡Lectura de hoy registrada! 🔥📖');
     }
   } catch (e) {
-    alert(e.message || 'Error al registrar la lectura.');
+    ToastService.error(e.message || 'Error al registrar la lectura.');
   } finally {
     loading.value = false;
   }

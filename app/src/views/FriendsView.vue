@@ -6,26 +6,25 @@
 
       <div class="flex items-center justify-between text-left">
         <div>
-          <h3 class="font-extrabold text-white text-base">Tu código de invitación</h3>
-          <p class="text-slate-300 text-sm font-medium">Muestra tu QR a un amigo para conectarte</p>
+          <h3 class="font-extrabold text-white text-lg">Tu código de invitación</h3>
+          <p class="text-slate-300 text-base font-medium">Muestra tu QR a un amigo para conectarte</p>
         </div>
         <span class="text-3xl">📱</span>
       </div>
 
       <!-- Contenedor del QR Code visible desde el inicio -->
       <div class="py-2">
-        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green transform hover:scale-105 transition-transform duration-200">
+        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
           <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
-          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-sm font-semibold">
+          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
             Generando QR...
           </div>
         </div>
       </div>
-
       <!-- Código de texto y Botón de Compartir -->
       <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
         <div class="text-left pl-2">
-          <span class="text-xs text-slate-300 font-bold uppercase tracking-wider block">Código:</span>
+          <span class="text-base text-slate-300 font-bold uppercase tracking-wider block">Código:</span>
           <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
             {{ user.invite_code || 'BIBLINGO1' }}
           </span>
@@ -37,11 +36,15 @@
           <span>Compartir</span>
         </button>
       </div>
+
+      <p v-if="copyMsg" class="text-emerald-400 text-base font-extrabold text-center pt-1">
+        {{ copyMsg }}
+      </p>
     </div>
 
     <!-- Agregar Amigo por Código -->
     <div class="card-duo space-y-3">
-      <h4 class="font-extrabold text-white text-base">Añadir a un amigo</h4>
+      <h4 class="font-extrabold text-white text-lg">Añadir a un amigo</h4>
 
       <div class="flex gap-2">
         <input 
@@ -60,7 +63,7 @@
           Añadir
         </button>
       </div>
-      <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold">
+      <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-base font-bold">
         {{ statusMsg }}
       </p>
     </div>
@@ -73,8 +76,8 @@
 
       <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <span class="text-4xl block">🦉</span>
-        <p class="text-base font-bold text-white">Aún no tienes amigos agregados.</p>
-        <p class="text-sm text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
+        <p class="text-lg font-extrabold text-white">Aún no tienes amigos agregados.</p>
+        <p class="text-base text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
       </div>
 
       <div v-else class="space-y-2">
@@ -95,9 +98,9 @@
             <div>
               <h4 class="font-bold text-white text-base flex items-center gap-1.5">
                 {{ friend.display_name }}
-                <span v-if="friend.id === user.id" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black">TÚ</span>
+                <span v-if="friend.id === user.id" class="text-base bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black">TÚ</span>
               </h4>
-              <p class="text-slate-300 text-sm font-medium">
+              <p class="text-slate-300 text-base font-medium">
                 Última lectura: {{ formatFriendlyDate(friend.last_read_date) }}
               </p>
             </div>
@@ -119,6 +122,7 @@ import { ref, computed, onMounted } from 'vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
+import { ToastService } from '../services/toast';
 import { formatDateDDMMYYYY, formatFriendlyDate } from '../utils/dateFormatter';
 
 const props = defineProps({
@@ -131,6 +135,7 @@ const loading = ref(false);
 const statusMsg = ref('');
 const statusError = ref(false);
 const qrDataUrl = ref('');
+const copyMsg = ref('');
 
 const sortedFriends = computed(() => {
   const all = [...friends.value];
@@ -177,19 +182,16 @@ const loadFriends = async () => {
 const addFriend = async () => {
   if (!inputCode.value || loading.value) return;
   loading.value = true;
-  statusMsg.value = '';
-  statusError.value = false;
 
   try {
     const res = await ApiService.addFriend(props.user.id, inputCode.value);
     if (res.success) {
-      statusMsg.value = `¡${res.friend.display_name} agregado a tus amigos! 🎉`;
+      ToastService.success(`¡${res.friend.display_name} agregado a tus amigos! 🎉`);
       inputCode.value = '';
       loadFriends();
     }
   } catch (e) {
-    statusError.value = true;
-    statusMsg.value = e.message || 'Error al agregar amigo.';
+    ToastService.error(e.message || 'Error al agregar amigo.');
   } finally {
     loading.value = false;
   }
@@ -197,8 +199,8 @@ const addFriend = async () => {
 
 const shareInvite = async () => {
   const res = await ShareService.shareInviteCode(props.user.invite_code, props.user.display_name);
-  if (res.method === 'clipboard') {
-    alert('¡Enlace y código de invitación copiado al portapapeles! 📋');
+  if (res.method === 'clipboard' || res.success) {
+    ToastService.success('¡Enlace y código copiado! 📋');
   }
 };
 
