@@ -39,34 +39,34 @@
         />
       </main>
 
-      <!-- Bottom Navigation Bar Gamificada -->
-      <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border py-2 px-6">
-        <div class="max-w-md mx-auto flex justify-around items-center">
+      <!-- Bottom Navigation Bar Gamificada con Área de Toque y Padding Ampliado (Sin saltos de layout) -->
+      <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border py-2 px-4 pb-safe">
+        <div class="max-w-md mx-auto flex justify-between items-center gap-2">
           <button 
             @click="currentTab = 'dashboard'"
-            :class="currentTab === 'dashboard' ? 'text-brand-green scale-105' : 'text-slate-400 hover:text-slate-200'"
-            class="flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer"
+            :class="currentTab === 'dashboard' ? 'text-brand-green bg-brand-green/15 border-brand-green/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
+            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
-            <span class="text-2xl">🔥</span>
-            <span class="text-[11px] font-extrabold tracking-wide">Racha</span>
+            <span class="text-2xl pointer-events-none">🔥</span>
+            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Racha</span>
           </button>
 
           <button 
             @click="currentTab = 'friends'"
-            :class="currentTab === 'friends' ? 'text-brand-blue scale-105' : 'text-slate-400 hover:text-slate-200'"
-            class="flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer"
+            :class="currentTab === 'friends' ? 'text-brand-blue bg-brand-blue/15 border-brand-blue/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
+            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
-            <span class="text-2xl">👥</span>
-            <span class="text-[11px] font-extrabold tracking-wide">Amigos</span>
+            <span class="text-2xl pointer-events-none">👥</span>
+            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Amigos</span>
           </button>
 
           <button 
             @click="currentTab = 'profile'"
-            :class="currentTab === 'profile' ? 'text-brand-purple scale-105' : 'text-slate-400 hover:text-slate-200'"
-            class="flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer"
+            :class="currentTab === 'profile' ? 'text-brand-purple bg-brand-purple/15 border-brand-purple/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
+            class="flex-1 py-2.5 px-2 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
           >
-            <span class="text-2xl">🦉</span>
-            <span class="text-[11px] font-extrabold tracking-wide">Perfil</span>
+            <span class="text-2xl pointer-events-none">🦉</span>
+            <span class="text-xs font-extrabold tracking-wide pointer-events-none">Perfil</span>
           </button>
         </div>
       </nav>
