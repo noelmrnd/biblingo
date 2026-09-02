@@ -34,9 +34,10 @@ export async function request(endpoint, options = {}) {
 
 export const ApiService = {
   async socialLogin(payload) {
+    const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     return request('/auth/social', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ timezone: deviceTimezone, ...payload })
     });
   },
 

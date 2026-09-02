@@ -6,7 +6,7 @@ class ReadingController {
     public static function getStatus($userId) {
         $db = getDbConnection();
         
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -14,16 +14,18 @@ class ReadingController {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
+        $userTz = $user['timezone'] ?? 'UTC';
+        $today = DateUtils::getUserToday($userTz);
+
         // Obtener historial de lecturas de los últimos 30 días
         $logsStmt = $db->prepare("
             SELECT read_date FROM reading_logs 
-            WHERE user_id = ? AND read_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY) 
             ORDER BY read_date DESC
         ");
-        $logsStmt->execute([$userId]);
+        $logsStmt->execute([$userId, $today]);
         $logs = $logsStmt->fetchAll(PDO::FETCH_COLUMN);
 
-        $today = date('Y-m-d');
         $hasReadToday = ($user['last_read_date'] === $today);
 
         sendJsonResponse([
@@ -39,7 +41,7 @@ class ReadingController {
     public static function logReading($userId) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -47,8 +49,9 @@ class ReadingController {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
-        $today = date('Y-m-d');
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $userTz = $user['timezone'] ?? 'UTC';
+        $today = DateUtils::getUserToday($userTz);
+        $yesterday = DateUtils::getUserYesterday($userTz);
 
         $currentStreak = (int)$user['streak_count'];
         $maxStreak = (int)$user['max_streak_count'];
@@ -75,7 +78,7 @@ class ReadingController {
             ");
             $updateStmt->execute([$currentStreak, $maxStreak, $today, $userId]);
 
-            // Insertar o ignorar en reading_logs
+            // Insertar o ignorar duplicado limpiamente en reading_logs
             $logStmt = $db->prepare("
                 INSERT INTO reading_logs (user_id, read_date) 
                 VALUES (?, ?) 

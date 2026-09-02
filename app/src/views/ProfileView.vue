@@ -84,7 +84,7 @@ const reminderTime = ref('20:00');
 
 const saveReminder = async () => {
   try {
-    await StorageService.set('biblingo_reminder_time', reminderTime.value);
+    await StorageService.set('reminder_time', reminderTime.value);
     await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
@@ -100,7 +100,7 @@ const logout = () => {
 };
 
 onMounted(async () => {
-  const saved = await StorageService.get('biblingo_reminder_time');
+  const saved = await StorageService.get('reminder_time');
   if (saved) {
     reminderTime.value = saved;
   } else if (props.user.reminder_time) {

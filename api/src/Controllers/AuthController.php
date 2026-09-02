@@ -11,6 +11,8 @@ class AuthController {
         $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
         $platform    = $input['platform'] ?? 'ios';
         $pushToken   = $input['push_token'] ?? null;
+        $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');
+        $timezone    = DateUtils::getSafeDateTimeZone($rawTz)->getName();
 
         if (empty($idToken)) {
             sendJsonResponse(['error' => 'Identificador o token requerido.'], 400);
@@ -46,21 +48,22 @@ class AuthController {
             $googleId = ($provider === 'google') ? $idToken : null;
 
             $insertStmt = $db->prepare("
-                INSERT INTO users (apple_id, google_id, email, display_name, invite_code, push_token, platform) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO users (apple_id, google_id, email, display_name, invite_code, push_token, platform, timezone) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $insertStmt->execute([$appleId, $googleId, $email, $displayName, $inviteCode, $pushToken, $platform]);
+            $insertStmt->execute([$appleId, $googleId, $email, $displayName, $inviteCode, $pushToken, $platform, $timezone]);
 
             $userId = $db->lastInsertId();
             $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$userId]);
             $user = $stmt->fetch();
         } else {
-            // Actualizar push_token o plataforma si han cambiado
-            $updateStmt = $db->prepare("UPDATE users SET push_token = COALESCE(?, push_token), platform = ? WHERE id = ?");
-            $updateStmt->execute([$pushToken, $platform, $user['id']]);
+            // Actualizar push_token, plataforma y timezone si han cambiado
+            $updateStmt = $db->prepare("UPDATE users SET push_token = COALESCE(?, push_token), platform = ?, timezone = ? WHERE id = ?");
+            $updateStmt->execute([$pushToken, $platform, $timezone, $user['id']]);
             $user['push_token'] = $pushToken ?: $user['push_token'];
             $user['platform'] = $platform;
+            $user['timezone'] = $timezone;
         }
 
         // Token de sesión básico en base64
@@ -79,6 +82,7 @@ class AuthController {
                 'last_read_date'   => $user['last_read_date'],
                 'push_token'       => $user['push_token'],
                 'reminder_time'    => $user['reminder_time'] ?? '20:00',
+                'timezone'         => $user['timezone'] ?? 'UTC',
                 'platform'         => $user['platform']
             ]
         ]);

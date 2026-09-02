@@ -6,22 +6,27 @@ require_once __DIR__ . '/../Services/FCMService.php';
 class FriendController {
     public static function getFriends($userId) {
         $db = getDbConnection();
-        $today = date('Y-m-d');
 
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code,
-                   (SELECT COUNT(*) FROM friend_nudges fn WHERE fn.sender_id = ? AND fn.receiver_id = u.id AND fn.nudge_date = ?) AS nudged_today
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone
             FROM friendships f
             JOIN users u ON f.friend_id = u.id
             WHERE f.user_id = ?
             ORDER BY u.streak_count DESC, u.display_name ASC
         ");
-        $stmt->execute([$userId, $today, $userId]);
+        $stmt->execute([$userId]);
         $friends = $stmt->fetchAll();
+
+        // Verificar toques para el día local de cada amigo
+        $nudgeCheckStmt = $db->prepare("SELECT COUNT(*) FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
 
         sendJsonResponse([
             'success' => true,
-            'friends' => array_map(function($f) {
+            'friends' => array_map(function($f) use ($userId, $nudgeCheckStmt) {
+                $friendToday = DateUtils::getUserToday($f['timezone'] ?? 'UTC');
+                $nudgeCheckStmt->execute([$userId, $f['id'], $friendToday]);
+                $nudgedCount = (int)$nudgeCheckStmt->fetchColumn();
+
                 return [
                     'id'               => (int)$f['id'],
                     'display_name'     => $f['display_name'],
@@ -29,7 +34,7 @@ class FriendController {
                     'max_streak_count' => (int)$f['max_streak_count'],
                     'last_read_date'   => $f['last_read_date'],
                     'invite_code'      => $f['invite_code'],
-                    'nudged_today'     => ((int)$f['nudged_today']) > 0
+                    'nudged_today'     => $nudgedCount > 0
                 ];
             }, $friends)
         ]);
@@ -125,7 +130,7 @@ class FriendController {
         $me = $meStmt->fetch();
         $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
 
-        $friendStmt = $db->prepare("SELECT id, display_name, push_token, last_read_date FROM users WHERE id = ?");
+        $friendStmt = $db->prepare("SELECT id, display_name, push_token, last_read_date, timezone FROM users WHERE id = ?");
         $friendStmt->execute([$friendId]);
         $friend = $friendStmt->fetch();
 
@@ -133,25 +138,27 @@ class FriendController {
             sendJsonResponse(['error' => 'Amigo no encontrado.'], 404);
         }
 
-        // 3. Verificar si el amigo ya leyó hoy
-        $today = date('Y-m-d');
-        if (!empty($friend['last_read_date']) && substr($friend['last_read_date'], 0, 10) === $today) {
+        // 3. Evaluar el día calendario local del amigo destinatario
+        $friendToday = DateUtils::getUserToday($friend['timezone'] ?? 'UTC');
+
+        // 4. Verificar si el amigo ya leyó en su día local
+        if (!empty($friend['last_read_date']) && $friend['last_read_date'] === $friendToday) {
             sendJsonResponse(['error' => "{$friend['display_name']} ya completó su lectura de hoy."], 400);
         }
 
-        // 4. Verificar si YA se le envió un recordatorio hoy (límite de 1 al día)
+        // 5. Verificar si YA se le envió un recordatorio en su día local (límite de 1 al día)
         $nudgeCheck = $db->prepare("SELECT id FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
-        $nudgeCheck->execute([$userId, $friendId, $today]);
+        $nudgeCheck->execute([$userId, $friendId, $friendToday]);
         if ($nudgeCheck->fetch()) {
             sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
         }
 
-        // 5. Registrar el toque en la base de datos
+        // 6. Registrar el toque en la base de datos
         try {
             $insertNudge = $db->prepare("INSERT INTO friend_nudges (sender_id, receiver_id, nudge_date) VALUES (?, ?, ?)");
-            $insertNudge->execute([$userId, $friendId, $today]);
+            $insertNudge->execute([$userId, $friendId, $friendToday]);
         } catch (Exception $e) {
-            // Ignorar error si ya existía registro
+            // Ignorar duplicados
         }
 
         // 6. Enviar notificación Push vía FCM si cuenta con token

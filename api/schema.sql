@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_read_date DATE NULL,
     push_token VARCHAR(255) NULL,
     reminder_time VARCHAR(10) DEFAULT '20:00',
+    timezone VARCHAR(50) DEFAULT 'UTC',
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

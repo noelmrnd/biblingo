@@ -203,7 +203,7 @@ const logReadingToday = async () => {
       });
 
       // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy)
-      const savedTime = (await StorageService.get('biblingo_reminder_time')) || props.user.reminder_time || '20:00';
+      const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
       NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
       ToastService.success('¡Lectura de hoy registrada! 🔥📖');
     }
@@ -216,7 +216,7 @@ const logReadingToday = async () => {
 
 onMounted(async () => {
   await loadReadingStatus();
-  const savedTime = (await StorageService.get('biblingo_reminder_time')) || props.user.reminder_time || '20:00';
+  const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
   NotificationService.schedule7DayBurst(savedTime, props.user.streak_count, hasReadToday.value);
 });
 

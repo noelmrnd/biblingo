@@ -102,34 +102,31 @@ import ToastNotification from './components/ToastNotification.vue';
 import { DeepLinkService } from './services/deepLinks';
 import { ApiService } from './services/api';
 import { ToastService } from './services/toast';
-import { StorageService } from './services/storage';
+import { UserService } from './services/userService';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
 
 const onLoginSuccess = async (user) => {
   currentUser.value = user;
-  await StorageService.set('biblingo_user', user);
+  await UserService.saveSession(user);
   ToastService.success(`¡Bienvenido de nuevo, ${user.display_name}! 👋`);
 };
 
 const onUserUpdated = async (updatedUser) => {
   currentUser.value = { ...currentUser.value, ...updatedUser };
-  await StorageService.set('biblingo_user', currentUser.value);
+  await UserService.saveSession(currentUser.value);
 };
 
 const onLogout = async () => {
   currentUser.value = null;
-  await StorageService.remove('biblingo_user');
+  await UserService.clearSession();
   ToastService.info('Sesión cerrada correctamente.');
 };
 
 onMounted(async () => {
-  // Cargar usuario almacenado desde StorageService nativo
-  const savedUser = await StorageService.get('biblingo_user');
-  if (savedUser) {
-    currentUser.value = savedUser;
-  }
+  // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
+  currentUser.value = await UserService.initSession();
 
   // Inicializar receptor de enlaces de invitación (Deep Links)
   DeepLinkService.initListener(async (inviteCode) => {
