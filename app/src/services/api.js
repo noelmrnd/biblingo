@@ -67,5 +67,12 @@ export const ApiService = {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, ...data })
     });
+  },
+
+  async nudgeFriend(userId, friendId) {
+    return request('/friends/nudge', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, friend_id: friendId })
+    });
   }
 };

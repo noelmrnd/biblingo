@@ -89,32 +89,58 @@
         <div 
           v-for="(friend, index) in sortedFriends" 
           :key="friend.id"
-          class="card-duo py-3.5 px-4 flex items-center justify-between bg-slate-900/80 border-slate-800 hover:border-slate-700 transition-colors"
+          class="card-duo py-3.5 px-4 flex items-center justify-between bg-slate-900/80 border-slate-800 hover:border-slate-700 transition-colors gap-4"
         >
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
             <!-- Medallas de ranking -->
-            <div class="w-7 text-center font-black text-base">
+            <div class="w-7 text-center font-black text-base flex-none">
               <span v-if="index === 0">🥇</span>
               <span v-else-if="index === 1">🥈</span>
               <span v-else-if="index === 2">🥉</span>
               <span v-else class="text-slate-400 font-bold">#{{ index + 1 }}</span>
             </div>
 
-            <div>
-              <h4 class="font-bold text-white text-base flex items-center gap-1.5">
+            <div class="min-w-0 flex-1">
+              <h4 class="font-bold text-white text-base flex items-center gap-1.5 truncate">
                 {{ friend.display_name }}
-                <span v-if="friend.id === user.id" class="text-base bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black">TÚ</span>
+                <span v-if="friend.id === user.id" class="text-base bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
               </h4>
-              <p class="text-slate-300 text-base font-medium">
+              <p class="text-slate-300 text-base font-medium truncate">
                 Última lectura: {{ formatFriendlyDate(friend.last_read_date) }}
               </p>
             </div>
           </div>
 
-          <!-- Racha del amigo -->
-          <div class="flex items-center gap-1.5 font-extrabold text-amber-400 text-base bg-amber-500/10 px-3.5 py-1.5 rounded-xl border border-amber-500/20">
-            <Flame class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-            <span>{{ friend.streak_count }}d</span>
+          <!-- Acciones de Racha & Recordatorio -->
+          <div class="flex items-center gap-2 flex-none">
+            <!-- Si es el usuario actual -->
+            <template v-if="friend.id === user.id">
+              <div class="flex items-center gap-1.5 font-extrabold text-amber-400 text-base bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
+                <Flame class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+                <span>{{ friend.streak_count }}d</span>
+              </div>
+            </template>
+
+            <!-- Si es un amigo -->
+            <template v-else>
+              <!-- Si el amigo YA leyó hoy -->
+              <div v-if="hasFriendReadToday(friend.last_read_date)" class="flex items-center gap-1.5 bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 text-base font-extrabold">
+                <CheckCircle2 class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+                <span>{{ friend.streak_count }}d</span>
+              </div>
+
+              <!-- Si el amigo AÚN NO ha leído hoy -->
+              <div v-else class="flex items-center gap-1.5">
+                <button
+                  @click="sendNudge(friend)"
+                  :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
+                  class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3.5 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
+                >
+                  <BellRing class="w-4 h-4 stroke-[2.5]" :class="nudgedFriends[friend.id] ? '' : 'animate-bounce'" />
+                  <span>{{ nudgedFriends[friend.id] ? 'Toque enviado' : 'Dar un toque' }}</span>
+                </button>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -124,12 +150,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame } from '@lucide/vue';
+import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2 } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
 import { ToastService } from '../services/toast';
-import { formatDateDDMMYYYY, formatFriendlyDate } from '../utils/dateFormatter';
+import { formatFriendlyDate } from '../utils/dateFormatter';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -142,6 +168,29 @@ const statusMsg = ref('');
 const statusError = ref(false);
 const qrDataUrl = ref('');
 const copyMsg = ref('');
+const nudgedFriends = ref({});
+const nudgeLoading = ref({});
+
+const hasFriendReadToday = (lastReadDateStr) => {
+  if (!lastReadDateStr) return false;
+  const today = new Date().toISOString().split('T')[0];
+  return lastReadDateStr.startsWith(today);
+};
+
+const sendNudge = async (friend) => {
+  if (nudgedFriends.value[friend.id] || nudgeLoading.value[friend.id]) return;
+
+  nudgeLoading.value[friend.id] = true;
+  try {
+    const res = await ApiService.nudgeFriend(props.user.id, friend.id);
+    nudgedFriends.value[friend.id] = true;
+    ToastService.success(res.message || `¡Le enviaste un recordatorio a ${friend.display_name}! 🔔`);
+  } catch (e) {
+    ToastService.error(e.message || `No se pudo enviar el recordatorio.`);
+  } finally {
+    nudgeLoading.value[friend.id] = false;
+  }
+};
 
 const sortedFriends = computed(() => {
   const all = [...friends.value];
@@ -179,6 +228,12 @@ const loadFriends = async () => {
     const res = await ApiService.getFriends(props.user.id);
     if (res.success) {
       friends.value = res.friends || [];
+      // Sincronizar estado de toques enviados hoy desde la API
+      friends.value.forEach(f => {
+        if (f.nudged_today) {
+          nudgedFriends.value[f.id] = true;
+        }
+      });
     }
   } catch (e) {
     console.warn('Error al cargar amigos:', e.message);
