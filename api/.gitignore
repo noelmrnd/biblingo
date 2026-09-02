@@ -1,0 +1,12 @@
+# Environment & Credentials
+.env
+.env.*
+firebase-service-account.json
+*.p8
+
+# Vendor / Composer (if added in the future)
+vendor/
+
+# OS & Temp
+.DS_Store
+*.log

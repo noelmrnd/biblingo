@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biblingo - Hábito Diario de Lectura Estilo Duolingo</title>
+  <meta name="description" content="Construye un hábito diario de lectura con Biblingo. Mantén tu racha de días, compite con amigos y no leas nunca más en soledad." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="container flex-between">
+      <div class="logo">
+        <span class="logo-icon">🦉</span>
+        <span class="logo-text">Biblingo</span>
+      </div>
+      <a href="https://biblingo.me/app" class="btn btn-primary">Abrir App Web</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="badge">🔥 ¡Construye tu Racha!</div>
+        <h1 class="hero-title">Lee 10 minutos cada día. Para siempre.</h1>
+        <p class="hero-subtitle">
+          Biblingo transforma la lectura en un juego diario. Mantén viva tu racha, invita a tus amigos y nunca vuelvas a abandonar un libro.
+        </p>
+        <div class="hero-buttons">
+          <a href="https://biblingo.me/app" class="btn btn-3d-green">
+            <span>🚀 Empezar Gratis</span>
+          </a>
+          <a href="#features" class="btn btn-outline">Conocer Más</a>
+        </div>
+      </div>
+
+      <div class="hero-preview">
+        <div class="phone-mockup">
+          <div class="screen">
+            <div class="flame-badge">
+              <span class="flame">🔥</span>
+              <span class="streak-num">14 Días</span>
+            </div>
+            <h3>¡Lectura de hoy completada!</h3>
+            <p>Has leído 12 páginas hoy.</p>
+            <div class="week-row">
+              <span class="day active">L</span>
+              <span class="day active">M</span>
+              <span class="day active">X</span>
+              <span class="day active">J</span>
+              <span class="day active">V</span>
+              <span class="day active">S</span>
+              <span class="day active">D</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container text-center">
+      <h2 class="section-title">¿Por qué Biblingo funciona?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔥</div>
+          <h3>Rachas Gamificadas</h3>
+          <p>Siente la satisfacción de ver crecer tu contador de días consecutivos leyendo.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3>Amigos & Competencia</h3>
+          <p>Añade a tus amigos con un enlace único y compite por la mejor racha de la semana.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <h3>Recordatorios Inteligentes</h3>
+          <p>Ráfaga escalonada de notificaciones locales que protegen tu racha sin molestarte.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container flex-between">
+      <p>© 2026 Biblingo (biblingo.me). Todos los derechos reservados.</p>
+      <div class="footer-links">
+        <a href="https://biblingo.me/privacy">Privacidad</a>
+        <a href="https://biblingo.me/terms">Términos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Redirección inteligente si se accede mediante enlace de invitación /invite/CODIGO
+    const path = window.location.pathname;
+    if (path.includes('/invite/')) {
+      const code = path.split('/invite/')[1];
+      if (code) {
+        window.location.href = 'https://biblingo.me/app?invite=' + code;
+      }
+    }
+  </script>
+</body>
+</html>

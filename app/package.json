@@ -1,0 +1,31 @@
+{
+  "name": "biblingo-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@capacitor-community/apple-sign-in": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "@codetrix-studio/capacitor-google-auth": "^3.3.1",
+    "canvas-confetti": "^1.9.4",
+    "@lucide/vue": "^1.39.0",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.2.0"
+  }
+}
