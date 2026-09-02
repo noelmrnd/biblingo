@@ -53,15 +53,6 @@
           </svg>
           <span>Continuar con Google</span>
         </button>
-
-        <!-- Acceso Rápido / Demo -->
-        <button 
-          @click="loginDemo"
-          :disabled="loading"
-          class="btn-3d-green w-full text-base"
-        >
-          <span>🚀 Entrar como Invitado</span>
-        </button>
       </div>
 
       <p v-if="errorMsg" class="text-rose-400 text-sm font-semibold bg-rose-950/50 border border-rose-800 p-3 rounded-xl w-full">
@@ -100,5 +91,4 @@ const handleAuth = async (authPromise) => {
 
 const loginApple = () => handleAuth(AuthService.loginWithApple());
 const loginGoogle = () => handleAuth(AuthService.loginWithGoogle());
-const loginDemo = () => handleAuth(AuthService.demoLogin('Lector Invitado'));
 </script>

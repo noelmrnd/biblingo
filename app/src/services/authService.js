@@ -28,7 +28,7 @@ export const AuthService = {
         });
       } else {
         // Fallback Web o Android para Apple Sign-In
-        return this.demoLogin('Apple User', 'apple');
+        throw new Error('Sign in with Apple solo está disponible en dispositivos iOS.');
       }
     } catch (e) {
       console.warn('Falló Sign in with Apple:', e);
@@ -41,35 +41,33 @@ export const AuthService = {
    */
   async loginWithGoogle() {
     try {
-      if (Capacitor.isNativePlatform()) {
-        const googleUser = await GoogleAuth.signIn();
-        return await ApiService.socialLogin({
-          provider: 'google',
-          id_token: googleUser.id || googleUser.authentication.idToken,
-          email: googleUser.email,
-          display_name: googleUser.name || 'Lector Google',
-          platform: Capacitor.getPlatform()
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+      
+      // Inicializar GoogleAuth en entorno Web / Nativo
+      try {
+        await GoogleAuth.initialize({
+          clientId: clientId,
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: false,
         });
-      } else {
-        return this.demoLogin('Lector Google', 'google');
+      } catch (initErr) {
+        // Ignorar si ya está inicializado previamente
       }
+
+      const googleUser = await GoogleAuth.signIn();
+      return await ApiService.socialLogin({
+        provider: 'google',
+        id_token: googleUser.id || googleUser.authentication?.idToken || googleUser.serverAuthCode,
+        email: googleUser.email,
+        display_name: googleUser.name || 'Lector Google',
+        platform: Capacitor.getPlatform() || 'web'
+      });
     } catch (e) {
       console.warn('Falló Google Sign-In:', e);
-      return this.demoLogin('Lector Google', 'google');
+      if (!import.meta.env.VITE_GOOGLE_CLIENT_ID && (e.message?.includes('grantOfflineAccess') || e.message?.includes('undefined') || !e.message)) {
+        throw new Error('Debes configurar tu Client ID de Google (VITE_GOOGLE_CLIENT_ID) en el archivo .env para iniciar sesión en la Web.');
+      }
+      throw new Error(e.message || 'No se pudo iniciar sesión con Google.');
     }
-  },
-
-  /**
-   * Login de Demostración para desarrollo y pruebas rápidas.
-   */
-  async demoLogin(name = 'Lector Apasionado', provider = 'demo') {
-    const demoId = 'demo_' + Math.random().toString(36).substring(2, 9);
-    return await ApiService.socialLogin({
-      provider: provider,
-      id_token: demoId,
-      email: `${demoId}@biblingo.me`,
-      display_name: name,
-      platform: Capacitor.getPlatform() || 'web'
-    });
   }
 };
