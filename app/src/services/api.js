@@ -1,8 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
-  window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
-    ? 'http://localhost:8000/api'
-    : 'https://biblingo.me/api'
-);
+const hostname = window.location.hostname;
+const isLocalNetwork = hostname === 'localhost' || 
+                       hostname === '127.0.0.1' || 
+                       /^192\.168\./.test(hostname) || 
+                       /^10\./.test(hostname) || 
+                       /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL && !import.meta.env.VITE_API_BASE_URL.includes('localhost'))
+  ? import.meta.env.VITE_API_BASE_URL
+  : (isLocalNetwork ? `http://${hostname}:8000/api` : 'https://biblingo.me/api');
 
 export async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;

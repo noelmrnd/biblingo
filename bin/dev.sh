@@ -23,8 +23,8 @@ cleanup() {
 trap cleanup SIGINT SIGTERM EXIT
 
 # 1. Iniciar Servidor Backend PHP API
-echo -e "${GREEN}🐘 Iniciando API PHP en http://localhost:8000 ...${NC}"
-php -S localhost:8000 -t "$ROOT_DIR/api/public" &
+echo -e "${GREEN}🐘 Iniciando API PHP en http://0.0.0.0:8000 ...${NC}"
+php -S 0.0.0.0:8000 -t "$ROOT_DIR/api/public" &
 PHP_PID=$!
 
 # 2. Iniciar Servidor Frontend (Vue + Vite con pnpm)
