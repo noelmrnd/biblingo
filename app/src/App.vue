@@ -45,32 +45,38 @@
       </main>
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
-      <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2 px-4 pb-safe">
+      <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-1.5 px-4 pb-safe">
         <div class="max-w-md mx-auto flex justify-between items-center gap-2">
           <button 
             @click="currentTab = 'dashboard'"
-            :class="currentTab === 'dashboard' ? 'text-brand-green bg-brand-green/15 border-brand-green/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            :class="currentTab === 'dashboard' 
+              ? 'text-brand-green bg-[radial-gradient(ellipse_at_center,_rgba(88,204,2,0.25)_0%,_transparent_70%)]' 
+              : 'text-slate-400 hover:text-slate-200'"
+            class="flex-1 py-1 px-1 flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all duration-200 cursor-pointer select-none relative overflow-hidden"
           >
-            <span class="text-2xl pointer-events-none">🔥</span>
+            <span class="text-2xl pointer-events-none transition-transform" :class="currentTab === 'dashboard' ? 'scale-110 drop-shadow-[0_0_10px_rgba(88,204,2,0.7)]' : ''">🔥</span>
             <span class="text-base font-extrabold tracking-wide pointer-events-none">Racha</span>
           </button>
 
           <button 
             @click="currentTab = 'friends'"
-            :class="currentTab === 'friends' ? 'text-brand-blue bg-brand-blue/15 border-brand-blue/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            :class="currentTab === 'friends' 
+              ? 'text-brand-blue bg-[radial-gradient(ellipse_at_center,_rgba(28,176,246,0.25)_0%,_transparent_70%)]' 
+              : 'text-slate-400 hover:text-slate-200'"
+            class="flex-1 py-1 px-1 flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all duration-200 cursor-pointer select-none relative overflow-hidden"
           >
-            <span class="text-2xl pointer-events-none">👥</span>
+            <span class="text-2xl pointer-events-none transition-transform" :class="currentTab === 'friends' ? 'scale-110 drop-shadow-[0_0_10px_rgba(28,176,246,0.7)]' : ''">👥</span>
             <span class="text-base font-extrabold tracking-wide pointer-events-none">Amigos</span>
           </button>
 
           <button 
             @click="currentTab = 'profile'"
-            :class="currentTab === 'profile' ? 'text-brand-purple bg-brand-purple/15 border-brand-purple/30' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'"
-            class="flex-1 py-2 px-2 flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition-colors duration-150 cursor-pointer select-none"
+            :class="currentTab === 'profile' 
+              ? 'text-brand-purple bg-[radial-gradient(ellipse_at_center,_rgba(168,85,247,0.25)_0%,_transparent_70%)]' 
+              : 'text-slate-400 hover:text-slate-200'"
+            class="flex-1 py-1 px-1 flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all duration-200 cursor-pointer select-none relative overflow-hidden"
           >
-            <span class="text-2xl pointer-events-none">🦉</span>
+            <span class="text-2xl pointer-events-none transition-transform" :class="currentTab === 'profile' ? 'scale-110 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]' : ''">🦉</span>
             <span class="text-base font-extrabold tracking-wide pointer-events-none">Perfil</span>
           </button>
         </div>

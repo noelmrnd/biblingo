@@ -32,7 +32,7 @@
 
       <!-- Subtítulo / Badge de Estado -->
       <div v-if="hasReadToday" class="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
-        <span>✅</span> Lectura de hoy asegurada
+        <span>✅</span> ¡Perfecto, ya leíste hoy!
       </div>
       <p v-else class="text-slate-200 text-base mt-3">
         Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
