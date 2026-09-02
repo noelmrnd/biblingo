@@ -102,36 +102,33 @@ import ToastNotification from './components/ToastNotification.vue';
 import { DeepLinkService } from './services/deepLinks';
 import { ApiService } from './services/api';
 import { ToastService } from './services/toast';
+import { StorageService } from './services/storage';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
 
-const onLoginSuccess = (user) => {
+const onLoginSuccess = async (user) => {
   currentUser.value = user;
-  localStorage.setItem('biblingo_user', JSON.stringify(user));
+  await StorageService.set('biblingo_user', user);
   ToastService.success(`¡Bienvenido de nuevo, ${user.display_name}! 👋`);
 };
 
-const onUserUpdated = (updatedUser) => {
+const onUserUpdated = async (updatedUser) => {
   currentUser.value = { ...currentUser.value, ...updatedUser };
-  localStorage.setItem('biblingo_user', JSON.stringify(currentUser.value));
+  await StorageService.set('biblingo_user', currentUser.value);
 };
 
-const onLogout = () => {
+const onLogout = async () => {
   currentUser.value = null;
-  localStorage.removeItem('biblingo_user');
+  await StorageService.remove('biblingo_user');
   ToastService.info('Sesión cerrada correctamente.');
 };
 
-onMounted(() => {
-  // Cargar usuario almacenado si existe
-  const saved = localStorage.getItem('biblingo_user');
-  if (saved) {
-    try {
-      currentUser.value = JSON.parse(saved);
-    } catch (e) {
-      localStorage.removeItem('biblingo_user');
-    }
+onMounted(async () => {
+  // Cargar usuario almacenado desde StorageService nativo
+  const savedUser = await StorageService.get('biblingo_user');
+  if (savedUser) {
+    currentUser.value = savedUser;
   }
 
   // Inicializar receptor de enlaces de invitación (Deep Links)

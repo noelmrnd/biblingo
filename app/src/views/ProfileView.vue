@@ -72,6 +72,7 @@ import { UserRound, Flame, Zap, Bell, LogOut } from '@lucide/vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
+import { StorageService } from '../services/storage';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -83,7 +84,7 @@ const reminderTime = ref('20:00');
 
 const saveReminder = async () => {
   try {
-    localStorage.setItem('biblingo_reminder_time', reminderTime.value);
+    await StorageService.set('biblingo_reminder_time', reminderTime.value);
     await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count);
@@ -98,8 +99,8 @@ const logout = () => {
   emit('logout');
 };
 
-onMounted(() => {
-  const saved = localStorage.getItem('biblingo_reminder_time');
+onMounted(async () => {
+  const saved = await StorageService.get('biblingo_reminder_time');
   if (saved) {
     reminderTime.value = saved;
   } else if (props.user.reminder_time) {

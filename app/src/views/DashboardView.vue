@@ -122,6 +122,7 @@ import confetti from 'canvas-confetti';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
+import { StorageService } from '../services/storage';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -212,9 +213,9 @@ const logReadingToday = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   loadReadingStatus();
-  const savedTime = localStorage.getItem('biblingo_reminder_time') || props.user.reminder_time || '20:00';
+  const savedTime = (await StorageService.get('biblingo_reminder_time')) || props.user.reminder_time || '20:00';
   NotificationService.schedule7DayBurst(savedTime, props.user.streak_count);
 });
 
