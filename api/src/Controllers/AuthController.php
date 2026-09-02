@@ -78,6 +78,7 @@ class AuthController {
                 'max_streak_count' => (int)$user['max_streak_count'],
                 'last_read_date'   => $user['last_read_date'],
                 'push_token'       => $user['push_token'],
+                'reminder_time'    => $user['reminder_time'] ?? '20:00',
                 'platform'         => $user['platform']
             ]
         ]);

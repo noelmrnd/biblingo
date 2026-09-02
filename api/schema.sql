@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     max_streak_count INT DEFAULT 0,
     last_read_date DATE NULL,
     push_token VARCHAR(255) NULL,
+    reminder_time VARCHAR(10) DEFAULT '20:00',
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

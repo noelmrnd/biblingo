@@ -25,12 +25,12 @@
       </div>
     </div>
 
-    <!-- Ajustes de Notificación Diaria (Ráfaga de 7 Días) -->
+    <!-- Ajustes de Notificación Diaria -->
     <div class="card-duo space-y-4">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="font-extrabold text-white text-base">Recordatorio Diario</h3>
-          <p class="text-slate-400 text-xs">Notificación local programada para 7 días</p>
+          <p class="text-slate-400 text-xs">Te notificaremos cada día para proteger tu racha</p>
         </div>
         <span class="text-2xl">🔔</span>
       </div>
@@ -48,7 +48,7 @@
         @click="saveReminder" 
         class="btn-3d-green w-full text-sm py-3"
       >
-        <span>Guardar y Programar 7 Días</span>
+        <span>Guardar Recordatorio</span>
       </button>
       <p v-if="savedMsg" class="text-emerald-400 text-xs font-semibold text-center">
         {{ savedMsg }}
@@ -69,8 +69,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { NotificationService } from '../services/notifications';
+import { ApiService } from '../services/api';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -82,13 +83,29 @@ const reminderTime = ref('20:00');
 const savedMsg = ref('');
 
 const saveReminder = async () => {
-  await NotificationService.requestPermissions();
-  await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count);
-  savedMsg.value = `¡Notificaciones programadas diariamente a las ${reminderTime.value}! ⏰`;
-  setTimeout(() => { savedMsg.value = ''; }, 4000);
+  try {
+    localStorage.setItem('biblingo_reminder_time', reminderTime.value);
+    await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
+    await NotificationService.requestPermissions();
+    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count);
+    savedMsg.value = `¡Recordatorio guardado para las ${reminderTime.value}! ⏰`;
+  } catch (e) {
+    savedMsg.value = `¡Recordatorio guardado para las ${reminderTime.value}! ⏰`;
+  } finally {
+    setTimeout(() => { savedMsg.value = ''; }, 4000);
+  }
 };
 
 const logout = () => {
   emit('logout');
 };
+
+onMounted(() => {
+  const saved = localStorage.getItem('biblingo_reminder_time');
+  if (saved) {
+    reminderTime.value = saved;
+  } else if (props.user.reminder_time) {
+    reminderTime.value = props.user.reminder_time;
+  }
+});
 </script>

@@ -7,8 +7,9 @@ class UserController {
         $input = getJsonInput();
         $displayName = isset($input['display_name']) ? trim($input['display_name']) : null;
         $pushToken   = isset($input['push_token']) ? trim($input['push_token']) : null;
+        $reminderTime = isset($input['reminder_time']) ? trim($input['reminder_time']) : null;
 
-        if (!$displayName && !$pushToken) {
+        if (!$displayName && !$pushToken && !$reminderTime) {
             sendJsonResponse(['error' => 'Sin datos para actualizar.'], 400);
         }
 
@@ -24,6 +25,11 @@ class UserController {
         if ($pushToken !== null) {
             $fields[] = 'push_token = ?';
             $params[] = $pushToken;
+        }
+
+        if ($reminderTime !== null) {
+            $fields[] = 'reminder_time = ?';
+            $params[] = $reminderTime;
         }
 
         $params[] = $userId;

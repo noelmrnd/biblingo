@@ -116,10 +116,6 @@
       </div>
     </div>
 
-    <!-- Frase Motivacional -->
-    <div class="glass-panel p-4 rounded-2xl border-slate-700 text-center text-xs text-slate-300 italic">
-      "{{ currentQuote.text }}" — <span class="font-bold text-slate-200 not-italic">{{ currentQuote.author }}</span>
-    </div>
   </div>
 </template>
 
@@ -143,13 +139,6 @@ const historyDates = ref([]);
 const timerSeconds = ref(600); // 10 mins
 const isTimerRunning = ref(false);
 let timerInterval = null;
-
-const quotes = [
-  { text: "Un lector vive mil vidas antes de morir. Aquel que nunca lee vive solo una.", author: "George R.R. Martin" },
-  { text: "La lectura es para la mente lo que el ejercicio es para el cuerpo.", author: "Joseph Addison" },
-  { text: "No hay espectáculo más hermoso que la mirada de un lector concentrado en su libro.", author: "Jorge Luis Borges" }
-];
-const currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
 const weekDays = computed(() => {
   const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -259,6 +248,8 @@ const resetTimer = () => {
 
 onMounted(() => {
   loadReadingStatus();
+  const savedTime = localStorage.getItem('biblingo_reminder_time') || props.user.reminder_time || '20:00';
+  NotificationService.schedule7DayBurst(savedTime, props.user.streak_count);
 });
 
 onUnmounted(() => {
