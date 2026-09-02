@@ -69,5 +69,20 @@ export const AuthService = {
       }
       throw new Error(e.message || 'No se pudo iniciar sesión con Google.');
     }
+  },
+
+  /**
+   * Login de desarrollo local (permite probar sin configurar OAuth en Google/Apple).
+   */
+  async devLogin(name = 'Lector Dev') {
+    const cleanName = name.trim() || 'Lector Dev';
+    const devId = 'dev_' + cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    return await ApiService.socialLogin({
+      provider: 'dev',
+      id_token: devId,
+      email: `${devId}@dev.biblingo.me`,
+      display_name: cleanName,
+      platform: Capacitor.getPlatform() || 'web'
+    });
   }
 };
