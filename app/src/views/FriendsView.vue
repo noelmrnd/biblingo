@@ -104,7 +104,7 @@
                 <span v-if="friend.id === user.id" class="text-[10px] bg-brand-green/20 text-brand-green px-1.5 py-0.5 rounded font-extrabold">TÚ</span>
               </h4>
               <p class="text-slate-400 text-xs">
-                Última lectura: {{ friend.last_read_date || 'Sin registro' }}
+                Última lectura: {{ formatFriendlyDate(friend.last_read_date) }}
               </p>
             </div>
           </div>
@@ -125,6 +125,7 @@ import { ref, computed, onMounted } from 'vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
+import { formatDateDDMMYYYY, formatFriendlyDate } from '../utils/dateFormatter';
 
 const props = defineProps({
   user: { type: Object, required: true }
