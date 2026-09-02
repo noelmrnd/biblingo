@@ -71,6 +71,7 @@
     </div>
 
     <!-- Temporizador de lectura de 10 minutos -->
+    <!--
     <div class="card-duo bg-slate-900/90 border-slate-700 space-y-4 text-center">
       <div class="flex items-center justify-between text-left">
         <div>
@@ -100,12 +101,13 @@
         </button>
       </div>
     </div>
+    -->
 
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import confetti from 'canvas-confetti';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
@@ -119,11 +121,6 @@ const emit = defineEmits(['user-updated']);
 const loading = ref(false);
 const hasReadToday = ref(false);
 const historyDates = ref([]);
-
-// Temporizador
-const timerSeconds = ref(600); // 10 mins
-const isTimerRunning = ref(false);
-let timerInterval = null;
 
 const weekDays = computed(() => {
   const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -200,44 +197,50 @@ const logReadingToday = async () => {
   }
 };
 
-const formatTimer = (sec) => {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-};
-
-const toggleTimer = () => {
-  if (isTimerRunning.value) {
-    clearInterval(timerInterval);
-    isTimerRunning.value = false;
-  } else {
-    isTimerRunning.value = true;
-    timerInterval = setInterval(() => {
-      if (timerSeconds.value > 0) {
-        timerSeconds.value--;
-      } else {
-        clearInterval(timerInterval);
-        isTimerRunning.value = false;
-        alert('¡Felicidades! Completaste tus 10 minutos de lectura diaria. 🔥');
-        logReadingToday();
-      }
-    }, 1000);
-  }
-};
-
-const resetTimer = () => {
-  clearInterval(timerInterval);
-  isTimerRunning.value = false;
-  timerSeconds.value = 600;
-};
-
 onMounted(() => {
   loadReadingStatus();
   const savedTime = localStorage.getItem('biblingo_reminder_time') || props.user.reminder_time || '20:00';
   NotificationService.schedule7DayBurst(savedTime, props.user.streak_count);
 });
 
-onUnmounted(() => {
-  if (timerInterval) clearInterval(timerInterval);
-});
+
+
+// const timerSeconds = ref(600); // 10 mins
+// const isTimerRunning = ref(false);
+// let timerInterval = null;
+
+// const formatTimer = (sec) => {
+//   const m = Math.floor(sec / 60);
+//   const s = sec % 60;
+//   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+// };
+
+// const toggleTimer = () => {
+//   if (isTimerRunning.value) {
+//     clearInterval(timerInterval);
+//     isTimerRunning.value = false;
+//   } else {
+//     isTimerRunning.value = true;
+//     timerInterval = setInterval(() => {
+//       if (timerSeconds.value > 0) {
+//         timerSeconds.value--;
+//       } else {
+//         clearInterval(timerInterval);
+//         isTimerRunning.value = false;
+//         alert('¡Felicidades! Completaste tus 10 minutos de lectura diaria. 🔥');
+//         logReadingToday();
+//       }
+//     }, 1000);
+//   }
+// };
+
+// const resetTimer = () => {
+//   clearInterval(timerInterval);
+//   isTimerRunning.value = false;
+//   timerSeconds.value = 600;
+// };
+
+// onUnmounted(() => {
+//   if (timerInterval) clearInterval(timerInterval);
+// });
 </script>
