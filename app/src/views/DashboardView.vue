@@ -1,9 +1,16 @@
 <template>
-  <div class="space-y-4">
-    <!-- Header Racha Hero -->
-    <div class="relative overflow-hidden card-duo bg-gradient-to-br from-slate-900 via-brand-card to-slate-900 border-amber-500/30 text-center py-8 px-6">
-      <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-flame/15 rounded-full blur-2xl pointer-events-none"></div>
+  <!-- Loading Indicator Centrado -->
+  <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
+    <div class="relative w-16 h-16 flex items-center justify-center">
+      <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-green animate-spin"></div>
+      <span class="text-2xl">🦉</span>
+    </div>
+    <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
+  </div>
 
+  <div v-else class="space-y-4">
+    <!-- Header Racha Hero -->
+    <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,150,0,0.22),_transparent_65%)] border-amber-500/30 text-center py-8 px-6 overflow-hidden">
       <!-- Llama animada -->
       <div class="inline-block relative my-3">
         <div class="text-7xl animate-flame-pulse inline-block filter drop-shadow-[0_0_20px_rgba(255,150,0,0.8)]">
@@ -120,6 +127,7 @@ const props = defineProps({
 const emit = defineEmits(['user-updated']);
 
 const loading = ref(false);
+const initialLoading = ref(true);
 const hasReadToday = ref(false);
 const historyDates = ref([]);
 
@@ -163,6 +171,8 @@ const loadReadingStatus = async () => {
     }
   } catch (e) {
     console.warn('No se pudo actualizar estado:', e.message);
+  } finally {
+    initialLoading.value = false;
   }
 };
 

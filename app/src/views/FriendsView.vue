@@ -1,8 +1,7 @@
 <template>
   <div class="space-y-4">
     <!-- Card de Invitación con Código QR visible desde el principio -->
-    <div class="card-duo bg-gradient-to-br from-brand-card via-slate-900 to-slate-900 border-indigo-500/30 text-center space-y-4 py-6 px-5 relative overflow-hidden">
-      <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-green/10 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 text-center space-y-4 py-6 px-5 relative overflow-hidden">
 
       <div class="flex items-center justify-between text-left">
         <div>
