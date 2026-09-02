@@ -39,15 +39,9 @@
       </div>
     </div>
 
-    <!-- Agregar Amigo por Código o QR -->
+    <!-- Agregar Amigo por Código -->
     <div class="card-duo space-y-3">
-      <div class="flex items-center justify-between">
-        <h4 class="font-bold text-white text-sm">Añadir a un Amigo</h4>
-        <label class="text-xs font-bold text-brand-blue hover:underline cursor-pointer flex items-center gap-1">
-          <span>📷 Cargar QR</span>
-          <input type="file" accept="image/*" class="hidden" @change="handleQrFileUpload" />
-        </label>
-      </div>
+      <h4 class="font-bold text-white text-sm">Añadir a un Amigo</h4>
 
       <div class="flex gap-2">
         <input 
@@ -199,13 +193,6 @@ const addFriend = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const handleQrFileUpload = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  alert('Se procesará la imagen cargada para obtener el código de invitación.');
 };
 
 const shareInvite = async () => {
