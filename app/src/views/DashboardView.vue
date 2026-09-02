@@ -23,39 +23,24 @@
         </p>
       </div>
 
-      <p class="text-slate-400 text-xs mt-3">
+      <!-- Subtítulo / Badge de Estado -->
+      <div v-if="hasReadToday" class="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3.5 py-1 rounded-full text-xs font-extrabold mt-3 shadow-inner">
+        <span>✅</span> Lectura de hoy asegurada
+      </div>
+      <p v-else class="text-slate-400 text-xs mt-3">
         Racha máxima histórica: <span class="text-slate-200 font-bold">{{ user.max_streak_count }} días</span>
       </p>
     </div>
 
-    <!-- Banner de Estado de Hoy -->
-    <div 
-      :class="hasReadToday ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300' : 'bg-amber-950/50 border-amber-500/40 text-amber-300'"
-      class="border rounded-2xl p-4 flex items-center justify-between shadow-lg"
-    >
-      <div class="flex items-center gap-3">
-        <span class="text-2xl">{{ hasReadToday ? '✅' : '⏳' }}</span>
-        <div>
-          <h4 class="font-bold text-sm text-white">
-            {{ hasReadToday ? '¡Lectura de hoy completada!' : 'Lectura pendiente' }}
-          </h4>
-          <p class="text-xs opacity-80">
-            {{ hasReadToday ? 'Has asegurado tu racha de hoy.' : 'Dedica al menos 10 minutos a leer hoy.' }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Botón Principal 3D: Registrar Lectura -->
-    <div class="pt-2">
+    <!-- Botón de Lectura de Hoy (Solo visible cuando falta leer) -->
+    <div v-if="!hasReadToday">
       <button
         @click="logReadingToday"
-        :disabled="hasReadToday || loading"
-        :class="hasReadToday ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed border-b-4' : 'btn-3d-green w-full text-lg py-5'"
-        class="w-full font-black rounded-2xl flex items-center justify-center gap-3 transition-transform"
+        :disabled="loading"
+        class="btn-3d-green w-full text-lg py-5 font-black rounded-2xl flex items-center justify-center gap-3 transition-transform"
       >
-        <span class="text-2xl">{{ hasReadToday ? '🎉' : '📖' }}</span>
-        <span>{{ hasReadToday ? '¡LECTURA REGISTRADA HOY!' : 'MARCAR LECTURA DE HOY' }}</span>
+        <span class="text-2xl">📖</span>
+        <span>MARCAR LECTURA DE HOY</span>
       </button>
     </div>
 
