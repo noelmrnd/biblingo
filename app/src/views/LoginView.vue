@@ -56,34 +56,34 @@
 
         <!-- Panel de Desarrollo Local (Vite Dev / Localhost) -->
         <div v-if="isDevMode" class="pt-4 border-t border-slate-800 space-y-3">
-          <div class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
-            <span>🛠️</span> Entorno de Desarrollo
+          <div class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
+            <span>🛠️</span> Entorno de desarrollo
           </div>
           <div class="flex gap-2">
             <input 
               v-model="devName"
               type="text" 
               placeholder="Nombre de usuario dev"
-              class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-green"
+              class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-white focus:outline-none focus:border-brand-green"
               @keyup.enter="loginDev"
             />
             <button 
               @click="loginDev"
               :disabled="loading"
-              class="btn-3d-green text-xs py-2 px-4 whitespace-nowrap"
+              class="btn-3d-green text-sm py-2.5 px-4 whitespace-nowrap"
             >
-              Entrar Dev
+              Entrar dev
             </button>
           </div>
         </div>
       </div>
 
-      <p v-if="errorMsg" class="text-rose-400 text-sm font-semibold bg-rose-950/50 border border-rose-800 p-3 rounded-xl w-full">
+      <p v-if="errorMsg" class="text-rose-400 text-sm font-bold bg-rose-950/50 border border-rose-800 p-3 rounded-xl w-full">
         {{ errorMsg }}
       </p>
 
-      <p class="text-slate-500 text-xs max-w-xs">
-        Al continuar, aceptas formar parte del club de hábito diario de lectura Biblingo. Sin contraseñas molestos.
+      <p class="text-slate-300 text-sm font-medium max-w-xs">
+        Al continuar, aceptas formar parte del club de hábito diario de lectura Biblingo. Sin contraseñas molestas.
       </p>
     </div>
   </div>

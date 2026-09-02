@@ -6,8 +6,8 @@
 
       <div class="flex items-center justify-between text-left">
         <div>
-          <h3 class="font-extrabold text-white text-base">Tu Código de Invitación</h3>
-          <p class="text-slate-400 text-xs">Muestra tu QR a un amigo para conectarte</p>
+          <h3 class="font-extrabold text-white text-base">Tu código de invitación</h3>
+          <p class="text-slate-300 text-sm font-medium">Muestra tu QR a un amigo para conectarte</p>
         </div>
         <span class="text-3xl">📱</span>
       </div>
@@ -15,8 +15,8 @@
       <!-- Contenedor del QR Code visible desde el inicio -->
       <div class="py-2">
         <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green transform hover:scale-105 transition-transform duration-200">
-          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de Invitación" class="w-44 h-44 mx-auto block" />
-          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-xs font-semibold">
+          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
+          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-sm font-semibold">
             Generando QR...
           </div>
         </div>
@@ -25,56 +25,56 @@
       <!-- Código de texto y Botón de Compartir -->
       <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
         <div class="text-left pl-2">
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Código:</span>
+          <span class="text-xs text-slate-300 font-bold uppercase tracking-wider block">Código:</span>
           <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
             {{ user.invite_code || 'BIBLINGO1' }}
           </span>
         </div>
         <button 
           @click="shareInvite" 
-          class="btn-3d-green text-xs py-2.5 px-4"
+          class="btn-3d-green text-base py-3 px-5 font-extrabold"
         >
-          <span>Compartir Enlace</span>
+          <span>Compartir</span>
         </button>
       </div>
     </div>
 
     <!-- Agregar Amigo por Código -->
     <div class="card-duo space-y-3">
-      <h4 class="font-bold text-white text-sm">Añadir a un Amigo</h4>
+      <h4 class="font-extrabold text-white text-base">Añadir a un amigo</h4>
 
       <div class="flex gap-2">
         <input 
           v-model="inputCode" 
           type="text" 
           placeholder="Código (ej. 8K2M9P)"
-          class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+          class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-base uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
           maxlength="12"
           @keyup.enter="addFriend"
         />
         <button 
           @click="addFriend"
           :disabled="loading || !inputCode"
-          class="btn-3d-blue text-xs py-2.5 px-4 disabled:opacity-50"
+          class="btn-3d-blue text-base py-3 px-5 font-extrabold disabled:opacity-50"
         >
           Añadir
         </button>
       </div>
-      <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-xs font-semibold">
+      <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold">
         {{ statusMsg }}
       </p>
     </div>
 
     <!-- Tabla de Clasificación de Amigos -->
     <div class="space-y-3">
-      <h3 class="font-extrabold text-white text-base flex items-center gap-2">
-        <span>🏆</span> Ranking de Rachas
+      <h3 class="font-extrabold text-white text-lg flex items-center gap-2">
+        <span>🏆</span> Ranking de rachas
       </h3>
 
       <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <span class="text-4xl block">🦉</span>
-        <p class="text-sm font-semibold">Aún no tienes amigos agregados.</p>
-        <p class="text-xs text-slate-500">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
+        <p class="text-base font-bold text-white">Aún no tienes amigos agregados.</p>
+        <p class="text-sm text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
       </div>
 
       <div v-else class="space-y-2">
@@ -85,26 +85,26 @@
         >
           <div class="flex items-center gap-3">
             <!-- Medallas de ranking -->
-            <div class="w-7 text-center font-black text-sm">
+            <div class="w-7 text-center font-black text-base">
               <span v-if="index === 0">🥇</span>
               <span v-else-if="index === 1">🥈</span>
               <span v-else-if="index === 2">🥉</span>
-              <span v-else class="text-slate-500">#{{ index + 1 }}</span>
+              <span v-else class="text-slate-400 font-bold">#{{ index + 1 }}</span>
             </div>
 
             <div>
-              <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+              <h4 class="font-bold text-white text-base flex items-center gap-1.5">
                 {{ friend.display_name }}
-                <span v-if="friend.id === user.id" class="text-[10px] bg-brand-green/20 text-brand-green px-1.5 py-0.5 rounded font-extrabold">TÚ</span>
+                <span v-if="friend.id === user.id" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black">TÚ</span>
               </h4>
-              <p class="text-slate-400 text-xs">
+              <p class="text-slate-300 text-sm font-medium">
                 Última lectura: {{ formatFriendlyDate(friend.last_read_date) }}
               </p>
             </div>
           </div>
 
           <!-- Racha del amigo -->
-          <div class="flex items-center gap-1.5 font-extrabold text-amber-400 text-sm bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
+          <div class="flex items-center gap-1.5 font-extrabold text-amber-400 text-base bg-amber-500/10 px-3.5 py-1.5 rounded-xl border border-amber-500/20">
             <span>🔥</span>
             <span>{{ friend.streak_count }}d</span>
           </div>

@@ -18,17 +18,17 @@
         <h2 class="text-4xl font-extrabold text-white tracking-tight">
           {{ user.streak_count }} {{ user.streak_count === 1 ? 'Día' : 'Días' }}
         </h2>
-        <p class="text-amber-400 font-bold text-sm uppercase tracking-wider">
+        <p class="text-amber-400 font-extrabold text-base uppercase tracking-wider">
           Racha de lectura activa
         </p>
       </div>
 
       <!-- Subtítulo / Badge de Estado -->
-      <div v-if="hasReadToday" class="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3.5 py-1 rounded-full text-xs font-extrabold mt-3 shadow-inner">
+      <div v-if="hasReadToday" class="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
         <span>✅</span> Lectura de hoy asegurada
       </div>
-      <p v-else class="text-slate-400 text-xs mt-3">
-        Racha máxima histórica: <span class="text-slate-200 font-bold">{{ user.max_streak_count }} días</span>
+      <p v-else class="text-slate-200 text-base mt-3">
+        Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
       </p>
     </div>
 
@@ -40,14 +40,14 @@
         class="btn-3d-green w-full text-lg py-5 font-black rounded-2xl flex items-center justify-center gap-3 transition-transform"
       >
         <span class="text-2xl">📖</span>
-        <span>MARCAR LECTURA DE HOY</span>
+        <span>Marcar lectura de hoy</span>
       </button>
     </div>
 
     <!-- Tracker semanal de 7 días (Lun - Dom) -->
     <div class="card-duo space-y-4">
-      <h3 class="font-extrabold text-white text-base flex items-center gap-2">
-        <span>📅</span> Esta Semana
+      <h3 class="font-extrabold text-white text-lg flex items-center gap-2">
+        <span>📅</span> Esta semana
       </h3>
       <div class="grid grid-cols-7 gap-1.5 text-center">
         <div 
