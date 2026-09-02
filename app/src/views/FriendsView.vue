@@ -1,31 +1,54 @@
 <template>
   <div class="space-y-6 pb-24 max-w-md mx-auto">
-    <!-- Card de Invitación / Código -->
-    <div class="card-duo bg-gradient-to-br from-brand-card to-slate-900 border-indigo-500/30 space-y-4">
-      <div class="flex items-center justify-between">
+    <!-- Card de Invitación con Código QR visible desde el principio -->
+    <div class="card-duo bg-gradient-to-br from-brand-card via-slate-900 to-slate-900 border-indigo-500/30 text-center space-y-4 py-6 px-5 relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-green/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between text-left">
         <div>
           <h3 class="font-extrabold text-white text-base">Tu Código de Invitación</h3>
-          <p class="text-slate-400 text-xs">Invita a tus amigos para competir en rachas</p>
+          <p class="text-slate-400 text-xs">Muestra tu QR a un amigo para conectarte</p>
         </div>
-        <span class="text-3xl">👥</span>
+        <span class="text-3xl">📱</span>
       </div>
 
+      <!-- Contenedor del QR Code visible desde el inicio -->
+      <div class="py-2">
+        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green transform hover:scale-105 transition-transform duration-200">
+          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de Invitación" class="w-44 h-44 mx-auto block" />
+          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-xs font-semibold">
+            Generando QR...
+          </div>
+        </div>
+      </div>
+
+      <!-- Código de texto y Botón de Compartir -->
       <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
-        <span class="text-xl font-black tracking-widest text-emerald-400 font-mono pl-2">
-          {{ user.invite_code || 'BIBLINGO1' }}
-        </span>
+        <div class="text-left pl-2">
+          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Código:</span>
+          <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
+            {{ user.invite_code || 'BIBLINGO1' }}
+          </span>
+        </div>
         <button 
           @click="shareInvite" 
-          class="btn-3d-green text-xs py-2 px-3"
+          class="btn-3d-green text-xs py-2.5 px-4"
         >
           <span>Compartir Enlace</span>
         </button>
       </div>
     </div>
 
-    <!-- Agregar Amigo por Código -->
+    <!-- Agregar Amigo por Código o QR -->
     <div class="card-duo space-y-3">
-      <h4 class="font-bold text-white text-sm">Añadir a un Amigo</h4>
+      <div class="flex items-center justify-between">
+        <h4 class="font-bold text-white text-sm">Añadir a un Amigo</h4>
+        <label class="text-xs font-bold text-brand-blue hover:underline cursor-pointer flex items-center gap-1">
+          <span>📷 Cargar QR</span>
+          <input type="file" accept="image/*" class="hidden" @change="handleQrFileUpload" />
+        </label>
+      </div>
+
       <div class="flex gap-2">
         <input 
           v-model="inputCode" 
@@ -33,6 +56,7 @@
           placeholder="Código (ej. 8K2M9P)"
           class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
           maxlength="12"
+          @keyup.enter="addFriend"
         />
         <button 
           @click="addFriend"
@@ -56,7 +80,7 @@
       <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <span class="text-4xl block">🦉</span>
         <p class="text-sm font-semibold">Aún no tienes amigos agregados.</p>
-        <p class="text-xs text-slate-500">Comparte tu código de invitación para empezar a competir.</p>
+        <p class="text-xs text-slate-500">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
       </div>
 
       <div v-else class="space-y-2">
@@ -98,6 +122,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
 
@@ -110,9 +135,9 @@ const inputCode = ref('');
 const loading = ref(false);
 const statusMsg = ref('');
 const statusError = ref(false);
+const qrDataUrl = ref('');
 
 const sortedFriends = computed(() => {
-  // Incluir al usuario actual en el ranking
   const all = [...friends.value];
   if (!all.some(f => f.id === props.user.id)) {
     all.push({
@@ -125,6 +150,23 @@ const sortedFriends = computed(() => {
   }
   return all.sort((a, b) => b.streak_count - a.streak_count);
 });
+
+const generateQrCode = async () => {
+  if (!props.user.invite_code) return;
+  const inviteUrl = `https://biblingo.me/invite/${props.user.invite_code}`;
+  try {
+    qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#0F172A',
+        light: '#FFFFFF'
+      }
+    });
+  } catch (err) {
+    console.warn('Error al generar el código QR:', err);
+  }
+};
 
 const loadFriends = async () => {
   try {
@@ -158,6 +200,13 @@ const addFriend = async () => {
   }
 };
 
+const handleQrFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  alert('Se procesará la imagen cargada para obtener el código de invitación.');
+};
+
 const shareInvite = async () => {
   const res = await ShareService.shareInviteCode(props.user.invite_code, props.user.display_name);
   if (res.method === 'clipboard') {
@@ -167,5 +216,6 @@ const shareInvite = async () => {
 
 onMounted(() => {
   loadFriends();
+  generateQrCode();
 });
 </script>

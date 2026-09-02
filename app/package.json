@@ -17,8 +17,9 @@
     "@capacitor/push-notifications": "^6.0.0",
     "@capacitor/share": "^6.0.0",
     "@codetrix-studio/capacitor-google-auth": "^3.3.1",
-    "canvas-confetti": "^1.9.4",
     "@lucide/vue": "^1.39.0",
+    "canvas-confetti": "^1.9.4",
+    "qrcode": "^1.5.4",
     "vue": "^3.4.21"
   },
   "devDependencies": {
