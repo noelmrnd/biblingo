@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-brand-dark flex flex-col justify-between selection:bg-brand-green selection:text-white">
+  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white">
     <!-- Si no está autenticado, mostrar Login -->
     <LoginView v-if="!currentUser" @login-success="onLoginSuccess" />
 
     <!-- Aplicación Principal -->
     <template v-else>
-      <!-- Top Navbar -->
-      <header class="sticky top-0 z-30 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border px-4 py-3 flex items-center justify-between shadow-md">
+      <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
+      <header class="flex-none z-30 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border px-4 py-3 pt-safe flex items-center justify-between shadow-md">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 bg-brand-green rounded-xl flex items-center justify-center text-lg shadow-sm">
             🦉
@@ -21,26 +21,28 @@
         </div>
       </header>
 
-      <!-- Contenido de la vista activa -->
-      <main class="flex-1 p-4 max-w-md mx-auto w-full">
-        <DashboardView 
-          v-if="currentTab === 'dashboard'" 
-          :user="currentUser" 
-          @user-updated="onUserUpdated" 
-        />
-        <FriendsView 
-          v-else-if="currentTab === 'friends'" 
-          :user="currentUser" 
-        />
-        <ProfileView 
-          v-else-if="currentTab === 'profile'" 
-          :user="currentUser" 
-          @logout="onLogout" 
-        />
+      <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
+      <main class="flex-1 overflow-y-auto w-full no-scrollbar">
+        <div class="max-w-md mx-auto p-4 space-y-4">
+          <DashboardView 
+            v-if="currentTab === 'dashboard'" 
+            :user="currentUser" 
+            @user-updated="onUserUpdated" 
+          />
+          <FriendsView 
+            v-else-if="currentTab === 'friends'" 
+            :user="currentUser" 
+          />
+          <ProfileView 
+            v-else-if="currentTab === 'profile'" 
+            :user="currentUser" 
+            @logout="onLogout" 
+          />
+        </div>
       </main>
 
-      <!-- Bottom Navigation Bar Gamificada con Área de Toque y Padding Ampliado (Sin saltos de layout) -->
-      <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border py-2 px-4 pb-safe">
+      <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
+      <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2.5 px-4 pb-safe">
         <div class="max-w-md mx-auto flex justify-between items-center gap-2">
           <button 
             @click="currentTab = 'dashboard'"

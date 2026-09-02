@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 pb-24 max-w-md mx-auto">
+  <div class="space-y-4">
     <!-- Header Racha Hero -->
     <div class="relative overflow-hidden card-duo bg-gradient-to-br from-slate-900 via-brand-card to-slate-900 border-amber-500/30 text-center py-8 px-6">
       <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-flame/15 rounded-full blur-2xl pointer-events-none"></div>

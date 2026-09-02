@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 pb-24 max-w-md mx-auto">
+  <div class="space-y-4">
     <!-- Header Perfil -->
     <div class="card-duo text-center py-6 space-y-3">
       <div class="w-20 h-20 bg-gradient-to-tr from-brand-green to-emerald-400 rounded-full flex items-center justify-center text-4xl shadow-xl mx-auto border-4 border-slate-800">

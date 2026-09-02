@@ -2,10 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  position: fixed; /* Evita que iOS Safari desplace el cuerpo de la ventana */
+}
+
+* {
+  touch-action: manipulation; /* Deshabilita el gesto de zoom por doble toque */
+}
+
 @layer base {
   body {
-    @apply bg-brand-dark text-slate-100 min-h-screen flex flex-col;
+    @apply bg-brand-dark text-slate-100;
     -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
 }
 
@@ -36,4 +50,21 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Ocultar barras de scroll pero mantener funcionalidad táctil */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Áreas seguras iOS (Safe Area Insets + Relleno Base) */
+.pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+}
+.pb-safe {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
 }
