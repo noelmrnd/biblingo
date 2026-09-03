@@ -9,6 +9,7 @@ class FriendController {
     public static function getFriends($userId) {
         $db = getDbConnection();
 
+        // 1. Obtener lista de amigos del usuario
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone
             FROM friendships f
@@ -19,32 +20,46 @@ class FriendController {
         $stmt->execute([$userId]);
         $friends = $stmt->fetchAll();
 
-        // Verificar toques para el día local de cada amigo
-        $nudgeCheckStmt = $db->prepare("SELECT COUNT(*) FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
+        // 2. Obtener la última fecha de toque enviada por este usuario en una sola consulta indexada
+        $nudgesStmt = $db->prepare("
+            SELECT receiver_id, MAX(nudge_date) AS last_nudge_date
+            FROM friend_nudges
+            WHERE sender_id = ?
+            GROUP BY receiver_id
+        ");
+        $nudgesStmt->execute([$userId]);
+        $nudges = $nudgesStmt->fetchAll();
+
+        // Mapear toques por id de amigo para búsqueda O(1)
+        $nudgeMap = [];
+        foreach ($nudges as $n) {
+            $nudgeMap[(int)$n['receiver_id']] = $n['last_nudge_date'];
+        }
 
         sendJsonResponse([
             'success' => true,
-            'friends' => array_map(function($f) use ($userId, $nudgeCheckStmt) {
+            'friends' => array_map(function($f) use ($nudgeMap) {
+                $friendId = (int)$f['id'];
                 $tz = $f['timezone'] ?? 'UTC';
                 $friendToday = DateUtils::getUserToday($tz);
                 $friendYesterday = DateUtils::getUserYesterday($tz);
-
-                $nudgeCheckStmt->execute([$userId, $f['id'], $friendToday]);
-                $nudgedCount = (int)$nudgeCheckStmt->fetchColumn();
 
                 $streakCount = (int)$f['streak_count'];
                 $lastRead = $f['last_read_date'];
                 $hasReadToday = (!empty($lastRead) && $lastRead === $friendToday);
                 $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $friendToday && $lastRead !== $friendYesterday));
 
+                $lastNudgeDate = $nudgeMap[$friendId] ?? null;
+                $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $friendToday);
+
                 return [
-                    'id'               => (int)$f['id'],
+                    'id'               => $friendId,
                     'display_name'     => $f['display_name'],
                     'streak_count'     => $streakCount,
                     'max_streak_count' => (int)$f['max_streak_count'],
                     'last_read_date'   => $lastRead,
                     'invite_code'      => $f['invite_code'],
-                    'nudged_today'     => $nudgedCount > 0,
+                    'nudged_today'     => $nudgedToday,
                     'has_read_today'   => $hasReadToday,
                     'is_streak_lost'   => $isStreakLost
                 ];
@@ -128,52 +143,64 @@ class FriendController {
         }
 
         $db = getDbConnection();
+        $today = date('Y-m-d');
 
-        // 1. Verificar amistad
-        $stmt = $db->prepare("SELECT user_id FROM friendships WHERE user_id = ? AND friend_id = ?");
-        $stmt->execute([$userId, $friendId]);
-        if (!$stmt->fetch()) {
-            sendJsonResponse(['error' => 'No tienes agregada a esta persona como amiga.'], 403);
+        // 1. Verificar INMEDIATAMENTE si ya se envió un recordatorio hoy (búsqueda directa por índice en friend_nudges)
+        $nudgeCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
+        $nudgeCheck->execute([$userId, $friendId, $today]);
+        if ($nudgeCheck->fetch()) {
+            sendJsonResponse(['error' => 'Ya le enviaste un recordatorio a este amigo hoy. ⏳'], 400);
         }
 
-        // 2. Obtener información de remitente y destinatario
-        $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
-        $meStmt->execute([$userId]);
-        $me = $meStmt->fetch();
-        $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
+        // 2. Obtener datos del amigo y validar relación de amistad en 1 sola consulta
+        $stmt = $db->prepare("
+            SELECT u.id, u.display_name, u.push_token, u.last_read_date, u.timezone, f.user_id AS is_friend
+            FROM users u
+            LEFT JOIN friendships f ON f.user_id = ? AND f.friend_id = u.id
+            WHERE u.id = ?
+        ");
+        $stmt->execute([$userId, $friendId]);
+        $friend = $stmt->fetch();
 
-        $friendStmt = $db->prepare("SELECT id, display_name, push_token, last_read_date, timezone FROM users WHERE id = ?");
-        $friendStmt->execute([$friendId]);
-        $friend = $friendStmt->fetch();
-
-        if (!$friend) {
+        if (!$friend || empty($friend['id'])) {
             sendJsonResponse(['error' => 'Amigo no encontrado.'], 404);
         }
 
-        // 3. Evaluar el día calendario local del amigo destinatario
-        $friendToday = DateUtils::getUserToday($friend['timezone'] ?? 'UTC');
+        if (empty($friend['is_friend'])) {
+            sendJsonResponse(['error' => 'No tienes agregada a esta persona como amiga.'], 403);
+        }
+
+        $friendTz = $friend['timezone'] ?? 'UTC';
+        $friendToday = DateUtils::getUserToday($friendTz);
+
+        // Si el día local del amigo difiere de hoy en el servidor, verificar con su fecha local exacta
+        if ($friendToday !== $today) {
+            $preciseCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
+            $preciseCheck->execute([$userId, $friendId, $friendToday]);
+            if ($preciseCheck->fetch()) {
+                sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
+            }
+        }
 
         // 4. Verificar si el amigo ya leyó en su día local
         if (!empty($friend['last_read_date']) && $friend['last_read_date'] === $friendToday) {
             sendJsonResponse(['error' => "{$friend['display_name']} ya completó su lectura de hoy."], 400);
         }
 
-        // 5. Verificar si YA se le envió un recordatorio en su día local (límite de 1 al día)
-        $nudgeCheck = $db->prepare("SELECT id FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
-        $nudgeCheck->execute([$userId, $friendId, $friendToday]);
-        if ($nudgeCheck->fetch()) {
-            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
-        }
-
-        // 6. Registrar el toque en la base de datos
+        // 5. Registrar el toque en la base de datos
         try {
             $insertNudge = $db->prepare("INSERT INTO friend_nudges (sender_id, receiver_id, nudge_date) VALUES (?, ?, ?)");
             $insertNudge->execute([$userId, $friendId, $friendToday]);
         } catch (Exception $e) {
-            // Ignorar duplicados
+            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
         }
 
-        // 6. Enviar notificación Push vía FCM si cuenta con token
+        // 6. Obtener nombre del remitente y enviar notificación Push vía FCM
+        $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
+        $meStmt->execute([$userId]);
+        $me = $meStmt->fetch();
+        $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
+
         if (!empty($friend['push_token'])) {
             FCMService::sendPushNotification(
                 $friend['push_token'],
