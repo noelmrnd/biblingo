@@ -29,13 +29,18 @@ class ReadingController {
         $logs = $logsStmt->fetchAll(PDO::FETCH_COLUMN);
 
         $hasReadToday = ($user['last_read_date'] === $today);
+        $yesterday = DateUtils::getUserYesterday($userTz);
+        $lastRead = $user['last_read_date'];
+        $streakCount = (int)$user['streak_count'];
+        $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $today && $lastRead !== $yesterday));
 
         sendJsonResponse([
             'success'          => true,
-            'streak_count'     => (int)$user['streak_count'],
+            'streak_count'     => $streakCount,
             'max_streak_count' => (int)$user['max_streak_count'],
-            'last_read_date'   => $user['last_read_date'],
+            'last_read_date'   => $lastRead,
             'has_read_today'   => $hasReadToday,
+            'is_streak_lost'   => $isStreakLost,
             'history'          => $logs
         ]);
     }

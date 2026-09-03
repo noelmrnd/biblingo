@@ -25,18 +25,28 @@ class FriendController {
         sendJsonResponse([
             'success' => true,
             'friends' => array_map(function($f) use ($userId, $nudgeCheckStmt) {
-                $friendToday = DateUtils::getUserToday($f['timezone'] ?? 'UTC');
+                $tz = $f['timezone'] ?? 'UTC';
+                $friendToday = DateUtils::getUserToday($tz);
+                $friendYesterday = DateUtils::getUserYesterday($tz);
+
                 $nudgeCheckStmt->execute([$userId, $f['id'], $friendToday]);
                 $nudgedCount = (int)$nudgeCheckStmt->fetchColumn();
+
+                $streakCount = (int)$f['streak_count'];
+                $lastRead = $f['last_read_date'];
+                $hasReadToday = (!empty($lastRead) && $lastRead === $friendToday);
+                $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $friendToday && $lastRead !== $friendYesterday));
 
                 return [
                     'id'               => (int)$f['id'],
                     'display_name'     => $f['display_name'],
-                    'streak_count'     => (int)$f['streak_count'],
+                    'streak_count'     => $streakCount,
                     'max_streak_count' => (int)$f['max_streak_count'],
-                    'last_read_date'   => $f['last_read_date'],
+                    'last_read_date'   => $lastRead,
                     'invite_code'      => $f['invite_code'],
-                    'nudged_today'     => $nudgedCount > 0
+                    'nudged_today'     => $nudgedCount > 0,
+                    'has_read_today'   => $hasReadToday,
+                    'is_streak_lost'   => $isStreakLost
                 ];
             }, $friends)
         ]);

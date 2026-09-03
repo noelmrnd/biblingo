@@ -114,33 +114,34 @@
           </div>
 
           <!-- Acciones de Racha & Recordatorio -->
-          <div class="flex items-center gap-3 flex-none">
-            <!-- Si es el usuario actual -->
-            <div v-if="friend.id === user.id" class="flex items-center gap-1.5 font-extrabold text-amber-400 text-base bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
-              <Flame class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+          <div class="flex items-center gap-2 flex-none">
+            <!-- Badge de Racha Unificado -->
+            <div 
+              :class="[
+                friend.has_read_today
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                  : friend.is_streak_lost
+                  ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
+                  : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+              ]"
+              class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
+            >
+              <CheckCircle2 v-if="friend.has_read_today" class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+              <span v-else-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
+              <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
               <span>{{ friend.streak_count }}d</span>
             </div>
 
-            <!-- Si es un amigo -->
-            <template v-else>
-              <!-- Si el amigo YA leyó hoy -->
-              <div v-if="hasFriendReadToday(friend.last_read_date)" class="flex items-center gap-1.5 bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 text-base font-extrabold">
-                <CheckCircle2 class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-                <span>{{ friend.streak_count }}d</span>
-              </div>
-
-              <!-- Si el amigo AÚN NO ha leído hoy -->
-              <div v-else class="flex items-center gap-1.5">
-                <button
-                  @click="sendNudge(friend)"
-                  :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
-                  class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3.5 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
-                >
-                  <BellRing class="w-4 h-4 stroke-[2.5]" :class="nudgedFriends[friend.id] ? '' : 'animate-bounce'" />
-                  <span>{{ nudgedFriends[friend.id] ? 'Toque enviado' : 'Dar un toque' }}</span>
-                </button>
-              </div>
-            </template>
+            <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
+            <button
+              v-if="friend.id !== user.id && !friend.has_read_today"
+              @click="sendNudge(friend)"
+              :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
+              class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
+            >
+              <BellRing class="w-4 h-4 stroke-[2.5]" :class="nudgedFriends[friend.id] ? '' : 'animate-bounce'" />
+              <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -171,12 +172,6 @@ const copyMsg = ref('');
 const nudgedFriends = ref({});
 const nudgeLoading = ref({});
 
-const hasFriendReadToday = (lastReadDateStr) => {
-  if (!lastReadDateStr) return false;
-  const today = new Date().toISOString().split('T')[0];
-  return lastReadDateStr.startsWith(today);
-};
-
 const sendNudge = async (friend) => {
   if (nudgedFriends.value[friend.id] || nudgeLoading.value[friend.id]) return;
 
@@ -200,7 +195,9 @@ const sortedFriends = computed(() => {
       display_name: props.user.display_name,
       streak_count: props.user.streak_count,
       last_read_date: props.user.last_read_date,
-      invite_code: props.user.invite_code
+      invite_code: props.user.invite_code,
+      has_read_today: props.user.has_read_today,
+      is_streak_lost: props.user.is_streak_lost
     });
   }
   return all.sort((a, b) => b.streak_count - a.streak_count);
