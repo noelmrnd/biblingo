@@ -93,7 +93,7 @@ class FriendController {
         if (!empty($friend['push_token'])) {
             FCMService::sendPushNotification(
                 $friend['push_token'],
-                '¡Nuevo Amigo en Libringo! 🎉',
+                '¡Nuevo Amigo en Biblingo! 🎉',
                 "{$myDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
                 ['type' => 'friend_added', 'user_id' => $userId]
             );

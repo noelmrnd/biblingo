@@ -1,6 +1,6 @@
-# 🦉 Libringo — App de Hábito de Lectura (Estilo Duolingo)
+# 🦉 Biblingo — App de Hábito de Lectura (Estilo Duolingo)
 
-**Libringo** (`libringo.com`) es una plataforma gamificada diseñada para ayudar a las personas a construir y mantener un hábito diario de lectura. Inspira la consistencia mediante rachas de días consecutivos, ranking con amigos, recordatorios inteligentes y micro-interacciones.
+**Biblingo** (`biblingo.me`) es una plataforma gamificada diseñada para ayudar a las personas a construir y mantener un hábito diario de lectura. Inspira la consistencia mediante rachas de días consecutivos, ranking con amigos, recordatorios inteligentes y micro-interacciones.
 
 ---
 
@@ -13,14 +13,14 @@
 - **Notificaciones**:
   - **Locales**: Recordatorio diario con ráfaga de 7 días escalonados (`@capacitor/local-notifications`).
   - **Push Remotas**: Notificación al añadir un amigo usando Firebase Cloud Messaging (FCM HTTP v1).
-- **Social & Deep Links**: Hoja de compartir nativa (`@capacitor/share`) y recepción de invitaciones (`libringo.com/invite/CODIGO`).
+- **Social & Deep Links**: Hoja de compartir nativa (`@capacitor/share`) y recepción de invitaciones (`biblingo.me/invite/CODIGO`).
 
 ---
 
 ## 📁 2. Estructura del Proyecto
 
 ```
-libringo/
+biblingo/
 ├── api/                             # Backend API en PHP Nativo
 │   ├── config/
 │   │   └── db.php                   # Conexión PDO y utilidades de respuesta JSON
@@ -47,7 +47,7 @@ libringo/
 │   ├── api.sh                       # Levanta únicamente la API PHP
 │   └── app.sh                       # Levanta únicamente la App Vue (pnpm dev)
 │
-└── web/                             # Landing Page Estática Promo (libringo.com)
+└── web/                             # Landing Page Estática Promo (biblingo.me)
     ├── index.html                   # Página de aterrizaje con redirección inteligente
     └── style.css                    # Estilos CSS
 ```
@@ -82,7 +82,7 @@ mysql -u root -proot -h 127.0.0.1 < api/schema.sql
 
 **Backend (`api/.env`)**:
 ```env
-MAIN_DB_NAME=libringo
+MAIN_DB_NAME=biblingo
 MAIN_DB_USERNAME=root
 MAIN_DB_PASSWORD=root
 MAIN_DB_PORT=3306
@@ -147,4 +147,4 @@ En entorno de desarrollo (`localhost`), la pantalla de inicio incluye el panel *
 
 ## 📄 8. Licencia y Créditos
 
-Desarrollado para **Libringo** (`libringo.com`). Todos los derechos reservados.
+Desarrollado para **Biblingo** (`biblingo.me`). Todos los derechos reservados.

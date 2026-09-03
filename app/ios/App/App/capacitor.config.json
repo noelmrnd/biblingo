@@ -1,13 +1,13 @@
 {
-	"appId": "com.libringo.app",
-	"appName": "Libringo",
+	"appId": "me.biblingo.app",
+	"appName": "Biblingo",
 	"webDir": "dist-capacitor",
 	"server": {
 		"url": "http://192.168.68.124:3000",
 		"cleartext": true,
 		"allowNavigation": [
-			"app.libringo.com",
-			"*.libringo.com"
+			"app.biblingo.me",
+			"*.biblingo.me"
 		],
 		"errorPath": "offline.html",
 		"appStartPath": "/index.dev.html"

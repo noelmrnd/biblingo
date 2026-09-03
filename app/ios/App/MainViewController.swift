@@ -21,7 +21,7 @@ class MainViewController: CAPBridgeViewController {
             }
         }
 
-        monitor.start(queue: DispatchQueue(label: "com.libringo.app.network-monitor"))
+        monitor.start(queue: DispatchQueue(label: "me.biblingo.app.network-monitor"))
     }
 
     private func handlePathUpdate(isConnected: Bool) {

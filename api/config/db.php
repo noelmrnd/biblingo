@@ -24,7 +24,7 @@ function getDbConnection() {
     if ($pdo === null) {
         $host = getEnvVar('MAIN_DB_HOST', 'localhost');
         $port = getEnvVar('MAIN_DB_PORT', '3306');
-        $db   = getEnvVar('MAIN_DB_NAME', 'libringo');
+        $db   = getEnvVar('MAIN_DB_NAME', 'biblingo');
         $user = getEnvVar('MAIN_DB_USERNAME', 'root');
         $pass = getEnvVar('MAIN_DB_PASSWORD', 'root');
         $charset = getEnvVar('MAIN_DB_CHARSET', 'utf8mb4');

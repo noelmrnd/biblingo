@@ -14,7 +14,7 @@
           <div class="w-8 h-8 bg-brand-green rounded-xl flex items-center justify-center shadow-sm">
             <BookOpen class="w-5 h-5 text-white stroke-[2.5]" />
           </div>
-          <span class="font-extrabold text-xl tracking-tight text-white">Libringo</span>
+          <span class="font-extrabold text-xl tracking-tight text-white">Biblingo</span>
         </div>
 
         <!-- Racha activa en la barra superior (Emoji de fuego permitido) -->

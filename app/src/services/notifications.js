@@ -55,7 +55,7 @@ export const NotificationService = {
       const messages = [
         `¡No rompas tu racha de ${currentStreak} día(s)! 📖🔥 Tu libro te espera.`,
         'Dedica 10 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
-        '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
+        '¡Un capítulo al día marca la diferencia! Entra a Biblingo. ✨',
         `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
         'El conocimiento te espera. Lee 5 páginas hoy. 📕',
         '¡Casi completas tu semana perfecta de lectura! 🎯',
@@ -68,7 +68,7 @@ export const NotificationService = {
 
         notifications.push({
           id: 1000 + dayOffset,
-          title: '📖 Libringo: Recordatorio diario',
+          title: '📖 Biblingo: Recordatorio diario',
           body: messages[msgIndex],
           schedule: { at: scheduleDate },
           sound: 'beep.wav',

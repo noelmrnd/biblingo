@@ -10,7 +10,7 @@ async function ensureInitialized() {
     const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
     const config = {
       apple: {
-        clientId: 'com.libringo.app',
+        clientId: 'me.biblingo.app',
         redirectUrl: '',
       }
     };
@@ -108,7 +108,7 @@ export const AuthService = {
     return await ApiService.socialLogin({
       provider: 'dev',
       id_token: devId,
-      email: `${devId}@app.libringo.com`,
+      email: `${devId}@app.biblingo.me`,
       display_name: cleanName,
       platform: Capacitor.getPlatform() || 'web'
     });

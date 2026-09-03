@@ -13,7 +13,7 @@ function getApiBaseUrl() {
     }
     return envUrl;
   }
-  return isLocalNetwork ? `http://${hostname}:8000/api` : 'https://app.libringo.com/api';
+  return isLocalNetwork ? `http://${hostname}:8000/api` : 'https://app.biblingo.me/api';
 }
 
 export const API_BASE_URL = getApiBaseUrl();

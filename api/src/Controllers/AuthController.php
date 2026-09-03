@@ -10,7 +10,7 @@ class AuthController {
         $provider    = $input['provider'] ?? ''; // 'apple' or 'google'
         $idToken     = $input['id_token'] ?? $input['user_id'] ?? '';
         $email       = $input['email'] ?? null;
-        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Libringo';
+        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
         $platform    = $input['platform'] ?? 'ios';
         $pushToken   = $input['push_token'] ?? null;
         $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');

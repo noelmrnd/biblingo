@@ -54,6 +54,6 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',
         'uri'   => $requestUri,
-        'app'   => 'Libringo API v1.0'
+        'app'   => 'Biblingo API v1.0'
     ], 404);
 }

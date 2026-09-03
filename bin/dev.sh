@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Libringo - Script de desarrollo local unificado
+# Biblingo - Script de desarrollo local unificado
 
 # Colores para la consola
 GREEN='\030[0;32m'
@@ -8,7 +8,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}🚀 Iniciando entorno de desarrollo local de Libringo...${NC}\n"
+echo -e "${YELLOW}🚀 Iniciando entorno de desarrollo local de Biblingo...${NC}\n"
 
 # Obtener directorio raíz del proyecto
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

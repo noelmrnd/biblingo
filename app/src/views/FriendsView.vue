@@ -27,7 +27,7 @@
           <div class="text-left pl-2">
             <span class="text-xs text-slate-300 uppercase tracking-wider block">Código:</span>
             <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
-              {{ user.invite_code || 'LIBRINGO1' }}
+              {{ user.invite_code || 'BIBLINGO1' }}
             </span>
           </div>
           <button 
@@ -208,7 +208,7 @@ const sortedFriends = computed(() => {
 
 const generateQrCode = async () => {
   if (!props.user.invite_code) return;
-  const inviteUrl = `https://app.libringo.com/invite/${props.user.invite_code}`;
+  const inviteUrl = `https://app.biblingo.me/invite/${props.user.invite_code}`;
   try {
     qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
       width: 300,

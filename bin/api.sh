@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Libringo - Servidor de API PHP
+# Biblingo - Servidor de API PHP
 
 GREEN='\033[0;32m'
 NC='\033[0m'

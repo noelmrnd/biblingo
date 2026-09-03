@@ -1,11 +1,11 @@
 {
-  "appId": "com.libringo.app",
-  "appName": "Libringo",
+  "appId": "me.biblingo.app",
+  "appName": "Biblingo",
   "webDir": "dist-capacitor",
   "server": {
-    "url": "https://app.libringo.com",
+    "url": "https://app.biblingo.me",
     "cleartext": false,
-    "allowNavigation": ["app.libringo.com", "*.libringo.com"],
+    "allowNavigation": ["app.biblingo.me", "*.biblingo.me"],
     "errorPath": "offline.html"
   },
   "plugins": {
