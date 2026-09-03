@@ -9,8 +9,7 @@
 			"app.biblingo.me",
 			"*.biblingo.me"
 		],
-		"errorPath": "offline.html",
-		"appStartPath": "/index.dev.html"
+		"errorPath": "offline.html"
 	},
 	"plugins": {
 		"PushNotifications": {
@@ -27,6 +26,7 @@
 		"PreferencesPlugin",
 		"PushNotificationsPlugin",
 		"SharePlugin",
+		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"SocialLoginPlugin"
 	]
