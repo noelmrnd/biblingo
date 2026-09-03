@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 class DateUtils {
     /**
      * Valida y retorna un objeto DateTimeZone seguro.

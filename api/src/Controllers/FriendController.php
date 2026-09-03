@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../Services/FCMService.php';
 
@@ -91,7 +93,7 @@ class FriendController {
         if (!empty($friend['push_token'])) {
             FCMService::sendPushNotification(
                 $friend['push_token'],
-                '¡Nuevo Amigo en Biblingo! 🎉',
+                '¡Nuevo Amigo en Libringo! 🎉',
                 "{$myDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
                 ['type' => 'friend_added', 'user_id' => $userId]
             );

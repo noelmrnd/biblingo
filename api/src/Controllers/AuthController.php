@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../config/db.php';
 
 class AuthController {
@@ -8,7 +10,7 @@ class AuthController {
         $provider    = $input['provider'] ?? ''; // 'apple' or 'google'
         $idToken     = $input['id_token'] ?? $input['user_id'] ?? '';
         $email       = $input['email'] ?? null;
-        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
+        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Libringo';
         $platform    = $input['platform'] ?? 'ios';
         $pushToken   = $input['push_token'] ?? null;
         $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');

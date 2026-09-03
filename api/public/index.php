@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/Utils/DateUtils.php';
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
@@ -51,6 +53,6 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',
         'uri'   => $requestUri,
-        'app'   => 'Biblingo API v1.0'
+        'app'   => 'Libringo API v1.0'
     ], 404);
 }

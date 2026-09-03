@@ -1,5 +1,5 @@
 {
-  "name": "biblingo-root",
+  "name": "libringo-root",
   "private": true,
   "scripts": {
     "dev": "./bin/dev.sh",

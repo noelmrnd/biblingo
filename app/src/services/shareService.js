@@ -3,9 +3,9 @@ import { Capacitor } from '@capacitor/core';
 
 export const ShareService = {
   async shareInviteCode(inviteCode, displayName = 'Tu amigo') {
-    const inviteUrl = `https://biblingo.me/invite/${inviteCode}`;
-    const title = '¡Únete a mi racha de lectura en Biblingo! 📖🔥';
-    const text = `¡Hola! Te invito a formar parte de mi hábito diario de lectura en Biblingo. Usa mi código de invitación: ${inviteCode}`;
+    const inviteUrl = `https://libringo.com/invite/${inviteCode}`;
+    const title = '¡Únete a mi racha de lectura en Libringo! 📖🔥';
+    const text = `¡Hola! Te invito a formar parte de mi hábito diario de lectura en Libringo. Usa mi código de invitación: ${inviteCode}`;
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -13,7 +13,7 @@ export const ShareService = {
           title,
           text,
           url: inviteUrl,
-          dialogTitle: 'Compartir invitación de Biblingo'
+          dialogTitle: 'Compartir invitación de Libringo'
         });
         return { success: true, method: 'native' };
       } catch (e) {

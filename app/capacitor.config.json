@@ -1,9 +1,9 @@
 {
-  "appId": "me.biblingo.app",
-  "appName": "Biblingo",
+  "appId": "com.libringo.app",
+  "appName": "Libringo",
   "webDir": "dist",
   "server": {
-    "url": "https://biblingo.me",
+    "url": "https://libringo.com",
     "cleartext": true
   },
   "plugins": {

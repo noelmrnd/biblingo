@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 class FCMService {
     /**
      * Envia una notificación Push a un dispositivo específico vía FCM.

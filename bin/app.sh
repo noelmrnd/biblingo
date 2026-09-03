@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Biblingo - Servidor Frontend Vue (pnpm)
+# Libringo - Servidor Frontend Vue (pnpm)
 
 BLUE='\033[0;34m'
 NC='\033[0m'
