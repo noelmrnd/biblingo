@@ -9,7 +9,7 @@
   >
     <div 
       v-if="toastState.visible"
-      class="fixed top-20 left-0 right-0 z-50 px-4 pointer-events-none flex justify-center"
+      class="fixed top-safe left-0 right-0 z-50 px-4 pointer-events-none flex justify-center"
     >
       <div 
         :class="[

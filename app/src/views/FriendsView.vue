@@ -84,7 +84,7 @@
       <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
         <p class="text-lg font-extrabold text-white">Aún no tienes amigos agregados.</p>
-        <p class="text-base text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar a competir.</p>
+        <p class="text-base text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar.</p>
       </div>
 
       <div v-else class="space-y-3">
@@ -260,7 +260,7 @@ const addFriend = async () => {
 
 const shareInvite = async () => {
   const res = await ShareService.shareInviteCode(props.user.invite_code, props.user.display_name);
-  if (res.method === 'clipboard' || res.success) {
+  if (res.success && res.method === 'clipboard') {
     ToastService.success('¡Enlace y código copiado! 📋');
   }
 };

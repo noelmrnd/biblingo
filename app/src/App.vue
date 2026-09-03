@@ -20,7 +20,7 @@
         <!-- Racha activa en la barra superior (Emoji de fuego permitido) -->
         <div class="flex items-center gap-2 bg-slate-900 border border-amber-500/30 px-4 py-1 rounded-full shadow-inner">
           <span class="text-lg animate-flame-pulse">🔥</span>
-          <span class="font-black text-amber-400 text-base">{{ currentUser.streak_count || 0 }}</span>
+          <span class="font-bold text-amber-400 text-xl">{{ currentUser.streak_count || 0 }}</span>
         </div>
       </header>
 

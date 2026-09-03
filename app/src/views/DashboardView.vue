@@ -31,17 +31,17 @@
       </div>
 
       <!-- Subtítulo / Badge de Estado -->
-      <div v-if="hasReadToday" class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
+      <div v-if="hasReadToday === true" class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
         <CheckCircle2 class="w-5 h-5 text-emerald-400 stroke-[2.5]" />
         <span>¡Perfecto, ya leíste hoy!</span>
       </div>
-      <p v-else class="text-slate-200 text-base mt-3">
+      <p v-else-if="hasReadToday === false" class="text-slate-200 text-base mt-3">
         Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
       </p>
     </div>
 
-    <!-- Botón de Lectura de Hoy (Solo visible cuando falta leer) -->
-    <div v-if="!hasReadToday">
+    <!-- Botón de Lectura de Hoy (Solo visible cuando se haya confirmado que falta por leer) -->
+    <div v-if="hasReadToday === false">
       <button
         @click="logReadingToday"
         :disabled="loading"
@@ -115,6 +115,12 @@
   </div>
 </template>
 
+<script>
+// Estado de sesión para controlar que initialLoading solo ocurra la primera vez que se abre la app
+let isFirstAppLoad = true;
+let lastLoadedUserId = null;
+</script>
+
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { BookOpen, CheckCircle2, Calendar } from '@lucide/vue';
@@ -130,9 +136,15 @@ const props = defineProps({
 
 const emit = defineEmits(['user-updated']);
 
+// Reiniciar flag si cambió de usuario
+if (lastLoadedUserId !== props.user?.id) {
+  isFirstAppLoad = true;
+  lastLoadedUserId = props.user?.id;
+}
+
 const loading = ref(false);
-const initialLoading = ref(true);
-const hasReadToday = ref(false);
+const initialLoading = ref(isFirstAppLoad);
+const hasReadToday = ref(null);
 const historyDates = ref([]);
 
 const weekDays = computed(() => {
@@ -176,6 +188,7 @@ const loadReadingStatus = async () => {
   } catch (e) {
     console.warn('No se pudo actualizar estado:', e.message);
   } finally {
+    isFirstAppLoad = false;
     initialLoading.value = false;
   }
 };
@@ -205,7 +218,7 @@ const logReadingToday = async () => {
       // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy)
       const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
       NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
-      ToastService.success('¡Lectura de hoy registrada! 🔥📖');
+      // ToastService.success('¡Lectura de hoy registrada! 🔥📖');
     }
   } catch (e) {
     ToastService.error(e.message || 'Error al registrar la lectura.');

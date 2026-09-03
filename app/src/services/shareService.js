@@ -15,18 +15,24 @@ export const ShareService = {
           url: inviteUrl,
           dialogTitle: 'Compartir invitación de Biblingo'
         });
-        return { success: true, method: 'native' };
+        return { success: true, method: 'native', canceled: false };
       } catch (e) {
-        console.warn('Error en compartir nativo:', e);
+        console.warn('Compartir nativo cancelado o falló:', e);
+        return { success: false, method: 'native', canceled: true, error: e };
       }
     }
 
     if (navigator.share) {
       try {
         await navigator.share({ title, text, url: inviteUrl });
-        return { success: true, method: 'web-share' };
+        return { success: true, method: 'web-share', canceled: false };
       } catch (e) {
-        console.warn('Web Share omitido o cancelado:', e.message);
+        console.warn('Web Share omitido o cancelado:', e);
+        const isCanceled = e.name === 'AbortError' || e.message?.toLowerCase().includes('cancel') || e.message?.toLowerCase().includes('user');
+        if (isCanceled) {
+          return { success: false, method: 'web-share', canceled: true, error: e };
+        }
+        return { success: false, method: 'web-share', canceled: false, error: e };
       }
     }
 
@@ -34,7 +40,7 @@ export const ShareService = {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(`${text}\n${inviteUrl}`);
-        return { success: true, method: 'clipboard' };
+        return { success: true, method: 'clipboard', canceled: false };
       } catch (e) {
         console.warn('Error en clipboard API:', e);
       }
@@ -64,12 +70,12 @@ export const ShareService = {
       document.body.removeChild(textArea);
 
       if (successful) {
-        return { success: true, method: 'clipboard' };
+        return { success: true, method: 'clipboard', canceled: false };
       }
     } catch (e) {
       console.warn('Error en fallback execCommand:', e);
     }
 
-    return { success: false, method: 'none' };
+    return { success: false, method: 'none', canceled: false };
   }
 };
