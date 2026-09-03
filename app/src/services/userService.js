@@ -39,5 +39,7 @@ export const UserService = {
    */
   async clearSession() {
     await StorageService.remove(USER_STORAGE_KEY);
+    await StorageService.remove('push_token');
+    await StorageService.remove('push_user_id');
   }
 };

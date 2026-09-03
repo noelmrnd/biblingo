@@ -79,6 +79,13 @@ export const ApiService = {
     });
   },
 
+  async registerPushToken(userId, pushToken, platform = 'ios') {
+    return request('/user/push-token', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, push_token: pushToken, platform })
+    });
+  },
+
   async nudgeFriend(userId, friendId) {
     return request('/friends/nudge', {
       method: 'POST',

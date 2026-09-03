@@ -47,11 +47,19 @@ export const NotificationService = {
           console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
 
           try {
-            await ApiService.updateProfile(userId, {
-              push_token: pushToken,
-              platform: platform
-            });
+            const savedToken = await StorageService.get('push_token');
+            const savedUserId = await StorageService.get('push_user_id');
+
+            // Enviar a la API únicamente si el token o el usuario activo cambiaron
+            if (savedToken === pushToken && String(savedUserId) === String(userId)) {
+              console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
+              return;
+            }
+
+            await ApiService.registerPushToken(userId, pushToken, platform);
             await StorageService.set('push_token', pushToken);
+            await StorageService.set('push_user_id', userId);
+            console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
           } catch (err) {
             console.warn('Error al enviar el push token a la API:', err.message);
           }

@@ -12,7 +12,6 @@ class AuthController {
         $email       = $input['email'] ?? null;
         $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
         $platform    = $input['platform'] ?? 'ios';
-        $pushToken   = $input['push_token'] ?? null;
         $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');
         $timezone    = DateUtils::getSafeDateTimeZone($rawTz)->getName();
 
@@ -79,16 +78,6 @@ class AuthController {
             $updateStmt->execute([$platform, $timezone, $userId]);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;
-        }
-
-        // Si se proporcionó un push_token al autenticarse, registrarlo en user_push_tokens
-        if (!empty($pushToken)) {
-            $tokenStmt = $db->prepare("
-                INSERT INTO user_push_tokens (user_id, token, platform)
-                VALUES (?, ?, ?)
-                ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
-            ");
-            $tokenStmt->execute([$userId, $pushToken, $platform]);
         }
 
         // Token de sesión básico en base64

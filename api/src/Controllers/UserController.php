@@ -8,11 +8,10 @@ class UserController {
     public static function updateProfile($userId) {
         $input = getJsonInput();
         $displayName = isset($input['display_name']) ? trim($input['display_name']) : null;
-        $pushToken   = isset($input['push_token']) ? trim($input['push_token']) : null;
         $reminderTime = isset($input['reminder_time']) ? trim($input['reminder_time']) : null;
         $timezone     = isset($input['timezone']) ? DateUtils::getSafeDateTimeZone($input['timezone'])->getName() : null;
 
-        if (!$displayName && !$pushToken && !$reminderTime && !$timezone) {
+        if (!$displayName && !$reminderTime && !$timezone) {
             sendJsonResponse(['error' => 'Sin datos para actualizar.'], 400);
         }
 
@@ -42,30 +41,44 @@ class UserController {
             $stmt->execute($params);
         }
 
-        // Si se proporcionó un push_token, almacenarlo también en user_push_tokens para soporte multidispositivo
-        if (!empty($pushToken)) {
-            $platform = strtolower(trim($input['platform'] ?? 'ios'));
-            if (!in_array($platform, ['ios', 'android', 'web'], true)) {
-                $platform = 'ios';
-            }
-
-            try {
-                // Registrar o reasignar el token de forma atómica al usuario actual
-                $tokenStmt = $db->prepare("
-                    INSERT INTO user_push_tokens (user_id, token, platform)
-                    VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
-                ");
-                $tokenStmt->execute([$userId, $pushToken, $platform]);
-            } catch (Exception $e) {
-                error_log("Error al guardar token multidispositivo: " . $e->getMessage());
-            }
-        }
-
         sendJsonResponse([
             'success' => true,
             'message' => 'Perfil actualizado correctamente.'
         ]);
+    }
+
+    /**
+     * Endpoint dedicado para registrar o actualizar el token push multidispositivo del usuario.
+     */
+    public static function registerPushToken($userId) {
+        $input = getJsonInput();
+        $pushToken = isset($input['push_token']) ? trim($input['push_token']) : (isset($input['token']) ? trim($input['token']) : null);
+        $platform  = strtolower(trim($input['platform'] ?? 'ios'));
+
+        if (empty($pushToken)) {
+            sendJsonResponse(['error' => 'push_token es requerido.'], 400);
+        }
+
+        if (!in_array($platform, ['ios', 'android', 'web'], true)) {
+            $platform = 'ios';
+        }
+
+        $db = getDbConnection();
+        try {
+            $tokenStmt = $db->prepare("
+                INSERT INTO user_push_tokens (user_id, token, platform)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
+            ");
+            $tokenStmt->execute([$userId, $pushToken, $platform]);
+
+            sendJsonResponse([
+                'success' => true,
+                'message' => 'Token Push registrado con éxito.'
+            ]);
+        } catch (Exception $e) {
+            sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
+        }
     }
 }
 
