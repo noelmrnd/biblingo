@@ -10,7 +10,7 @@
     <template v-else>
       <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
       <header class="flex-none z-30 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border px-4 py-3 pt-safe flex items-center justify-between shadow-md">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-brand-green rounded-xl flex items-center justify-center shadow-sm">
             <BookOpen class="w-5 h-5 text-white stroke-[2.5]" />
           </div>
@@ -46,7 +46,7 @@
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
       <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2 pb-safe-sm px-4">
-        <div class="max-w-md mx-auto flex justify-between items-center gap-2">
+        <div class="max-w-md mx-auto flex justify-between items-center">
           <button 
             @click="currentTab = 'dashboard'"
             :class="currentTab === 'dashboard' ? 'text-brand-green' : 'text-slate-400 hover:text-slate-200'"

@@ -49,7 +49,7 @@
         @click="saveReminder" 
         class="btn-3d-green w-full text-base py-3.5"
       >
-        <span>Guardar recordatorio</span>
+        Guardar recordatorio
       </button>
     </div>
 
@@ -57,7 +57,7 @@
     <div class="pt-4">
       <button 
         @click="logout" 
-        class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-2 cursor-pointer"
+        class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
         <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
         <span>Cerrar sesión</span>

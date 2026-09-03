@@ -54,7 +54,7 @@
 
     <!-- Tracker semanal de 7 días (Lun - Dom) -->
     <div class="card-duo space-y-4">
-      <h3 class="font-extrabold text-white text-lg flex items-center gap-2">
+      <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
         <Calendar class="w-5 h-5 text-amber-400 stroke-[2.5]" />
         <span>Esta semana</span>
       </h3>
@@ -94,7 +94,7 @@
         {{ formatTimer(timerSeconds) }}
       </div>
 
-      <div class="flex gap-2">
+      <div class="flex gap-3">
         <button 
           @click="toggleTimer" 
           :class="isTimerRunning ? 'btn-3d-orange' : 'btn-3d-blue'"

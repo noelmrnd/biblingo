@@ -33,8 +33,8 @@
           :disabled="loading"
           class="w-full bg-white text-black font-extrabold py-4 px-6 rounded-2xl border-b-4 border-slate-300 active:border-b-0 active:translate-y-1 transition-all shadow-lg flex items-center justify-center gap-3 text-base cursor-pointer disabled:opacity-50"
         >
-          <svg class="w-5 h-5 fill-current" viewBox="0 0 170 170">
-            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.33.13-9.13-1.9-14.38-6.08-3.32-2.73-7.27-7.46-11.85-14.19-6.3-9.28-11.3-19.82-15.01-31.62-3.71-11.8-5.56-23.03-5.56-33.68 0-14.34 3.59-26.17 10.77-35.49 7.18-9.32 16.35-14.07 27.5-14.25 4.8 0 10.08 1.25 15.86 3.75 5.78 2.5 9.77 3.75 11.97 3.75 1.83 0 5.86-1.22 12.09-3.67 6.23-2.45 11.47-3.6 15.72-3.46 9.87.5 18.25 4.38 25.14 11.64-8.8 5.34-13.11 12.82-12.93 22.44.18 7.57 3.01 14.12 8.48 19.65 5.47 5.53 12.08 8.76 19.83 9.69-2.22 6.64-5.15 13.06-8.8 19.26zM119.22 31.86c0-6.73 2.45-13.2 7.35-19.41 4.9-6.21 11.13-10.02 18.69-11.44.27 1.48.41 2.89.41 4.22 0 6.64-2.51 13.15-7.53 19.53-5.02 6.38-11.18 10.22-18.48 11.52-.18-1.42-.44-2.89-.44-4.42z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="24" height="28" viewBox="0 0 814 1000">
+            <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
           </svg>
           <span>Continuar con Apple</span>
         </button>
@@ -59,7 +59,7 @@
           <div class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
             <span>🛠️</span> Entorno de desarrollo
           </div>
-          <div class="flex gap-2">
+          <div class="flex gap-3">
             <input 
               v-model="devName"
               type="text" 
@@ -80,10 +80,6 @@
 
       <p v-if="errorMsg" class="text-rose-400 text-sm font-bold bg-rose-950/50 border border-rose-800 p-3 rounded-xl w-full">
         {{ errorMsg }}
-      </p>
-
-      <p class="text-slate-300 text-sm font-medium max-w-xs">
-        Al continuar, aceptas formar parte del club de hábito diario de lectura Biblingo. Sin contraseñas molestas.
       </p>
     </div>
   </div>
