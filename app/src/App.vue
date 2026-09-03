@@ -103,6 +103,7 @@ import { DeepLinkService } from './services/deepLinks';
 import { ApiService } from './services/api';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
+import { NotificationService } from './services/notifications';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
@@ -111,6 +112,11 @@ const onLoginSuccess = async (user) => {
   currentUser.value = user;
   await UserService.saveSession(user);
   ToastService.success(`¡Bienvenido de nuevo, ${user.display_name}! 👋`);
+
+  // Inicializar Notificaciones Push para el usuario autenticado
+  if (user && user.id) {
+    NotificationService.initPushNotifications(user.id);
+  }
 };
 
 const onUserUpdated = async (updatedUser) => {
@@ -127,6 +133,10 @@ const onLogout = async () => {
 onMounted(async () => {
   // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
   currentUser.value = await UserService.initSession();
+
+  if (currentUser.value && currentUser.value.id) {
+    NotificationService.initPushNotifications(currentUser.value.id);
+  }
 
   // Inicializar receptor de enlaces de invitación (Deep Links)
   DeepLinkService.initListener(async (inviteCode) => {

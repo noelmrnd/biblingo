@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     streak_count INT DEFAULT 0,
     max_streak_count INT DEFAULT 0,
     last_read_date DATE NULL,
-    push_token VARCHAR(255) NULL,
     reminder_time VARCHAR(10) DEFAULT '20:00',
     timezone VARCHAR(50) DEFAULT 'UTC',
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
@@ -51,4 +50,17 @@ CREATE TABLE IF NOT EXISTS friend_nudges (
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. Tokens de Notificaciones Push Multidispositivo
+CREATE TABLE IF NOT EXISTS user_push_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_device_token (token),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 

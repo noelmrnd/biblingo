@@ -29,4 +29,35 @@ class FCMService {
         error_log("[FCM Mock Push] Token: {$deviceToken} | Título: {$title} | Mensaje: {$body}");
         return true;
     }
+
+    /**
+     * Envía una notificación Push a TODOS los dispositivos activos de un usuario.
+     */
+    public static function sendPushNotificationToUser($userId, $title, $body, $data = []) {
+        if (empty($userId)) {
+            return false;
+        }
+
+        $db = getDbConnection();
+        $tokens = [];
+
+        $stmt = $db->prepare("SELECT token FROM user_push_tokens WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $tokens = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($tokens)) {
+            return false;
+        }
+
+        // 3. Enviar a cada dispositivo registrado
+        $sentCount = 0;
+        foreach (array_unique($tokens) as $token) {
+            if (self::sendPushNotification($token, $title, $body, $data)) {
+                $sentCount++;
+            }
+        }
+
+        return $sentCount > 0;
+    }
 }
+

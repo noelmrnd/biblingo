@@ -78,7 +78,7 @@ class FriendController {
         $db = getDbConnection();
 
         // Buscar al amigo por invite_code
-        $targetStmt = $db->prepare("SELECT id, display_name, push_token FROM users WHERE invite_code = ?");
+        $targetStmt = $db->prepare("SELECT id, display_name FROM users WHERE invite_code = ?");
         $targetStmt->execute([$inviteCode]);
         $friend = $targetStmt->fetch();
 
@@ -114,15 +114,13 @@ class FriendController {
             sendJsonResponse(['error' => 'Error al agregar amigo: ' . $e->getMessage()], 500);
         }
 
-        // Enviar notificación Push al amigo vía FCM
-        if (!empty($friend['push_token'])) {
-            FCMService::sendPushNotification(
-                $friend['push_token'],
-                '¡Nuevo Amigo en Biblingo! 🎉',
-                "{$myDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
-                ['type' => 'friend_added', 'user_id' => $userId]
-            );
-        }
+        // Enviar notificación Push al amigo vía FCM en todos sus dispositivos
+        FCMService::sendPushNotificationToUser(
+            $friendId,
+            '¡Nuevo Amigo en Biblingo! 🎉',
+            "{$myDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
+            ['type' => 'friend_added', 'user_id' => $userId]
+        );
 
         sendJsonResponse([
             'success' => true,
@@ -154,7 +152,7 @@ class FriendController {
 
         // 2. Obtener datos del amigo y validar relación de amistad en 1 sola consulta
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.push_token, u.last_read_date, u.timezone, f.user_id AS is_friend
+            SELECT u.id, u.display_name, u.last_read_date, u.timezone, f.user_id AS is_friend
             FROM users u
             LEFT JOIN friendships f ON f.user_id = ? AND f.friend_id = u.id
             WHERE u.id = ?
@@ -201,14 +199,13 @@ class FriendController {
         $me = $meStmt->fetch();
         $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
 
-        if (!empty($friend['push_token'])) {
-            FCMService::sendPushNotification(
-                $friend['push_token'],
-                '📖 Recordatorio de lectura',
-                "{$myDisplayName} te ha enviado un recordatorio para que leas hoy y protejas tu racha. 🔥",
-                ['type' => 'nudge', 'sender_id' => $userId]
-            );
-        }
+        // 6. Obtener nombre del remitente y enviar notificación Push a todos sus dispositivos
+        FCMService::sendPushNotificationToUser(
+            $friendId,
+            '📖 Recordatorio de lectura',
+            "{$myDisplayName} te ha enviado un recordatorio para que leas hoy y protejas tu racha. 🔥",
+            ['type' => 'nudge', 'sender_id' => $userId]
+        );
 
         sendJsonResponse([
             'success'   => true,

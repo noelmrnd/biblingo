@@ -25,11 +25,6 @@ class UserController {
             $params[] = $displayName;
         }
 
-        if ($pushToken !== null) {
-            $fields[] = 'push_token = ?';
-            $params[] = $pushToken;
-        }
-
         if ($reminderTime !== null) {
             $fields[] = 'reminder_time = ?';
             $params[] = $reminderTime;
@@ -40,11 +35,32 @@ class UserController {
             $params[] = $timezone;
         }
 
-        $params[] = $userId;
+        if (!empty($fields)) {
+            $params[] = $userId;
+            $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+        }
 
-        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
+        // Si se proporcionó un push_token, almacenarlo también en user_push_tokens para soporte multidispositivo
+        if (!empty($pushToken)) {
+            $platform = strtolower(trim($input['platform'] ?? 'ios'));
+            if (!in_array($platform, ['ios', 'android', 'web'], true)) {
+                $platform = 'ios';
+            }
+
+            try {
+                // Registrar o reasignar el token de forma atómica al usuario actual
+                $tokenStmt = $db->prepare("
+                    INSERT INTO user_push_tokens (user_id, token, platform)
+                    VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
+                ");
+                $tokenStmt->execute([$userId, $pushToken, $platform]);
+            } catch (Exception $e) {
+                error_log("Error al guardar token multidispositivo: " . $e->getMessage());
+            }
+        }
 
         sendJsonResponse([
             'success' => true,
@@ -52,3 +68,4 @@ class UserController {
         ]);
     }
 }
+

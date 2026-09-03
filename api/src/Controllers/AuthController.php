@@ -63,22 +63,32 @@ class AuthController {
             $googleId = ($provider === 'google') ? $idToken : null;
 
             $insertStmt = $db->prepare("
-                INSERT INTO users (apple_id, google_id, email, display_name, invite_code, push_token, platform, timezone) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO users (apple_id, google_id, email, display_name, invite_code, platform, timezone) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            $insertStmt->execute([$appleId, $googleId, $email, $displayName, $inviteCode, $pushToken, $platform, $timezone]);
+            $insertStmt->execute([$appleId, $googleId, $email, $displayName, $inviteCode, $platform, $timezone]);
 
-            $userId = $db->lastInsertId();
+            $userId = (int)$db->lastInsertId();
             $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$userId]);
             $user = $stmt->fetch();
         } else {
-            // Actualizar push_token, plataforma y timezone si han cambiado
-            $updateStmt = $db->prepare("UPDATE users SET push_token = COALESCE(?, push_token), platform = ?, timezone = ? WHERE id = ?");
-            $updateStmt->execute([$pushToken, $platform, $timezone, $user['id']]);
-            $user['push_token'] = $pushToken ?: $user['push_token'];
+            $userId = (int)$user['id'];
+            // Actualizar plataforma y timezone si han cambiado
+            $updateStmt = $db->prepare("UPDATE users SET platform = ?, timezone = ? WHERE id = ?");
+            $updateStmt->execute([$platform, $timezone, $userId]);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;
+        }
+
+        // Si se proporcionó un push_token al autenticarse, registrarlo en user_push_tokens
+        if (!empty($pushToken)) {
+            $tokenStmt = $db->prepare("
+                INSERT INTO user_push_tokens (user_id, token, platform)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
+            ");
+            $tokenStmt->execute([$userId, $pushToken, $platform]);
         }
 
         // Token de sesión básico en base64
@@ -95,7 +105,6 @@ class AuthController {
                 'streak_count'     => (int)$user['streak_count'],
                 'max_streak_count' => (int)$user['max_streak_count'],
                 'last_read_date'   => $user['last_read_date'],
-                'push_token'       => $user['push_token'],
                 'reminder_time'    => $user['reminder_time'] ?? '20:00',
                 'timezone'         => $user['timezone'] ?? 'UTC',
                 'platform'         => $user['platform']

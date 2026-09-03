@@ -1,10 +1,13 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
+import { ApiService } from './api';
+import { StorageService } from './storage';
+import { ToastService } from './toast';
 
 export const NotificationService = {
   /**
-   * Solicita permisos de notificación al usuario.
+   * Solicita permisos de notificación al usuario (locales y push).
    */
   async requestPermissions() {
     if (!Capacitor.isNativePlatform()) return true;
@@ -20,8 +23,64 @@ export const NotificationService = {
   },
 
   /**
-   * Programa la ráfaga de 7 días escalonados de recordatorios locales de lectura.
-   * Se ejecuta al guardar la hora deseada o tras completar la lectura del día.
+   * Inicializa el registro de notificaciones Push, solicita permisos,
+   * escucha eventos de registro y envía el token a la API del servidor.
+   */
+  async initPushNotifications(userId) {
+    if (!Capacitor.isNativePlatform() || !userId) return;
+
+    try {
+      const permResult = await PushNotifications.requestPermissions();
+      if (permResult.receive !== 'granted') {
+        console.warn('Permiso de notificaciones push no otorgado.');
+        return;
+      }
+
+      await PushNotifications.register();
+
+      // Escuchar registro exitoso de token FCM / APNs
+      await PushNotifications.addListener('registration', async (token) => {
+        if (token && token.value) {
+          const pushToken = token.value;
+          const platform = Capacitor.getPlatform() || 'ios';
+
+          console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
+
+          try {
+            await ApiService.updateProfile(userId, {
+              push_token: pushToken,
+              platform: platform
+            });
+            await StorageService.set('push_token', pushToken);
+          } catch (err) {
+            console.warn('Error al enviar el push token a la API:', err.message);
+          }
+        }
+      });
+
+      // Escuchar posibles errores de registro
+      await PushNotifications.addListener('registrationError', (error) => {
+        console.warn('Error en registro de Push Notifications:', error);
+      });
+
+      // Escuchar cuando llega una notificación Push estando la app en primer plano
+      await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('[PushReceived]', notification);
+        const title = notification.title || '📖 Biblingo';
+        const body = notification.body || '¡Tienes una nueva notificación!';
+        ToastService.info(`${title}: ${body}`);
+      });
+
+      // Escuchar al tocar una notificación Push desde la barra de estado
+      await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
+        console.log('[PushActionPerformed]', notificationAction);
+      });
+
+    } catch (e) {
+      console.warn('Error al inicializar Push Notifications:', e);
+    }
+  },
+
   /**
    * Programar ráfaga de 7 días de notificaciones locales.
    * Si ya se leyó hoy o la hora de hoy ya pasó, comienza a notificar a partir de mañana.
@@ -81,24 +140,6 @@ export const NotificationService = {
       console.log(`Ráfaga de notificaciones programada (hoy incluido: ${includeToday}).`);
     } catch (e) {
       console.error('Error al programar ráfaga de notificaciones:', e);
-    }
-  },
-
-  /**
-   * Registrar token para Push Notifications (FCM).
-   */
-  async registerPushToken(onTokenReceived) {
-    if (!Capacitor.isNativePlatform()) return;
-
-    try {
-      await PushNotifications.register();
-      await PushNotifications.addListener('registration', token => {
-        if (token && token.value) {
-          onTokenReceived(token.value);
-        }
-      });
-    } catch (e) {
-      console.warn('Error al registrar Push Notifications:', e);
     }
   }
 };
