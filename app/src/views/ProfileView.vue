@@ -13,15 +13,19 @@
 
     <!-- Estadísticas Globales -->
     <div class="grid grid-cols-2 gap-3">
-      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-1">
-        <Flame class="w-7 h-7 text-amber-400 mx-auto stroke-[2.5]" />
-        <div class="text-2xl font-extrabold text-amber-400">{{ user.streak_count }}</div>
-        <div class="text-slate-300 text-base font-black uppercase tracking-wider">Racha actual</div>
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
+        <div class="flex items-center justify-center gap-3">
+          <Flame class="w-7 h-7 text-amber-400 stroke-[2.5]" />
+          <div class="text-3xl font-extrabold text-amber-400">{{ user.streak_count }}</div>
+        </div>
+        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha actual</div>
       </div>
-      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-1">
-        <Zap class="w-7 h-7 text-purple-400 mx-auto stroke-[2.5]" />
-        <div class="text-2xl font-extrabold text-purple-400">{{ user.max_streak_count }}</div>
-        <div class="text-slate-300 text-base font-black uppercase tracking-wider">Racha máxima</div>
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
+        <div class="flex items-center justify-center gap-3">
+          <Zap class="w-7 h-7 text-purple-400 stroke-[2.5]" />
+          <div class="text-3xl font-extrabold text-purple-400">{{ user.max_streak_count }}</div>
+        </div>
+        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha máxima</div>
       </div>
     </div>
 

@@ -22,7 +22,7 @@
       </div>
 
       <div class="mt-2 space-y-1">
-        <h2 class="text-4xl font-extrabold text-white tracking-tight">
+        <h2 class="text-4xl font-extrabold text-white">
           {{ user.streak_count }} {{ user.streak_count === 1 ? 'día' : 'días' }}
         </h2>
         <p class="text-amber-400 font-extrabold text-base uppercase tracking-wider">
