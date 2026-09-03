@@ -1,17 +1,22 @@
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
-import { ApiService } from './api';
+import { ApiService, API_BASE_URL } from './api';
 
 let socialLoginInitialized = false;
 
 async function ensureInitialized() {
   if (socialLoginInitialized) return;
+
+  const platform = Capacitor.getPlatform();
+  const isNativeIOS = platform === 'ios';
+
   try {
     const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
     const config = {
       apple: {
-        clientId: 'me.biblingo.app',
-        redirectUrl: '',
+        clientId: isNativeIOS ? 'me.biblingo.app' : 'me.biblingo.app.service',
+        redirectUrl: isNativeIOS ? '' : `${API_BASE_URL}/auth/apple/callback`,
+        useBroadcastChannel: platform === 'android',
       }
     };
     if (clientId) {

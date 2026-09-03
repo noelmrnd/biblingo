@@ -11,8 +11,8 @@
       <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
       <header class="flex-none z-30 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border px-4 py-3 pt-safe flex items-center justify-between shadow-md">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-brand-green rounded-xl flex items-center justify-center shadow-sm">
-            <BookOpen class="w-5 h-5 text-white stroke-[2.5]" />
+          <div class="w-8 h-8">
+            <img src="/assets/logo-256.png"/>
           </div>
           <span class="font-extrabold text-xl tracking-tight text-white">Biblingo</span>
         </div>
