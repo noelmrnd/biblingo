@@ -12,7 +12,7 @@ export const AuthService = {
       if (Capacitor.getPlatform() === 'ios') {
         const result = await SignInWithApple.authorize({
           clientId: 'com.libringo.app',
-          redirectURI: 'https://libringo.com/api/auth/apple/callback',
+          redirectURI: 'https://app.libringo.com/api/auth/apple/callback',
           scopes: 'email name',
         });
 
@@ -80,7 +80,7 @@ export const AuthService = {
     return await ApiService.socialLogin({
       provider: 'dev',
       id_token: devId,
-      email: `${devId}@dev.libringo.com`,
+      email: `${devId}@app.libringo.com`,
       display_name: cleanName,
       platform: Capacitor.getPlatform() || 'web'
     });

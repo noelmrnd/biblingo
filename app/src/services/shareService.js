@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core';
 
 export const ShareService = {
   async shareInviteCode(inviteCode, displayName = 'Tu amigo') {
-    const inviteUrl = `https://libringo.com/invite/${inviteCode}`;
+    const inviteUrl = `https://app.libringo.com/invite/${inviteCode}`;
     const title = '¡Únete a mi racha de lectura en Libringo! 📖🔥';
     const text = `¡Hola! Te invito a formar parte de mi hábito diario de lectura en Libringo. Usa mi código de invitación: ${inviteCode}`;
 

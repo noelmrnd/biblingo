@@ -7,7 +7,7 @@ const isLocalNetwork = hostname === 'localhost' ||
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL && !import.meta.env.VITE_API_BASE_URL.includes('localhost'))
   ? import.meta.env.VITE_API_BASE_URL
-  : (isLocalNetwork ? `http://${hostname}:8000/api` : 'https://libringo.com/api');
+  : (isLocalNetwork ? `http://${hostname}:8000/api` : 'https://app.libringo.com/api');
 
 export async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;

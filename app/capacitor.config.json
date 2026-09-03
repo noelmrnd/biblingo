@@ -1,9 +1,9 @@
 {
   "appId": "com.libringo.app",
   "appName": "Libringo",
-  "webDir": "dist",
+  "webDir": "dist-capacitor",
   "server": {
-    "url": "https://libringo.com",
+    "url": "https://app.libringo.com",
     "cleartext": true
   },
   "plugins": {

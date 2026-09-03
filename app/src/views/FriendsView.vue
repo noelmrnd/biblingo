@@ -208,7 +208,7 @@ const sortedFriends = computed(() => {
 
 const generateQrCode = async () => {
   if (!props.user.invite_code) return;
-  const inviteUrl = `https://libringo.com/invite/${props.user.invite_code}`;
+  const inviteUrl = `https://app.libringo.com/invite/${props.user.invite_code}`;
   try {
     qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
       width: 300,
