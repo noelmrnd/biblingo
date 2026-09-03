@@ -70,21 +70,30 @@ class ReadingController {
                 $maxStreak = $currentStreak;
             }
 
-            // Actualizar usuario
-            $updateStmt = $db->prepare("
-                UPDATE users 
-                SET streak_count = ?, max_streak_count = ?, last_read_date = ? 
-                WHERE id = ?
-            ");
-            $updateStmt->execute([$currentStreak, $maxStreak, $today, $userId]);
+            try {
+                $db->beginTransaction();
 
-            // Insertar o ignorar duplicado limpiamente en reading_logs
-            $logStmt = $db->prepare("
-                INSERT INTO reading_logs (user_id, read_date) 
-                VALUES (?, ?) 
-                ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP
-            ");
-            $logStmt->execute([$userId, $today]);
+                // 1. Actualizar contador y fecha en la tabla de usuarios
+                $updateStmt = $db->prepare("
+                    UPDATE users 
+                    SET streak_count = ?, max_streak_count = ?, last_read_date = ? 
+                    WHERE id = ?
+                ");
+                $updateStmt->execute([$currentStreak, $maxStreak, $today, $userId]);
+
+                // 2. Registrar la entrada en el historial de lecturas
+                $logStmt = $db->prepare("
+                    INSERT INTO reading_logs (user_id, read_date) 
+                    VALUES (?, ?) 
+                    ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP
+                ");
+                $logStmt->execute([$userId, $today]);
+
+                $db->commit();
+            } catch (Exception $e) {
+                $db->rollBack();
+                sendJsonResponse(['error' => 'Error de base de datos al registrar lectura: ' . $e->getMessage()], 500);
+            }
         }
 
         sendJsonResponse([
