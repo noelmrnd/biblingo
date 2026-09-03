@@ -101,12 +101,12 @@
             </div>
 
             <div class="min-w-0 flex-1">
-              <h4 class="font-bold text-white text-base flex items-center gap-1.5 truncate">
+              <h4 class="font-bold text-white text-base flex items-center gap-2 truncate">
                 {{ friend.display_name }}
                 <span v-if="friend.id === user.id" class="text-base bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
               </h4>
               <p class="text-slate-300 text-base font-medium truncate">
-                Última lectura: {{ formatFriendlyDate(friend.last_read_date) }}
+                {{ formatFriendlyDate(friend.last_read_date) }}
               </p>
             </div>
           </div>
@@ -197,7 +197,7 @@ const sortedFriends = computed(() => {
   if (!all.some(f => f.id === props.user.id)) {
     all.push({
       id: props.user.id,
-      display_name: `${props.user.display_name} (Tú)`,
+      display_name: props.user.display_name,
       streak_count: props.user.streak_count,
       last_read_date: props.user.last_read_date,
       invite_code: props.user.invite_code
