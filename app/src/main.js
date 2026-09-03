@@ -12,11 +12,6 @@ if (initialLoader) {
 }
 
 if (Capacitor.isNativePlatform()) {
-// Wait for the first real frame to paint before hiding the splash,
-// so it never dismisses onto a blank white screen.
-requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-    SplashScreen.hide();
-    });
-});
+  // Lets the WebView draw under the status bar so it matches the page background.
+  StatusBar.setOverlaysWebView({overlay: true}).catch(() => {});
 }

@@ -1,0 +1,33 @@
+{
+	"appId": "com.libringo.app",
+	"appName": "Libringo",
+	"webDir": "dist-capacitor",
+	"server": {
+		"url": "http://192.168.68.124:3000",
+		"cleartext": true,
+		"allowNavigation": [
+			"app.libringo.com",
+			"*.libringo.com"
+		],
+		"errorPath": "offline.html",
+		"appStartPath": "/index.dev.html"
+	},
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"LocalNotificationsPlugin",
+		"PreferencesPlugin",
+		"PushNotificationsPlugin",
+		"SharePlugin",
+		"StatusBarPlugin",
+		"SocialLoginPlugin"
+	]
+}

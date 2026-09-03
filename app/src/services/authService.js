@@ -1,33 +1,61 @@
-import { SignInWithApple } from '@capacitor-community/apple-sign-in';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
 import { ApiService } from './api';
 
+let socialLoginInitialized = false;
+
+async function ensureInitialized() {
+  if (socialLoginInitialized) return;
+  try {
+    const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+    const config = {
+      apple: {
+        clientId: 'com.libringo.app',
+        redirectUrl: '',
+      }
+    };
+    if (clientId) {
+      config.google = {
+        webClientId: clientId,
+        iOSClientId: clientId,
+      };
+    }
+    await SocialLogin.initialize(config);
+    socialLoginInitialized = true;
+  } catch (err) {
+    console.warn('Error al inicializar SocialLogin:', err);
+  }
+}
+
 export const AuthService = {
   /**
-   * Login con Sign in with Apple (iOS / Web).
+   * Login con Sign in with Apple (Exclusivo iOS nativo).
    */
   async loginWithApple() {
     try {
       if (Capacitor.getPlatform() === 'ios') {
-        const result = await SignInWithApple.authorize({
-          clientId: 'com.libringo.app',
-          redirectURI: 'https://app.libringo.com/api/auth/apple/callback',
-          scopes: 'email name',
+        await ensureInitialized();
+
+        const res = await SocialLogin.login({
+          provider: 'apple',
+          options: {
+            scopes: ['email', 'name'],
+          },
         });
 
-        const response = result.response;
-        const displayName = response.givenName ? `${response.givenName} ${response.familyName || ''}`.trim() : 'Lector Apple';
+        const response = res.result;
+        const givenName = response.profile?.givenName;
+        const familyName = response.profile?.familyName;
+        const displayName = givenName ? `${givenName} ${familyName || ''}`.trim() : 'Lector Apple';
 
         return await ApiService.socialLogin({
           provider: 'apple',
-          id_token: response.user || response.identityToken,
-          email: response.email,
+          id_token: response.profile?.user || response.idToken,
+          email: response.profile?.email,
           display_name: displayName,
           platform: 'ios'
         });
       } else {
-        // Fallback Web o Android para Apple Sign-In
         throw new Error('Sign in with Apple solo está disponible en dispositivos iOS.');
       }
     } catch (e) {
@@ -37,36 +65,36 @@ export const AuthService = {
   },
 
   /**
-   * Login con Google Sign-In (Android / Web).
+   * Login con Google Sign-In (Android / iOS / Web).
    */
   async loginWithGoogle() {
     try {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-      
-      // Inicializar GoogleAuth en entorno Web / Nativo
-      try {
-        await GoogleAuth.initialize({
-          clientId: clientId,
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: false,
-        });
-      } catch (initErr) {
-        // Ignorar si ya está inicializado previamente
+      const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+      if (!clientId) {
+        throw new Error('Debes configurar tu Client ID de Google (VITE_GOOGLE_CLIENT_ID) en el archivo .env para poder usar Google Sign-In.');
       }
 
-      const googleUser = await GoogleAuth.signIn();
+      await ensureInitialized();
+
+      const res = await SocialLogin.login({
+        provider: 'google',
+        options: {
+          scopes: ['email', 'profile'],
+        },
+      });
+
+      const response = res.result;
+      const idToken = response.idToken || (response.accessToken ? response.accessToken.token : null) || response.profile?.id;
+
       return await ApiService.socialLogin({
         provider: 'google',
-        id_token: googleUser.id || googleUser.authentication?.idToken || googleUser.serverAuthCode,
-        email: googleUser.email,
-        display_name: googleUser.name || 'Lector Google',
+        id_token: idToken,
+        email: response.profile?.email,
+        display_name: response.profile?.name || 'Lector Google',
         platform: Capacitor.getPlatform() || 'web'
       });
     } catch (e) {
       console.warn('Falló Google Sign-In:', e);
-      if (!import.meta.env.VITE_GOOGLE_CLIENT_ID && (e.message?.includes('grantOfflineAccess') || e.message?.includes('undefined') || !e.message)) {
-        throw new Error('Debes configurar tu Client ID de Google (VITE_GOOGLE_CLIENT_ID) en el archivo .env para iniciar sesión en la Web.');
-      }
       throw new Error(e.message || 'No se pudo iniciar sesión con Google.');
     }
   },

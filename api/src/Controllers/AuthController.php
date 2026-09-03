@@ -20,6 +20,19 @@ class AuthController {
             sendJsonResponse(['error' => 'Identificador o token requerido.'], 400);
         }
 
+        // Si idToken es un JWT, extraer la clave 'sub' (User ID de Apple/Google)
+        if (is_string($idToken) && strpos($idToken, '.') !== false) {
+            $jwtParts = explode('.', $idToken);
+            if (count($jwtParts) >= 2) {
+                $payloadJson = base64_decode(strtr($jwtParts[1], '-_', '+/'));
+                $jwtPayload = json_decode($payloadJson, true);
+                if (!empty($jwtPayload['sub'])) {
+                    $idToken = $jwtPayload['sub'];
+                }
+            }
+        }
+        $idToken = substr((string)$idToken, 0, 255);
+
         $db = getDbConnection();
         $user = null;
 
