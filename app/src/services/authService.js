@@ -70,11 +70,6 @@ export const AuthService = {
    */
   async loginWithGoogle() {
     try {
-      const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
-      if (!clientId) {
-        throw new Error('Debes configurar tu Client ID de Google (VITE_GOOGLE_CLIENT_ID) en el archivo .env para poder usar Google Sign-In.');
-      }
-
       await ensureInitialized();
 
       const res = await SocialLogin.login({
