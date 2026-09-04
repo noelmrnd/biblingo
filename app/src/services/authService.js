@@ -11,7 +11,9 @@ async function ensureInitialized() {
   const isNativeIOS = platform === 'ios';
 
   try {
-    const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+    const webClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+    const iOSClientId = (import.meta.env.VITE_GOOGLE_IOS_CLIENT_ID || '').trim();
+
     const config = {
       apple: {
         clientId: isNativeIOS ? 'me.biblingo.app' : 'me.biblingo.app.service',
@@ -19,10 +21,11 @@ async function ensureInitialized() {
         useBroadcastChannel: platform === 'android',
       }
     };
-    if (clientId) {
+
+    if (webClientId || iOSClientId) {
       config.google = {
-        webClientId: clientId,
-        iOSClientId: clientId,
+        webClientId: webClientId,
+        iOSClientId: iOSClientId,
       };
     }
     await SocialLogin.initialize(config);

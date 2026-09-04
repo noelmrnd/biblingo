@@ -111,7 +111,7 @@ const currentTab = ref('dashboard');
 const onLoginSuccess = async (user) => {
   currentUser.value = user;
   await UserService.saveSession(user);
-  ToastService.success(`¡Bienvenido de nuevo, ${user.display_name}! 👋`);
+  ToastService.success(`¡Hola, ${user.display_name}! 👋`);
 
   // Inicializar Notificaciones Push para el usuario autenticado
   if (user && user.id) {
@@ -127,7 +127,7 @@ const onUserUpdated = async (updatedUser) => {
 const onLogout = async () => {
   currentUser.value = null;
   await UserService.clearSession();
-  ToastService.info('Sesión cerrada correctamente.');
+  // ToastService.info('Sesión cerrada correctamente.');
 };
 
 onMounted(async () => {

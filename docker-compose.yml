@@ -1,25 +1,17 @@
 services:
-  web:
+  biblingo:
     build:
       context: .
-      dockerfile: docker/Dockerfile.web
-    container_name: biblingo_web
-    ports:
-      - "80:80"
-    volumes:
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./web:/var/www/web:ro
-      - ./app/dist:/var/www/app/dist:ro
-      - ./api:/var/www/api:ro
-    restart: always
-
-  api:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.api
-    container_name: biblingo_api
+      dockerfile: docker/Dockerfile
+    container_name: biblingo
     env_file:
       - ./api/.env
+    ports:
+      - "8082:8082"  # Web (Landing Page)
+      - "8083:8083"  # App (Vue SPA)
+      - "8084:8084"  # API (PHP Backend)
     volumes:
+      - ./web:/var/www/web:ro
+      - ./app/dist:/var/www/app:ro
       - ./api:/var/www/api
     restart: always
