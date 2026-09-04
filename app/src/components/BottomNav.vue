@@ -56,22 +56,22 @@ const tabs = [
     id: 'dashboard',
     label: 'Racha',
     icon: Flame,
-    activeColor: 'text-brand-green',
-    glowColor: 'rgba(88,204,2,0.35)'
+    activeColor: 'text-brand-flame',
+    glowColor: 'rgba(255,150,0,0.35)'
   },
   {
     id: 'friends',
     label: 'Amigos',
     icon: UsersRound,
-    activeColor: 'text-brand-blue',
-    glowColor: 'rgba(28,176,246,0.35)'
+    activeColor: 'text-brand-green',
+    glowColor: 'rgba(88,204,2,0.35)'
   },
   {
     id: 'profile',
     label: 'Perfil',
     icon: UserRound,
-    activeColor: 'text-brand-purple',
-    glowColor: 'rgba(168,85,247,0.35)'
+    activeColor: 'text-brand-blue',
+    glowColor: 'rgba(28,176,246,0.35)'
   }
 ];
 

@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-4">
-    <!-- Header Perfil -->
-    <div class="card-duo text-center py-6 space-y-3">
-      <div class="w-20 h-20 bg-gradient-to-tr from-brand-green to-emerald-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800">
+    <!-- Header Perfil con Resplandor Azul -->
+    <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(28,176,246,0.22),_transparent_65%)] border-sky-500/30 text-center py-6 space-y-3 overflow-hidden">
+      <div class="w-20 h-20 bg-gradient-to-tr from-brand-blue to-sky-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800">
         <UserRound class="w-10 h-10 text-white stroke-[2.5]" />
       </div>
       <div>
@@ -65,7 +65,7 @@
         class="flex items-center justify-between cursor-pointer select-none gap-3"
       >
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center">
             <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
           </div>
           <div>
@@ -147,7 +147,7 @@
     <div class="card-duo">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
             <Compass class="w-5 h-5 text-amber-400 stroke-[2.5]" />
           </div>
           <div>

@@ -1,63 +1,64 @@
 <template>
   <div class="space-y-6">
-    <!-- Card de Conexión: Código de Invitación + Agregar Amigo desplegable -->
-    <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 text-center space-y-4 py-6 px-5 relative overflow-hidden">
-      <div>
-        <h3 class="font-extrabold text-white text-lg">Código de invitación</h3>
-        <p class="text-slate-300 text-base font-medium">Muestra este QR a un amigo para conectarte</p>
-      </div>
-
-      <!-- Contenedor del QR Code visible desde el inicio -->
-      <div class="py-2">
-        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
-          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
-          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
-            Generando QR...
+    <!-- Card Desplegable: Invitar amigos (Estilo similar a Datos de perfil con resplandor) -->
+    <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 relative overflow-hidden transition-all duration-200">
+      <div 
+        @click="isInviteExpanded = !isInviteExpanded" 
+        class="flex items-center justify-between cursor-pointer select-none gap-3"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
+            <UserRoundPlus class="w-5 h-5 text-brand-green stroke-[2.5]" />
+          </div>
+          <div>
+            <h3 class="font-extrabold text-white text-lg">Invitar amigos</h3>
+            <p class="text-slate-300 text-base font-medium">
+              {{ isInviteExpanded ? 'Ocultar opciones de invitación' : 'Comparte tu código QR o agrega a tus amigos' }}
+            </p>
           </div>
         </div>
+        <component 
+          :is="isInviteExpanded ? ChevronUp : ChevronDown" 
+          class="w-6 h-6 text-slate-400 stroke-[2.5] transition-transform duration-200" 
+        />
       </div>
 
-      <!-- Código de texto y Botón de Compartir -->
-      <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
-        <div class="text-left pl-2">
-          <span class="text-xs text-slate-300 uppercase tracking-wider block">Código:</span>
-          <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
-            {{ user.invite_code || 'BIBLINGO1' }}
-          </span>
+      <!-- Contenido desplegable -->
+      <div v-if="isInviteExpanded" class="space-y-4 mt-4 text-center">
+        <!-- Contenedor del QR Code -->
+        <div class="py-2">
+          <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
+            <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
+            <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
+              Generando QR...
+            </div>
+          </div>
         </div>
-        <AppButton 
-          color="green"
-          @click="shareInvite" 
-        >
-          <Share2 class="w-5 h-5 stroke-[2.5]" />
-          <span>Compartir</span>
-        </AppButton>
-      </div>
 
-      <p v-if="copyMsg" class="text-emerald-400 text-base font-extrabold text-center pt-1">
-        {{ copyMsg }}
-      </p>
-
-      <!-- Sección Desplegable: Agregar amigo por código (Secundario) -->
-      <div>
-        <button
-          type="button"
-          @click="isAddFriendExpanded = !isAddFriendExpanded"
-          class="w-full flex items-center justify-between text-left py-1 text-slate-400 hover:text-white transition-colors cursor-pointer select-none group"
-        >
-          <div class="flex items-center gap-2">
-            <UserRoundPlus class="w-4 h-4 text-sky-400 stroke-[2.5]" />
-            <span class="text-base font-semibold text-slate-300 group-hover:text-white">
-              ¿Tienes el código de un amigo?
+        <!-- Código de texto y Botón de Compartir -->
+        <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
+          <div class="text-left pl-2">
+            <span class="text-xs text-slate-300 uppercase tracking-wider block">Código:</span>
+            <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
+              {{ user.invite_code || 'BIBLINGO1' }}
             </span>
           </div>
-          <component 
-            :is="isAddFriendExpanded ? ChevronUp : ChevronDown" 
-            class="w-4 h-4 text-slate-400 stroke-[2.5] transition-transform duration-200" 
-          />
-        </button>
+          <AppButton 
+            color="green"
+            @click="shareInvite" 
+          >
+            <Share2 class="w-5 h-5 stroke-[2.5]" />
+            <span>Compartir</span>
+          </AppButton>
+        </div>
 
-        <div v-if="isAddFriendExpanded" class="pt-3 space-y-3">
+        <p v-if="copyMsg" class="text-emerald-400 text-base font-extrabold text-center pt-1">
+          {{ copyMsg }}
+        </p>
+
+        <!-- Agregar amigo por código -->
+        <div class="space-y-2.5 pt-3 border-t border-slate-800/80 text-left">
+          <label class="text-xs text-slate-300 uppercase tracking-wider block font-bold">¿Tienes el código de un amigo?</label>
           <div class="flex gap-2.5">
             <input 
               v-model="inputCode" 
@@ -75,7 +76,7 @@
               Agregar
             </AppButton>
           </div>
-          <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold text-left">
+          <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold">
             {{ statusMsg }}
           </p>
         </div>
@@ -160,7 +161,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
-import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/vue';
+import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
@@ -174,7 +175,7 @@ const props = defineProps({
 const friends = ref([]);
 const inputCode = ref('');
 const loading = ref(false);
-const isAddFriendExpanded = ref(false);
+const isInviteExpanded = ref(false);
 const statusMsg = ref('');
 const statusError = ref(false);
 const qrDataUrl = ref('');
@@ -257,7 +258,7 @@ const addFriend = async () => {
     if (res.success) {
       ToastService.success(`¡${res.friend.display_name} agregado a tus amigos! 🎉`);
       inputCode.value = '';
-      isAddFriendExpanded.value = false;
+      isInviteExpanded.value = false;
       loadFriends();
     }
   } catch (e) {
