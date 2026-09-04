@@ -61,14 +61,6 @@
               {{ currentStepData.description }}
             </p>
           </div>
-
-          <!-- Tip / Consejo Destacado -->
-          <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-2xl w-full text-left flex items-start gap-2.5">
-            <CheckCircle2 class="w-4 h-4 text-brand-green flex-none mt-0.5 stroke-[2.5]" />
-            <p class="text-sm text-slate-300 font-semibold">
-              {{ currentStepData.tip }}
-            </p>
-          </div>
         </div>
 
         <!-- Footer: Botones de Acción -->
@@ -110,7 +102,6 @@
 import { ref, computed, onMounted } from 'vue';
 import AppButton from './AppButton.vue';
 import { 
-  CheckCircle2, 
   ChevronRight, 
   ChevronLeft 
 } from '@lucide/vue';
@@ -125,29 +116,25 @@ const currentStep = ref(0);
 const steps = [
   {
     title: 'Tu racha diaria',
-    description: 'La constancia es la clave. Cada día que lees tus libros favoritos, tu racha aumenta. ¡Mantén encendida tu llama!',
-    tip: 'Si dejas pasar un día sin leer, la racha se congelará.',
+    description: 'Cada día que lees tus libros favoritos aumentas tu racha. Si dejas pasar un día sin leer, la racha se congelará. ¡Mantén encendida tu llama!',
     ambientColor: 'bg-brand-flame',
     image: '/tour/tour-step-1.png'
   },
   {
     title: 'Marca tu lectura',
-    description: 'Dedica unos minutos al día a avanzar en tus libros. Al terminar, presiona el botón verde para registrar tu progreso y elegir tu reacción.',
-    tip: 'Puedes registrar cómo te hizo sentir lo que leíste hoy (inspirador, reflexivo, apasionante).',
+    description: 'Dedica unos minutos al día a avanzar en tus libros. Al terminar, presiona el botón verde para registrar tu progreso y compartir cómo te hizo sentir lo que leíste.',
     ambientColor: 'bg-brand-green',
     image: '/tour/tour-step-2.png'
   },
   {
     title: 'Compite y motívate',
-    description: 'Invita a tus amigos con tu código o QR. Podrás ver el ranking de lectura y darles un "Toque" si se les hace tarde para leer.',
-    tip: 'Compartir el hábito de la lectura en comunidad lo hace mucho más fácil y divertido.',
+    description: 'Invita a tus amigos con tu código o QR para compartir el hábito de la lectura. Podrás competir en el ranking y darles un toque si se les hace tarde.',
     ambientColor: 'bg-brand-blue',
     image: '/tour/tour-step-3.png'
   },
   {
     title: 'Protege tu hábito',
-    description: 'En tu perfil puedes configurar la hora exacta de tu recordatorio diario para que no se te pase tu momento de lectura.',
-    tip: 'Te enviaremos una notificación discreta para proteger tu racha.',
+    description: 'Configura en tu perfil la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu momento de lectura.',
     ambientColor: 'bg-brand-purple',
     image: '/tour/tour-step-4.png'
   }
