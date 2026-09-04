@@ -80,5 +80,40 @@ class UserController {
             sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Endpoint dedicado para eliminar / desregistrar el token push al cerrar sesión.
+     */
+    public static function unregisterPushToken($userId) {
+        $input = getJsonInput();
+        $pushToken = isset($input['push_token']) ? trim($input['push_token']) : (isset($input['token']) ? trim($input['token']) : null);
+        if (!$pushToken) {
+            $pushToken = isset($_GET['push_token']) ? trim($_GET['push_token']) : (isset($_GET['token']) ? trim($_GET['token']) : null);
+        }
+        $removeAll = !empty($input['all']) || !empty($_GET['all']);
+
+        if (empty($pushToken) && !$removeAll) {
+            sendJsonResponse(['error' => 'push_token es requerido para desregistrar este dispositivo (o enviar all=true).'], 400);
+        }
+
+        $db = getDbConnection();
+        try {
+            if ($removeAll) {
+                $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE user_id = ?");
+                $stmt->execute([$userId]);
+            } else {
+                $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE user_id = ? AND token = ?");
+                $stmt->execute([$userId, $pushToken]);
+            }
+
+            sendJsonResponse([
+                'success' => true,
+                'message' => $removeAll ? 'Todos los tokens Push fueron eliminados.' : 'Token Push eliminado con éxito.'
+            ]);
+        } catch (Exception $e) {
+            sendJsonResponse(['error' => 'Error al eliminar el token Push: ' . $e->getMessage()], 500);
+        }
+    }
 }
+
 

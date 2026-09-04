@@ -149,5 +149,32 @@ export const NotificationService = {
     } catch (e) {
       console.error('Error al programar ráfaga de notificaciones:', e);
     }
+  },
+
+  /**
+   * Elimina el token push de la API y limpia el almacenamiento de notificaciones al cerrar sesión.
+   */
+  async unregisterPushToken() {
+    try {
+      const savedToken = await StorageService.get('push_token');
+      const savedUserId = await StorageService.get('push_user_id');
+
+      if (savedUserId) {
+        await ApiService.unregisterPushToken(savedUserId, savedToken || '');
+      }
+
+      await StorageService.remove('push_token');
+      await StorageService.remove('push_user_id');
+
+      if (Capacitor.isNativePlatform()) {
+        const pending = await LocalNotifications.getPending();
+        if (pending.notifications && pending.notifications.length > 0) {
+          await LocalNotifications.cancel(pending);
+        }
+      }
+      console.log('[PushNotifications] Token desregistrado exitosamente.');
+    } catch (e) {
+      console.warn('Error al desregistrar push token:', e.message || e);
+    }
   }
 };

@@ -125,6 +125,7 @@ const onUserUpdated = async (updatedUser) => {
 };
 
 const onLogout = async () => {
+  await NotificationService.unregisterPushToken();
   currentUser.value = null;
   await UserService.clearSession();
   // ToastService.info('Sesión cerrada correctamente.');

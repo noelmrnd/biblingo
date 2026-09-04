@@ -86,6 +86,13 @@ export const ApiService = {
     });
   },
 
+  async unregisterPushToken(userId, pushToken) {
+    return request(`/user/push-token?user_id=${userId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ push_token: pushToken })
+    });
+  },
+
   async nudgeFriend(userId, friendId) {
     return request('/friends/nudge', {
       method: 'POST',

@@ -70,6 +70,9 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
 } elseif ($requestUri === '/api/user/push-token' && $method === 'POST') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     UserController::registerPushToken($userId);
+} elseif ($requestUri === '/api/user/push-token' && $method === 'DELETE') {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    UserController::unregisterPushToken($userId);
 } else {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',
