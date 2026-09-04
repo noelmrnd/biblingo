@@ -19,20 +19,28 @@ class ReadingController {
         $userTz = $user['timezone'] ?? 'UTC';
         $today = DateUtils::getUserToday($userTz);
 
-        // Obtener historial de lecturas de los últimos 30 días
+        // Obtener historial de lecturas y reacciones de los últimos 30 días en una sola consulta
         $logsStmt = $db->prepare("
-            SELECT read_date FROM reading_logs 
+            SELECT read_date, reaction FROM reading_logs 
             WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY) 
             ORDER BY read_date DESC
         ");
         $logsStmt->execute([$userId, $today]);
-        $logs = $logsStmt->fetchAll(PDO::FETCH_COLUMN);
+        $logs = $logsStmt->fetchAll();
 
-        $hasReadToday = ($user['last_read_date'] === $today);
+        $historyDates = array_column($logs, 'read_date');
+
+        $hasReadToday = $user['last_read_date'] === $today;
         $yesterday = DateUtils::getUserYesterday($userTz);
         $lastRead = $user['last_read_date'];
         $streakCount = (int)$user['streak_count'];
         $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $today && $lastRead !== $yesterday));
+
+        // Obtener la reacción más reciente (la de hoy) directamente de los registros ya obtenidos
+        $todayReaction = null;
+        if ($hasReadToday && !empty($logs) && $logs[0]['read_date'] === $today) {
+            $todayReaction = $logs[0]['reaction'] ?? null;
+        }
 
         sendJsonResponse([
             'success'          => true,
@@ -40,12 +48,13 @@ class ReadingController {
             'max_streak_count' => (int)$user['max_streak_count'],
             'last_read_date'   => $lastRead,
             'has_read_today'   => $hasReadToday,
+            'today_reaction'   => $todayReaction,
             'is_streak_lost'   => $isStreakLost,
-            'history'          => $logs
+            'history'          => $historyDates,
         ]);
     }
 
-    public static function logReading(string $userId) {
+    public static function logReading(string $userId, ?string $reaction = null) {
         $db = getDbConnection();
 
         $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
@@ -91,11 +100,11 @@ class ReadingController {
                 // 2. Registrar la entrada en el historial de lecturas con Snowflake ID
                 $logId = SnowflakeId::nextId();
                 $logStmt = $db->prepare("
-                    INSERT INTO reading_logs (id, user_id, read_date) 
-                    VALUES (?, ?, ?) 
-                    ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP
+                    INSERT INTO reading_logs (id, user_id, read_date, reaction) 
+                    VALUES (?, ?, ?, ?) 
+                    ON DUPLICATE KEY UPDATE reaction = VALUES(reaction), created_at = CURRENT_TIMESTAMP
                 ");
-                $logStmt->execute([$logId, $userId, $today]);
+                $logStmt->execute([$logId, $userId, $today, $reaction]);
 
                 $db->commit();
             } catch (Exception $e) {
@@ -109,7 +118,8 @@ class ReadingController {
             'already_read'     => $alreadyLoggedToday,
             'streak_count'     => $currentStreak,
             'max_streak_count' => $maxStreak,
-            'last_read_date'   => $today
+            'last_read_date'   => $today,
+            'reaction'         => $reaction
         ]);
     }
 }

@@ -4,7 +4,7 @@
       <!-- Card de Invitación con Código QR visible desde el principio -->
       <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 text-center space-y-4 py-6 px-5 relative overflow-hidden">
 
-        <div class="flex items-center justify-between text-left gap-3">
+        <div class="flex items-start justify-between text-left gap-3">
           <div>
             <h3 class="font-extrabold text-white text-lg">Código de invitación</h3>
             <p class="text-slate-300 text-base font-medium">Muestra este QR a un amigo para conectarte</p>

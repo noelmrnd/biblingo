@@ -3,7 +3,7 @@
   "appName": "Biblingo",
   "webDir": "dist-capacitor",
   "server": {
-    "url": "http://192.168.68.124:3000",
+    "url": "http://192.168.68.124:8083",
     "cleartext": true,
     "allowNavigation": ["app.biblingo.me", "*.biblingo.me"],
     "errorPath": "offline.html"
@@ -18,6 +18,14 @@
         "sound",
         "alert"
       ]
+    },
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 3000
+    },
+    "Keyboard": {
+      "resize": "none",
+      "style": "dark"
     }
   }
 }

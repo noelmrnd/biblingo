@@ -18,6 +18,14 @@
         "sound",
         "alert"
       ]
+    },
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 3000
+    },
+    "Keyboard": {
+      "resize": "none",
+      "style": "dark"
     }
   }
 }

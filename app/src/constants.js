@@ -24,3 +24,14 @@ export const APP_CONFIG = {
   isDev: IS_DEV,
   apiBaseUrl: API_BASE_URL,
 };
+
+export const READING_REACTIONS = [
+  { id: 'loved', emoji: '❤️', label: 'Me encantó', desc: 'Inspiradora y edificante' },
+  { id: 'thoughtful', emoji: '💡', label: 'Me puso a pensar', desc: 'Profunda y reflexiva' },
+  { id: 'peaceful', emoji: '🕊️', label: 'Me dio paz', desc: 'Tranquila y reconfortante' },
+  { id: 'challenged', emoji: '⚡', label: 'Me desafió', desc: 'Confrontó mi vida y hábitos' },
+  { id: 'saddened', emoji: '🥺', label: 'Me entristeció', desc: 'Sensible o conmovedora' },
+];
+
+export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id) || null;
+

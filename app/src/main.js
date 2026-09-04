@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
-import { Capacitor } from '@capacitor/core'
-import { SplashScreen } from '@capacitor/splash-screen'
-import { StatusBar } from '@capacitor/status-bar'
+import { Capacitor } from '@capacitor/core';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { StatusBar } from '@capacitor/status-bar';
 import App from './App.vue';
 import './style.css';
 

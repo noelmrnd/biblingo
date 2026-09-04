@@ -39,7 +39,8 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     ReadingController::getStatus($userId);
 } elseif ($requestUri === '/api/reading/log' && $method === 'POST') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
-    ReadingController::logReading($userId);
+    $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
+    ReadingController::logReading($userId, $reaction);
 } elseif ($requestUri === '/api/friends' && $method === 'GET') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     FriendController::getFriends($userId);

@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS reading_logs (
     id BIGINT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     read_date DATE NOT NULL,
+    reaction VARCHAR(50) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_user_day (user_id, read_date),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

@@ -18,20 +18,20 @@
           <Flame class="w-7 h-7 text-amber-400 stroke-[2.5]" />
           <div class="text-3xl font-extrabold text-amber-400">{{ user.streak_count }}</div>
         </div>
-        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha actual</div>
+        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>actual</div>
       </div>
       <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
         <div class="flex items-center justify-center gap-3">
           <Zap class="w-7 h-7 text-purple-400 stroke-[2.5]" />
           <div class="text-3xl font-extrabold text-purple-400">{{ user.max_streak_count }}</div>
         </div>
-        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha máxima</div>
+        <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>máxima</div>
       </div>
     </div>
 
     <!-- Ajustes de Notificación Diaria -->
     <div class="card-duo space-y-4">
-      <div class="flex items-center justify-between">
+      <div class="flex items-start justify-between gap-3">
         <div>
           <h3 class="font-extrabold text-white text-lg">Recordatorio diario</h3>
           <p class="text-slate-300 text-base mt-0.5 font-medium">Te notificaremos cada día para proteger tu racha</p>
@@ -61,7 +61,7 @@
     <div class="card-duo transition-all duration-200">
       <div 
         @click="isProfileExpanded = !isProfileExpanded" 
-        class="flex items-center justify-between cursor-pointer select-none"
+        class="flex items-center justify-between cursor-pointer select-none gap-3"
       >
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center">
@@ -85,7 +85,7 @@
         <div class="space-y-3">
           <!-- Nombre de Usuario (Editable) -->
           <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre de usuario</label>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre</label>
             <div class="relative flex items-center">
               <UserRound class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
               <input 
@@ -109,7 +109,7 @@
                 class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-400 font-medium rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
               />
               <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Vinculado
+                <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
               </span>
             </div>
           </div>

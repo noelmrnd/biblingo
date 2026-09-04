@@ -3,7 +3,7 @@
 	"appName": "Biblingo",
 	"webDir": "dist-capacitor",
 	"server": {
-		"url": "https://app.biblingo.me",
+		"url": "http://192.168.68.124:8083",
 		"cleartext": true,
 		"allowNavigation": [
 			"app.biblingo.me",
@@ -21,10 +21,19 @@
 				"sound",
 				"alert"
 			]
+		},
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"launchShowDuration": 3000
+		},
+		"Keyboard": {
+			"resize": "none",
+			"style": "dark"
 		}
 	},
 	"packageClassList": [
 		"AppPlugin",
+		"KeyboardPlugin",
 		"LocalNotificationsPlugin",
 		"PreferencesPlugin",
 		"PushNotificationsPlugin",

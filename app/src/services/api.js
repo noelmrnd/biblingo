@@ -38,10 +38,10 @@ export const ApiService = {
     return request(`/reading/status?user_id=${userId}`);
   },
 
-  async logReading(userId) {
+  async logReading(userId, reaction = null) {
     return request('/reading/log', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId })
+      body: JSON.stringify({ user_id: userId, reaction })
     });
   },
 

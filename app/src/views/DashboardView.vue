@@ -31,7 +31,7 @@
       </div>
 
       <!-- Subtítulo / Badge de Estado -->
-      <div v-if="hasReadToday === true" class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
+      <div v-if="hasReadToday === true" class="inline-flex flex-wrap items-center justify-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
         <CheckCircle2 class="w-5 h-5 text-emerald-400 stroke-[2.5]" />
         <span>¡Perfecto, ya leíste hoy!</span>
       </div>
@@ -41,16 +41,11 @@
     </div>
 
     <!-- Botón de Lectura de Hoy (Solo visible cuando se haya confirmado que falta por leer) -->
-    <div v-if="hasReadToday === false">
-      <button
-        @click="logReadingToday"
-        :disabled="loading"
-        class="btn-3d-green w-full text-lg py-5 font-black rounded-2xl flex items-center justify-center gap-3 transition-transform"
-      >
-        <BookOpen class="w-6 h-6 stroke-[2.5]" />
-        <span>Marcar lectura de hoy</span>
-      </button>
-    </div>
+    <ReadingButton
+      v-if="hasReadToday === false"
+      :user="user"
+      @reading-logged="onReadingLogged"
+    />
 
     <!-- Tracker semanal de 7 días (Lun - Dom) -->
     <div class="card-duo space-y-4">
@@ -124,10 +119,9 @@ let lastLoadedUserId = null;
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { BookOpen, CheckCircle2, Calendar } from '@lucide/vue';
-import confetti from 'canvas-confetti';
+import ReadingButton from '../components/ReadingButton.vue';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
-import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 
 const props = defineProps({
@@ -142,9 +136,9 @@ if (lastLoadedUserId !== props.user?.id) {
   lastLoadedUserId = props.user?.id;
 }
 
-const loading = ref(false);
 const initialLoading = ref(isFirstAppLoad);
 const hasReadToday = ref(null);
+const todayReaction = ref(null);
 const historyDates = ref([]);
 
 const weekDays = computed(() => {
@@ -172,11 +166,23 @@ const weekDays = computed(() => {
   });
 });
 
+const onReadingLogged = ({ res, reaction }) => {
+  hasReadToday.value = true;
+  todayReaction.value = reaction;
+  emit('user-updated', {
+    ...props.user,
+    streak_count: res.streak_count,
+    max_streak_count: res.max_streak_count,
+    last_read_date: res.last_read_date
+  });
+};
+
 const loadReadingStatus = async () => {
   try {
     const res = await ApiService.getReadingStatus(props.user.id);
     if (res.success) {
       hasReadToday.value = res.has_read_today;
+      todayReaction.value = res.today_reaction || null;
       historyDates.value = res.history || [];
       emit('user-updated', {
         ...props.user,
@@ -190,40 +196,6 @@ const loadReadingStatus = async () => {
   } finally {
     isFirstAppLoad = false;
     initialLoading.value = false;
-  }
-};
-
-const logReadingToday = async () => {
-  if (hasReadToday.value || loading.value) return;
-  loading.value = true;
-  try {
-    const res = await ApiService.logReading(props.user.id);
-    if (res.success) {
-      hasReadToday.value = true;
-      emit('user-updated', {
-        ...props.user,
-        streak_count: res.streak_count,
-        max_streak_count: res.max_streak_count,
-        last_read_date: res.last_read_date
-      });
-
-      // Efecto Confeti 🎉
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#58CC02', '#FF9600', '#1CB0F6', '#FFD700']
-      });
-
-      // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy)
-      const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-      NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
-      // ToastService.success('¡Lectura de hoy registrada! 🔥📖');
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'Error al registrar la lectura.');
-  } finally {
-    loading.value = false;
   }
 };
 
