@@ -57,6 +57,89 @@
       </button>
     </div>
 
+    <!-- Datos de Perfil (Desplegable / Accordion) -->
+    <div class="card-duo transition-all duration-200">
+      <div 
+        @click="isProfileExpanded = !isProfileExpanded" 
+        class="flex items-center justify-between cursor-pointer select-none"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center">
+            <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
+          </div>
+          <div>
+            <h3 class="font-extrabold text-white text-lg">Datos de perfil</h3>
+            <p class="text-slate-300 text-base font-medium">
+              {{ isProfileExpanded ? 'Ocultar información personal' : 'Toca para ver o editar tu información' }}
+            </p>
+          </div>
+        </div>
+        <component 
+          :is="isProfileExpanded ? ChevronUp : ChevronDown" 
+          class="w-6 h-6 text-slate-400 stroke-[2.5] transition-transform duration-200" 
+        />
+      </div>
+
+      <!-- Contenido del formulario al desplegar -->
+      <div v-if="isProfileExpanded" class="space-y-4 pt-4 mt-4 border-t border-slate-800">
+        <div class="space-y-3">
+          <!-- Nombre de Usuario (Editable) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre de usuario</label>
+            <div class="relative flex items-center">
+              <UserRound class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input 
+                v-model="editDisplayName" 
+                type="text" 
+                placeholder="Tu nombre de usuario"
+                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <!-- Correo Electrónico (Solo Lectura con Badge) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Correo electrónico</label>
+            <div class="relative flex items-center">
+              <Mail class="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input 
+                :value="user.email || 'Autenticación Social'" 
+                type="email" 
+                disabled 
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-400 font-medium rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
+              />
+              <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
+                <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Vinculado
+              </span>
+            </div>
+          </div>
+
+          <!-- Zona Horaria (Auto-detectada) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Zona horaria</label>
+            <div class="relative flex items-center">
+              <Globe class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input 
+                :value="currentTimezone" 
+                type="text" 
+                disabled
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 font-medium rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
+              />
+            </div>
+          </div>
+        </div>
+
+        <button 
+          @click="saveProfile" 
+          :disabled="savingProfile || !isNameChanged"
+          class="btn-3d-green w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span v-if="savingProfile">Guardando...</span>
+          <span v-else>Guardar datos</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Botón Cerrar Sesión -->
     <div class="pt-4">
       <button 
@@ -71,8 +154,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { UserRound, Flame, Zap, Bell, LogOut } from '@lucide/vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
@@ -82,9 +165,58 @@ const props = defineProps({
   user: { type: Object, required: true }
 });
 
-const emit = defineEmits(['logout']);
+const emit = defineEmits(['logout', 'user-updated']);
 
 const reminderTime = ref('20:00');
+const editDisplayName = ref('');
+const savingProfile = ref(false);
+const currentTimezone = ref('UTC');
+const isProfileExpanded = ref(false);
+
+const isNameChanged = computed(() => {
+  return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
+});
+
+watch(() => props.user, (newUser) => {
+  if (newUser) {
+    editDisplayName.value = newUser.display_name || '';
+    if (newUser.timezone) {
+      currentTimezone.value = newUser.timezone;
+    }
+  }
+}, { immediate: true });
+
+const saveProfile = async () => {
+  const newName = editDisplayName.value.trim();
+  if (!newName) {
+    ToastService.error('El nombre no puede estar vacío.');
+    return;
+  }
+  if (newName.length < 2 || newName.length > 50) {
+    ToastService.error('El nombre debe tener entre 2 y 50 caracteres.');
+    return;
+  }
+
+  savingProfile.value = true;
+  try {
+    const res = await ApiService.updateProfile(props.user.id, { 
+      display_name: newName,
+      timezone: currentTimezone.value
+    });
+    
+    if (res && res.user) {
+      emit('user-updated', res.user);
+    } else {
+      emit('user-updated', { display_name: newName });
+    }
+    ToastService.success('¡Perfil actualizado con éxito! ✨');
+    isProfileExpanded.value = false;
+  } catch (e) {
+    ToastService.error(e.message || 'No se pudo actualizar el perfil.');
+  } finally {
+    savingProfile.value = false;
+  }
+};
 
 const saveReminder = async () => {
   try {
@@ -105,6 +237,9 @@ const logout = () => {
 };
 
 onMounted(async () => {
+  editDisplayName.value = props.user.display_name || '';
+  currentTimezone.value = props.user.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
   const saved = await StorageService.get('reminder_time');
   if (saved) {
     reminderTime.value = saved;

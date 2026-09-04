@@ -19,7 +19,10 @@ class UserController {
         $fields = [];
         $params = [];
 
-        if ($displayName) {
+        if ($displayName !== null) {
+            if (mb_strlen($displayName) < 2 || mb_strlen($displayName) > 50) {
+                sendJsonResponse(['error' => 'El nombre debe tener entre 2 y 50 caracteres.'], 400);
+            }
             $fields[] = 'display_name = ?';
             $params[] = $displayName;
         }
@@ -41,9 +44,14 @@ class UserController {
             $stmt->execute($params);
         }
 
+        $userStmt = $db->prepare("SELECT id, display_name, email, invite_code, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
+        $userStmt->execute([$userId]);
+        $updatedUser = $userStmt->fetch();
+
         sendJsonResponse([
             'success' => true,
-            'message' => 'Perfil actualizado correctamente.'
+            'message' => 'Perfil actualizado correctamente.',
+            'user'    => $updatedUser
         ]);
     }
 

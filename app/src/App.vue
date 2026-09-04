@@ -40,6 +40,7 @@
             v-else-if="currentTab === 'profile'" 
             :user="currentUser" 
             @logout="onLogout" 
+            @user-updated="onUserUpdated"
           />
         </div>
       </main>
