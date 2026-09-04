@@ -61,18 +61,20 @@ class AuthController {
             $appleId = ($provider === 'apple') ? $idToken : null;
             $googleId = ($provider === 'google') ? $idToken : null;
 
-            $insertStmt = $db->prepare("
-                INSERT INTO users (apple_id, google_id, email, display_name, invite_code, platform, timezone) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $insertStmt->execute([$appleId, $googleId, $email, $displayName, $inviteCode, $platform, $timezone]);
+            // Generar Snowflake ID único para el nuevo usuario
+            $userId = SnowflakeId::nextId();
 
-            $userId = (int)$db->lastInsertId();
+            $insertStmt = $db->prepare("
+                INSERT INTO users (id, apple_id, google_id, email, display_name, invite_code, platform, timezone) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $insertStmt->execute([$userId, $appleId, $googleId, $email, $displayName, $inviteCode, $platform, $timezone]);
+
             $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$userId]);
             $user = $stmt->fetch();
         } else {
-            $userId = (int)$user['id'];
+            $userId = (string)$user['id'];
             // Actualizar plataforma y timezone si han cambiado
             $updateStmt = $db->prepare("UPDATE users SET platform = ?, timezone = ? WHERE id = ?");
             $updateStmt->execute([$platform, $timezone, $userId]);
@@ -87,7 +89,7 @@ class AuthController {
             'success' => true,
             'token'   => $authToken,
             'user'    => [
-                'id'               => (int)$user['id'],
+                'id'               => (string)$userId,
                 'display_name'     => $user['display_name'],
                 'email'            => $user['email'],
                 'invite_code'      => $user['invite_code'],

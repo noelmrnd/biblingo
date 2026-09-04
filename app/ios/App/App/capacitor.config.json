@@ -3,7 +3,7 @@
 	"appName": "Biblingo",
 	"webDir": "dist-capacitor",
 	"server": {
-		"url": "http://192.168.68.124:3000",
+		"url": "https://app.biblingo.me",
 		"cleartext": true,
 		"allowNavigation": [
 			"app.biblingo.me",
@@ -12,6 +12,9 @@
 		"errorPath": "offline.html"
 	},
 	"plugins": {
+		"Preferences": {
+			"group": "app"
+		},
 		"PushNotifications": {
 			"presentationOptions": [
 				"badge",

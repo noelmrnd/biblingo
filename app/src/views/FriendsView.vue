@@ -56,7 +56,7 @@
             v-model="inputCode" 
             type="text" 
             placeholder="Código"
-            class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-base uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+            class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-base uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green min-w-0"
             maxlength="12"
             @keyup.enter="addFriend"
           />
@@ -129,7 +129,7 @@
               <CheckCircle2 v-if="friend.has_read_today" class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
               <span v-else-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
               <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-              <span>{{ friend.streak_count }}d</span>
+              <span>{{ friend.streak_count }}</span>
             </div>
 
             <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
@@ -139,7 +139,7 @@
               :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
               class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
             >
-              <BellRing class="w-4 h-4 stroke-[2.5]" :class="nudgedFriends[friend.id] ? '' : 'animate-bounce'" />
+              <BellRing class="w-4 h-4 stroke-[2.5]" />
               <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
             </button>
           </div>

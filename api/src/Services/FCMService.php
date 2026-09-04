@@ -247,7 +247,7 @@ class FCMService {
     /**
      * Envía una notificación Push a TODOS los dispositivos activos de un usuario.
      */
-    public static function sendPushNotificationToUser($userId, $title, $body, $data = []): bool {
+    public static function sendPushNotificationToUser(string $userId, string $title, string $body, array $data = []): bool {
         if (empty($userId)) {
             return false;
         }

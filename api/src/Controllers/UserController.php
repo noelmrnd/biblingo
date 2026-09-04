@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../config/db.php';
 
 class UserController {
-    public static function updateProfile($userId) {
+    public static function updateProfile(string $userId) {
         $input = getJsonInput();
         $displayName = isset($input['display_name']) ? trim($input['display_name']) : null;
         $reminderTime = isset($input['reminder_time']) ? trim($input['reminder_time']) : null;
@@ -51,14 +51,17 @@ class UserController {
         sendJsonResponse([
             'success' => true,
             'message' => 'Perfil actualizado correctamente.',
-            'user'    => $updatedUser
+            'user'    => [
+                ...$updatedUser,
+                'id' => (string)$updatedUser['id'],
+            ],
         ]);
     }
 
     /**
      * Endpoint dedicado para registrar o actualizar el token push multidispositivo del usuario.
      */
-    public static function registerPushToken($userId) {
+    public static function registerPushToken(string $userId) {
         $input = getJsonInput();
         $pushToken = isset($input['push_token']) ? trim($input['push_token']) : (isset($input['token']) ? trim($input['token']) : null);
         $platform  = strtolower(trim($input['platform'] ?? 'ios'));
@@ -73,12 +76,13 @@ class UserController {
 
         $db = getDbConnection();
         try {
+            $tokenId = SnowflakeId::nextId();
             $tokenStmt = $db->prepare("
-                INSERT INTO user_push_tokens (user_id, token, platform)
-                VALUES (?, ?, ?)
+                INSERT INTO user_push_tokens (id, user_id, token, platform)
+                VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
             ");
-            $tokenStmt->execute([$userId, $pushToken, $platform]);
+            $tokenStmt->execute([$tokenId, $userId, $pushToken, $platform]);
 
             sendJsonResponse([
                 'success' => true,
@@ -92,7 +96,7 @@ class UserController {
     /**
      * Endpoint dedicado para eliminar / desregistrar el token push al cerrar sesión.
      */
-    public static function unregisterPushToken($userId) {
+    public static function unregisterPushToken(string $userId) {
         $input = getJsonInput();
         $pushToken = isset($input['push_token']) ? trim($input['push_token']) : (isset($input['token']) ? trim($input['token']) : null);
         if (!$pushToken) {

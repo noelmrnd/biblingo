@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../config/db.php';
 
 class ReadingController {
-    public static function getStatus($userId) {
+    public static function getStatus(string $userId) {
         $db = getDbConnection();
         
         $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
@@ -45,7 +45,7 @@ class ReadingController {
         ]);
     }
 
-    public static function logReading($userId) {
+    public static function logReading(string $userId) {
         $db = getDbConnection();
 
         $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
@@ -88,13 +88,14 @@ class ReadingController {
                 ");
                 $updateStmt->execute([$currentStreak, $maxStreak, $today, $userId]);
 
-                // 2. Registrar la entrada en el historial de lecturas
+                // 2. Registrar la entrada en el historial de lecturas con Snowflake ID
+                $logId = SnowflakeId::nextId();
                 $logStmt = $db->prepare("
-                    INSERT INTO reading_logs (user_id, read_date) 
-                    VALUES (?, ?) 
+                    INSERT INTO reading_logs (id, user_id, read_date) 
+                    VALUES (?, ?, ?) 
                     ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP
                 ");
-                $logStmt->execute([$userId, $today]);
+                $logStmt->execute([$logId, $userId, $today]);
 
                 $db->commit();
             } catch (Exception $e) {

@@ -8,7 +8,7 @@ require_once __DIR__ . '/../Events/FriendAddedEvent.php';
 require_once __DIR__ . '/../Events/FriendNudgedEvent.php';
 
 class FriendController {
-    public static function getFriends($userId) {
+    public static function getFriends(string $userId) {
         $db = getDbConnection();
 
         // 1. Obtener lista de amigos del usuario
@@ -35,13 +35,13 @@ class FriendController {
         // Mapear toques por id de amigo para búsqueda O(1)
         $nudgeMap = [];
         foreach ($nudges as $n) {
-            $nudgeMap[(int)$n['receiver_id']] = $n['last_nudge_date'];
+            $nudgeMap[(string)$n['receiver_id']] = $n['last_nudge_date'];
         }
 
         sendJsonResponse([
             'success' => true,
             'friends' => array_map(function($f) use ($nudgeMap) {
-                $friendId = (int)$f['id'];
+                $friendId = (string)$f['id'];
                 $tz = $f['timezone'] ?? 'UTC';
                 $friendToday = DateUtils::getUserToday($tz);
                 $friendYesterday = DateUtils::getUserYesterday($tz);
@@ -69,7 +69,7 @@ class FriendController {
         ]);
     }
 
-    public static function addFriend($userId) {
+    public static function addFriend(string $userId) {
         $input = getJsonInput();
         $inviteCode = strtoupper(trim($input['invite_code'] ?? ''));
 
@@ -88,9 +88,9 @@ class FriendController {
             sendJsonResponse(['error' => 'No se encontró ningún usuario con ese código de invitación.'], 404);
         }
 
-        $friendId = (int)$friend['id'];
+        $friendId = (string)$friend['id'];
 
-        if ($friendId === (int)$userId) {
+        if ($friendId === $userId) {
             sendJsonResponse(['error' => 'No puedes agregarte a ti mismo como amigo.'], 400);
         }
 
@@ -104,14 +104,14 @@ class FriendController {
         try {
             $db->beginTransaction();
 
-            $insert1 = $db->prepare("INSERT IGNORE INTO friendships (user_id, friend_id) VALUES (?, ?)");
-            $insert1->execute([$userId, $friendId]);
+            $insert1 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
+            $insert1->execute([SnowflakeId::nextId(), $userId, $friendId]);
 
-            $insert2 = $db->prepare("INSERT IGNORE INTO friendships (user_id, friend_id) VALUES (?, ?)");
-            $insert2->execute([$friendId, $userId]);
+            $insert2 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
+            $insert2->execute([SnowflakeId::nextId(), $friendId, $userId]);
 
             // Crear y persistir evento de dominio
-            $event = new FriendAddedEvent((int)$userId, $friendId, $myDisplayName);
+            $event = new FriendAddedEvent($userId, $friendId, $myDisplayName);
             DomainEventStore::record($event, $db);
 
             $db->commit();
@@ -130,9 +130,9 @@ class FriendController {
         ]);
     }
 
-    public static function nudgeFriend($userId) {
+    public static function nudgeFriend(string $userId) {
         $input = getJsonInput();
-        $friendId = (int)($input['friend_id'] ?? 0);
+        $friendId = $input['friend_id'] ?: null;
 
         if (!$friendId) {
             sendJsonResponse(['error' => 'friend_id es requerido.'], 400);
@@ -193,11 +193,12 @@ class FriendController {
         try {
             $db->beginTransaction();
 
-            $insertNudge = $db->prepare("INSERT INTO friend_nudges (sender_id, receiver_id, nudge_date) VALUES (?, ?, ?)");
-            $insertNudge->execute([$userId, $friendId, $friendToday]);
+            $nudgeId = SnowflakeId::nextId();
+            $insertNudge = $db->prepare("INSERT INTO friend_nudges (id, sender_id, receiver_id, nudge_date) VALUES (?, ?, ?, ?)");
+            $insertNudge->execute([$nudgeId, $userId, $friendId, $friendToday]);
 
             // Crear y persistir evento de dominio
-            $event = new FriendNudgedEvent((int)$userId, $friendId, $myDisplayName, $friendToday);
+            $event = new FriendNudgedEvent($userId, $friendId, $myDisplayName, $friendToday);
             DomainEventStore::record($event, $db);
 
             $db->commit();

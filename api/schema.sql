@@ -3,7 +3,7 @@ USE reading_app;
 
 -- 1. Tabla de Usuarios
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     apple_id VARCHAR(255) NULL UNIQUE,
     google_id VARCHAR(255) NULL UNIQUE,
     email VARCHAR(255) NULL,
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- 2. Registro diario de lectura
 CREATE TABLE IF NOT EXISTS reading_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
     read_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_user_day (user_id, read_date),
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS reading_logs (
 
 -- 3. Amistades (Relación bidireccional)
 CREATE TABLE IF NOT EXISTS friendships (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    friend_id INT NOT NULL,
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    friend_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_friendship (user_id, friend_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -41,9 +41,9 @@ CREATE TABLE IF NOT EXISTS friendships (
 
 -- 4. Registro de toques/recordatorios diarios entre amigos
 CREATE TABLE IF NOT EXISTS friend_nudges (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
+    id BIGINT PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
     nudge_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_sender_receiver_date (sender_id, receiver_id, nudge_date),
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS friend_nudges (
 
 -- 5. Tokens de Notificaciones Push Multidispositivo
 CREATE TABLE IF NOT EXISTS user_push_tokens (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
     token VARCHAR(255) NOT NULL,
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -77,6 +77,4 @@ CREATE TABLE IF NOT EXISTS domain_events (
     INDEX idx_status_occurred (status, occurred_on),
     INDEX idx_aggregate (aggregate_type, aggregate_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 

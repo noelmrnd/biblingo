@@ -5,18 +5,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/DomainEvent.php';
 
 class FriendNudgedEvent extends DomainEvent {
-    private int $senderId;
-    private int $receiverId;
+    private string $senderId;
+    private string $receiverId;
     private string $senderDisplayName;
     private string $nudgeDate;
 
     public function __construct(
-        int $senderId,
-        int $receiverId,
+        string $senderId,
+        string $receiverId,
         string $senderDisplayName,
         string $nudgeDate,
         ?string $id = null,
-        ?string $occurredOn = null
+        ?string $occurredOn = null,
     ) {
         parent::__construct($id, $occurredOn);
         $this->senderId = $senderId;
@@ -37,11 +37,11 @@ class FriendNudgedEvent extends DomainEvent {
         return "{$this->senderId}_{$this->receiverId}_{$this->nudgeDate}";
     }
 
-    public function getSenderId(): int {
+    public function getSenderId(): string {
         return $this->senderId;
     }
 
-    public function getReceiverId(): int {
+    public function getReceiverId(): string {
         return $this->receiverId;
     }
 
@@ -63,7 +63,7 @@ class FriendNudgedEvent extends DomainEvent {
             'notification_body'  => "{$this->senderDisplayName} te ha enviado un recordatorio para que leas hoy y protejas tu racha. 🔥",
             'notification_data'  => [
                 'type'      => 'nudge',
-                'sender_id' => $this->senderId
+                'sender_id' => $this->senderId,
             ]
         ];
     }

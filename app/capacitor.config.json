@@ -9,6 +9,9 @@
     "errorPath": "offline.html"
   },
   "plugins": {
+    "Preferences": {
+      "group": "app"
+    },
     "PushNotifications": {
       "presentationOptions": [
         "badge",

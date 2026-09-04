@@ -59,23 +59,23 @@ class DomainEventProcessor {
     }
 
     private static function handleFriendAdded(array $payload): void {
-        $receiverId = (int)($payload['receiver_id'] ?? 0);
+        $receiverId = $payload['receiver_id'] ?? null;
         $title      = $payload['notification_title'] ?? '¡Nuevo Amigo en Biblingo! 🎉';
         $body       = $payload['notification_body'] ?? 'Alguien te ha agregado a sus amigos.';
         $data       = $payload['notification_data'] ?? ['type' => 'friend_added'];
 
-        if ($receiverId > 0) {
+        if ($receiverId !== null) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
     }
 
     private static function handleFriendNudged(array $payload): void {
-        $receiverId = (int)($payload['receiver_id'] ?? 0);
+        $receiverId = $payload['receiver_id'] ?? null;
         $title      = $payload['notification_title'] ?? '📖 Recordatorio de lectura';
         $body       = $payload['notification_body'] ?? '¡Tienes un recordatorio de lectura!';
         $data       = $payload['notification_data'] ?? ['type' => 'nudge'];
 
-        if ($receiverId > 0) {
+        if ($receiverId !== null) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
     }

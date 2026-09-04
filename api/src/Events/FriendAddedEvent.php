@@ -5,13 +5,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/DomainEvent.php';
 
 class FriendAddedEvent extends DomainEvent {
-    private int $userId;
-    private int $friendId;
+    private string $userId;
+    private string $friendId;
     private string $userDisplayName;
 
     public function __construct(
-        int $userId,
-        int $friendId,
+        string $userId,
+        string $friendId,
         string $userDisplayName,
         ?string $id = null,
         ?string $occurredOn = null
@@ -34,11 +34,11 @@ class FriendAddedEvent extends DomainEvent {
         return "{$this->userId}_{$this->friendId}";
     }
 
-    public function getUserId(): int {
+    public function getUserId(): string {
         return $this->userId;
     }
 
-    public function getFriendId(): int {
+    public function getFriendId(): string {
         return $this->friendId;
     }
 
@@ -55,7 +55,7 @@ class FriendAddedEvent extends DomainEvent {
             'notification_body'  => "{$this->userDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
             'notification_data'  => [
                 'type'    => 'friend_added',
-                'user_id' => $this->userId
+                'user_id' => $this->userId,
             ]
         ];
     }

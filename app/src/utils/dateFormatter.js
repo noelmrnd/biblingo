@@ -39,7 +39,7 @@ export function formatDateDDMMYYYY(dateInput, fallbackText = 'Sin registro') {
  * Formatea una fecha indicando 'Hoy', 'Ayer' o la fecha en DD/MM/YYYY.
  */
 export function formatFriendlyDate(dateInput) {
-  if (!dateInput) return 'Sin registro';
+  if (!dateInput) return 'Sin racha';
 
   const todayStr = new Date().toISOString().split('T')[0];
   const yesterdayDate = new Date();
@@ -48,8 +48,8 @@ export function formatFriendlyDate(dateInput) {
 
   const dateStr = typeof dateInput === 'string' ? dateInput.split('T')[0] : new Date(dateInput).toISOString().split('T')[0];
 
-  if (dateStr === todayStr) return 'Hoy 🔥';
-  if (dateStr === yesterdayStr) return 'Ayer ⏳';
+  if (dateStr === todayStr) return 'Hoy';
+  if (dateStr === yesterdayStr) return 'Ayer';
 
   return formatDateDDMMYYYY(dateInput);
 }
