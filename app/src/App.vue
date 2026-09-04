@@ -105,9 +105,44 @@ import { ApiService } from './services/api';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
+import { StorageService } from './services/storage';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
+const PENDING_INVITE_KEY = 'pending_invite_code';
+let lastProcessedCode = null;
+let lastProcessedTime = 0;
+
+const processInvite = async (inviteCode, user = currentUser.value) => {
+  if (!inviteCode) return;
+
+  // Prevenir reprocesamiento duplicado inmediato (ej: cold-start + listener)
+  const now = Date.now();
+  if (inviteCode === lastProcessedCode && now - lastProcessedTime < 3000) {
+    return;
+  }
+  lastProcessedCode = inviteCode;
+  lastProcessedTime = now;
+
+  // Si no hay sesión iniciada, almacenar para procesar después del login/registro
+  if (!user || !user.id) {
+    await StorageService.set(PENDING_INVITE_KEY, inviteCode);
+    ToastService.info(`Invitación (${inviteCode}) guardada. Inicia sesión para conectar con tu amigo.`);
+    return;
+  }
+
+  try {
+    const res = await ApiService.addFriend(user.id, inviteCode);
+    if (res.success) {
+      ToastService.success(`¡Has aceptado la invitación de ${res.friend.display_name}! 👥🎉`);
+      currentTab.value = 'friends';
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'Error al procesar la invitación.');
+  } finally {
+    await StorageService.remove(PENDING_INVITE_KEY);
+  }
+};
 
 const onLoginSuccess = async (user) => {
   currentUser.value = user;
@@ -117,6 +152,12 @@ const onLoginSuccess = async (user) => {
   // Inicializar Notificaciones Push para el usuario autenticado
   if (user && user.id) {
     NotificationService.initPushNotifications(user.id);
+  }
+
+  // Procesar invitación pendiente si existía
+  const pendingInvite = await StorageService.get(PENDING_INVITE_KEY);
+  if (pendingInvite) {
+    await processInvite(pendingInvite, user);
   }
 };
 
@@ -138,21 +179,17 @@ onMounted(async () => {
 
   if (currentUser.value && currentUser.value.id) {
     NotificationService.initPushNotifications(currentUser.value.id);
+
+    // Procesar invitación pendiente guardada si existe sesión activa
+    const pendingInvite = await StorageService.get(PENDING_INVITE_KEY);
+    if (pendingInvite) {
+      await processInvite(pendingInvite, currentUser.value);
+    }
   }
 
-  // Inicializar receptor de enlaces de invitación (Deep Links)
+  // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
   DeepLinkService.initListener(async (inviteCode) => {
-    if (currentUser.value && inviteCode) {
-      try {
-        const res = await ApiService.addFriend(currentUser.value.id, inviteCode);
-        if (res.success) {
-          ToastService.success(`¡Has aceptado la invitación de ${res.friend.display_name}! 👥🎉`);
-          currentTab.value = 'friends';
-        }
-      } catch (e) {
-        ToastService.error(e.message || 'Error al procesar la invitación.');
-      }
-    }
+    await processInvite(inviteCode, currentUser.value);
   });
 });
 </script>

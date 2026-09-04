@@ -42,10 +42,8 @@ biblingo/
 │   ├── .env                         # Variables de entorno (VITE_API_BASE_URL)
 │   └── package.json
 │
-├── bin/                             # Scripts de Desarrollo Local Executables
-│   ├── dev.sh                       # Levanta API PHP (8000) y App Vue (3000) simultáneamente
-│   ├── api.sh                       # Levanta únicamente la API PHP
-│   └── app.sh                       # Levanta únicamente la App Vue (pnpm dev)
+├── bin/                             # Scripts de utilidad
+│   └── process_events.php           # Runner CLI de eventos de dominio
 │
 └── web/                             # Landing Page Estática Promo (biblingo.me)
     ├── index.html                   # Página de aterrizaje con redirección inteligente
@@ -91,29 +89,33 @@ MAIN_DB_HOST=127.0.0.1
 
 **Frontend (`app/.env`)**:
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=http://localhost:8084/api
 VITE_GOOGLE_CLIENT_ID=TU_CLIENT_ID_OPCIONAL.apps.googleusercontent.com
 ```
 
 ---
 
-## 🚀 5. Cómo Ejecutar en Desarrollo Local
+## 🚀 5. Cómo Ejecutar en Desarrollo Local (Docker)
 
-Puedes usar los scripts optimizados de la carpeta `bin/`:
+Todo el entorno de desarrollo se levanta mediante **Docker Compose**, leyendo los archivos directamente de tu sistema de archivos en vivo (sin necesidad de reconstruir la imagen):
 
-### Opción A: Levantar todo en un solo comando (Recomendado)
 ```bash
-./bin/dev.sh
-# O usando pnpm desde la raíz:
-pnpm dev
+docker compose up -d
+# O usando los atajos de pnpm desde la raíz:
+pnpm dev:d
 ```
-Esto iniciará:
-- 🐘 **API PHP** en `http://localhost:8000`
-- ⚡ **App Vue (Vite)** en `http://localhost:3000` (o `http://localhost:5173`)
 
-### Opción B: Levantar por separado
-- **Solo API PHP**: `./bin/api.sh` o `pnpm dev:api`
-- **Solo App Vue**: `./bin/app.sh` o `pnpm dev:app`
+Esto iniciará los servicios de desarrollo:
+- 📱 **App Frontend (Vue 3 + Vite Dev Server con Hot Reload en vivo)**: [http://localhost:8083](http://localhost:8083) (o [http://localhost:5173](http://localhost:5173))
+- 🌐 **Landing Page Web**: [http://localhost:8082](http://localhost:8082)
+- 🐘 **API PHP Backend**: [http://localhost:8084/api](http://localhost:8084/api)
+- 📬 **Worker de Eventos de Dominio**: Ejecutándose en background vía Supervisord (`process_events.php --daemon`)
+
+
+### Comandos útiles:
+- **Ver logs en tiempo real**: `docker compose logs -f` (o `pnpm dev:logs`)
+- **Detener los servidores**: `docker compose down` (o `pnpm dev:down`)
+- **Reconstruir la imagen de desarrollo**: `docker compose build` (o `pnpm dev:build`)
 
 ---
 

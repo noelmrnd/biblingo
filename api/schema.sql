@@ -63,4 +63,20 @@ CREATE TABLE IF NOT EXISTS user_push_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 6. Eventos de Dominio (Patrón Outbox para procesamiento desacoplado)
+CREATE TABLE IF NOT EXISTS domain_events (
+    id VARCHAR(36) PRIMARY KEY,
+    event_name VARCHAR(100) NOT NULL,
+    aggregate_type VARCHAR(50) NOT NULL,
+    aggregate_id VARCHAR(50) NOT NULL,
+    payload JSON NOT NULL,
+    status ENUM('pending', 'processed', 'failed') DEFAULT 'pending',
+    occurred_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    error_message TEXT NULL,
+    INDEX idx_status_occurred (status, occurred_on),
+    INDEX idx_aggregate (aggregate_type, aggregate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 

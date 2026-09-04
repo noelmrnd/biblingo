@@ -55,7 +55,7 @@
         </button>
 
         <!-- Panel de Desarrollo Local (Vite Dev / Localhost) -->
-        <div v-if="isDevMode" class="pt-4 border-t border-slate-800 space-y-3">
+        <div v-if="IS_DEV" class="pt-4 border-t border-slate-800 space-y-3">
           <div class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
             <span>🛠️</span> Entorno de desarrollo
           </div>
@@ -88,12 +88,12 @@
 <script setup>
 import { ref } from 'vue';
 import { AuthService } from '../services/authService';
+import { IS_DEV } from '../constants';
 
 const emit = defineEmits(['login-success']);
 const loading = ref(false);
 const errorMsg = ref('');
 const devName = ref('Lector Dev');
-const isDevMode = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 const handleAuth = async (authPromise) => {
   loading.value = true;

@@ -1,6 +1,7 @@
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
-import { ApiService, API_BASE_URL } from './api';
+import { ApiService } from './api';
+import { getAppleConfig, GOOGLE_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from '../constants';
 
 let socialLoginInitialized = false;
 
@@ -8,24 +9,16 @@ async function ensureInitialized() {
   if (socialLoginInitialized) return;
 
   const platform = Capacitor.getPlatform();
-  const isNativeIOS = platform === 'ios';
 
   try {
-    const webClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
-    const iOSClientId = (import.meta.env.VITE_GOOGLE_IOS_CLIENT_ID || '').trim();
-
     const config = {
-      apple: {
-        clientId: isNativeIOS ? 'me.biblingo.app' : 'me.biblingo.app.service',
-        redirectUrl: isNativeIOS ? '' : `${API_BASE_URL}/auth/apple/callback`,
-        useBroadcastChannel: platform === 'android',
-      }
+      apple: getAppleConfig(platform),
     };
 
-    if (webClientId || iOSClientId) {
+    if (GOOGLE_CLIENT_ID || GOOGLE_IOS_CLIENT_ID) {
       config.google = {
-        webClientId: webClientId,
-        iOSClientId: iOSClientId,
+        webClientId: GOOGLE_CLIENT_ID,
+        iOSClientId: GOOGLE_IOS_CLIENT_ID,
       };
     }
     await SocialLogin.initialize(config);

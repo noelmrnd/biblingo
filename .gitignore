@@ -29,6 +29,7 @@ build/
 *.p8
 firebase-service-account.json
 **/firebase-service-account.json
+private/
 
 # IDE / Editor Files
 .vscode/

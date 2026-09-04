@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../Services/FCMService.php';
+require_once __DIR__ . '/../Services/DomainEventStore.php';
+require_once __DIR__ . '/../Events/FriendAddedEvent.php';
+require_once __DIR__ . '/../Events/FriendNudgedEvent.php';
 
 class FriendController {
     public static function getFriends($userId) {
@@ -98,7 +100,7 @@ class FriendController {
         $me = $meStmt->fetch();
         $myDisplayName = $me ? $me['display_name'] : 'Un usuario';
 
-        // Insertar relaciones bidireccionales
+        // Insertar relaciones bidireccionales y registrar evento de dominio en MySQL
         try {
             $db->beginTransaction();
 
@@ -108,19 +110,15 @@ class FriendController {
             $insert2 = $db->prepare("INSERT IGNORE INTO friendships (user_id, friend_id) VALUES (?, ?)");
             $insert2->execute([$friendId, $userId]);
 
+            // Crear y persistir evento de dominio
+            $event = new FriendAddedEvent((int)$userId, $friendId, $myDisplayName);
+            DomainEventStore::record($event, $db);
+
             $db->commit();
         } catch (Exception $e) {
             $db->rollBack();
             sendJsonResponse(['error' => 'Error al agregar amigo: ' . $e->getMessage()], 500);
         }
-
-        // Enviar notificación Push al amigo vía FCM en todos sus dispositivos
-        FCMService::sendPushNotificationToUser(
-            $friendId,
-            '¡Nuevo Amigo en Biblingo! 🎉',
-            "{$myDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
-            ['type' => 'friend_added', 'user_id' => $userId]
-        );
 
         sendJsonResponse([
             'success' => true,
@@ -185,27 +183,28 @@ class FriendController {
             sendJsonResponse(['error' => "{$friend['display_name']} ya completó su lectura de hoy."], 400);
         }
 
-        // 5. Registrar el toque en la base de datos
-        try {
-            $insertNudge = $db->prepare("INSERT INTO friend_nudges (sender_id, receiver_id, nudge_date) VALUES (?, ?, ?)");
-            $insertNudge->execute([$userId, $friendId, $friendToday]);
-        } catch (Exception $e) {
-            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
-        }
-
-        // 6. Obtener nombre del remitente y enviar notificación Push vía FCM
+        // 5. Obtener nombre del remitente
         $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
         $meStmt->execute([$userId]);
         $me = $meStmt->fetch();
         $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
 
-        // 6. Obtener nombre del remitente y enviar notificación Push a todos sus dispositivos
-        FCMService::sendPushNotificationToUser(
-            $friendId,
-            '📖 Recordatorio de lectura',
-            "{$myDisplayName} te ha enviado un recordatorio para que leas hoy y protejas tu racha. 🔥",
-            ['type' => 'nudge', 'sender_id' => $userId]
-        );
+        // 6. Registrar el toque y persistir evento de dominio en MySQL
+        try {
+            $db->beginTransaction();
+
+            $insertNudge = $db->prepare("INSERT INTO friend_nudges (sender_id, receiver_id, nudge_date) VALUES (?, ?, ?)");
+            $insertNudge->execute([$userId, $friendId, $friendToday]);
+
+            // Crear y persistir evento de dominio
+            $event = new FriendNudgedEvent((int)$userId, $friendId, $myDisplayName, $friendToday);
+            DomainEventStore::record($event, $db);
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
+        }
 
         sendJsonResponse([
             'success'   => true,

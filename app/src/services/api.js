@@ -1,22 +1,6 @@
-const hostname = window.location.hostname;
-const isLocalNetwork = hostname === 'localhost' || 
-                       hostname === '127.0.0.1' || 
-                       /^192\.168\./.test(hostname) || 
-                       /^10\./.test(hostname) || 
-                       /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
+import { API_BASE_URL } from '../constants';
 
-function getApiBaseUrl() {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) {
-    if (envUrl.includes('localhost') && hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return envUrl.replace('localhost', hostname);
-    }
-    return envUrl;
-  }
-  return isLocalNetwork ? `http://${hostname}:8000/api` : 'https://app.biblingo.me/api';
-}
-
-export const API_BASE_URL = getApiBaseUrl();
+export { API_BASE_URL };
 
 export async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;

@@ -3,15 +3,36 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+      target: dev
     container_name: biblingo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
-      - ./api/.env
+      - path: ./api/.env
+        required: false
+    environment:
+      - MAIN_DB_HOST=${MAIN_DB_HOST:-host.docker.internal}
     ports:
       - "8082:8082"  # Web (Landing Page)
-      - "8083:8083"  # App (Vue SPA)
       - "8084:8084"  # API (PHP Backend)
     volumes:
       - ./web:/var/www/web:ro
-      - ./app/dist:/var/www/app:ro
       - ./api:/var/www/api
-    restart: always
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: biblingo_app
+    ports:
+      - "8083:3000"  # Frontend Vue + Vite Dev Server con Hot Reload
+      - "5173:3000"  # Puerto alternativo Vite
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8084/api
+    restart: unless-stopped

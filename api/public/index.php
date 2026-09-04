@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/Utils/DateUtils.php';
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
@@ -27,23 +28,6 @@ $userId = $_GET['user_id'] ?? null;
 if (!$userId) {
     $input = getJsonInput();
     $userId = $input['user_id'] ?? null;
-}
-
-// Rutas públicas .well-known (Universal Links / App Links)
-if ($requestUri === '/.well-known/apple-app-site-association') {
-    $file = __DIR__ . '/.well-known/apple-app-site-association';
-    if (file_exists($file)) {
-        header("Content-Type: application/json; charset=UTF-8");
-        echo file_get_contents($file);
-        exit;
-    }
-} elseif ($requestUri === '/.well-known/assetlinks.json') {
-    $file = __DIR__ . '/.well-known/assetlinks.json';
-    if (file_exists($file)) {
-        header("Content-Type: application/json; charset=UTF-8");
-        echo file_get_contents($file);
-        exit;
-    }
 }
 
 // Rutas API

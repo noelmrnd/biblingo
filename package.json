@@ -2,9 +2,11 @@
   "name": "biblingo-root",
   "private": true,
   "scripts": {
-    "dev": "./bin/dev.sh",
-    "dev:api": "./bin/api.sh",
-    "dev:app": "./bin/app.sh",
-    "dev:web": "./bin/web.sh"
+    "dev": "docker compose up",
+    "dev:d": "docker compose up -d",
+    "dev:down": "docker compose down",
+    "dev:logs": "docker compose logs -f",
+    "dev:build": "docker compose build",
+    "dev:worker": "docker compose exec biblingo php /var/www/api/bin/process_events.php"
   }
 }
