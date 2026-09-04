@@ -141,8 +141,32 @@
       </div>
     </div>
 
+    <!-- Guía y Tutorial / Tour de Bienvenida -->
+    <div class="card-duo">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+            <Compass class="w-5 h-5 text-amber-400 stroke-[2.5]" />
+          </div>
+          <div>
+            <h3 class="font-extrabold text-white text-lg">Guía de inicio</h3>
+            <p class="text-slate-300 text-base font-medium">
+              Aprende cómo funciona la racha y los amigos
+            </p>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          @click="openTour"
+          class="btn-3d-blue text-base py-3 px-5 font-extrabold flex-none"
+        >
+          Ver tour
+        </button>
+      </div>
+    </div>
+
     <!-- Botón Cerrar Sesión -->
-    <div class="pt-4">
+    <div class="pt-2">
       <button 
         @click="logout" 
         class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
@@ -156,7 +180,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/vue';
+import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass } from '@lucide/vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
@@ -166,7 +190,11 @@ const props = defineProps({
   user: { type: Object, required: true }
 });
 
-const emit = defineEmits(['logout', 'user-updated']);
+const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
+
+const openTour = () => {
+  emit('open-tour');
+};
 
 const reminderTime = ref('20:00');
 const editDisplayName = ref('');

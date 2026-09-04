@@ -3,6 +3,13 @@
     <!-- Componente Toast Flotante Global -->
     <ToastNotification />
 
+    <!-- Tour de Bienvenida Inicial (Onboarding) -->
+    <OnboardingTour 
+      :is-open="showTour" 
+      @close="onTourClose" 
+      @complete="onTourComplete" 
+    />
+
     <!-- Si no está autenticado, mostrar Login -->
     <LoginView v-if="!currentUser" @login-success="onLoginSuccess" />
 
@@ -31,6 +38,7 @@
             :user="currentUser" 
             @logout="onLogout" 
             @user-updated="onUserUpdated"
+            @open-tour="openTour"
           />
         </div>
       </main>
@@ -45,6 +53,7 @@
 import { ref, onMounted } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
+import OnboardingTour from './components/OnboardingTour.vue';
 import { keyboardHeight } from './utils/keyboard';
 import LoginView from './views/LoginView.vue';
 import DashboardView from './views/DashboardView.vue';
@@ -60,9 +69,35 @@ import { StorageService } from './services/storage';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
+const showTour = ref(false);
 const PENDING_INVITE_KEY = 'pending_invite_code';
+const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
 let lastProcessedCode = null;
 let lastProcessedTime = 0;
+
+const checkTourStatus = async () => {
+  const hasSeenTour = await StorageService.get(TOUR_SEEN_KEY);
+  if (!hasSeenTour) {
+    setTimeout(() => {
+      showTour.value = true;
+    }, 500);
+  }
+};
+
+const onTourComplete = async () => {
+  showTour.value = false;
+  await StorageService.set(TOUR_SEEN_KEY, true);
+  ToastService.success('¡Tour completado! Que disfrutes tu lectura diaria. 📖✨');
+};
+
+const onTourClose = async () => {
+  showTour.value = false;
+  await StorageService.set(TOUR_SEEN_KEY, true);
+};
+
+const openTour = () => {
+  showTour.value = true;
+};
 
 const processInvite = async (inviteCode, user = currentUser.value) => {
   if (!inviteCode) return;
@@ -110,6 +145,9 @@ const onLoginSuccess = async (user) => {
   if (pendingInvite) {
     await processInvite(pendingInvite, user);
   }
+
+  // Comprobar si corresponde mostrar el tour inicial
+  await checkTourStatus();
 };
 
 const onUserUpdated = async (updatedUser) => {
@@ -136,6 +174,9 @@ onMounted(async () => {
     if (pendingInvite) {
       await processInvite(pendingInvite, currentUser.value);
     }
+
+    // Comprobar tour para usuario activo
+    await checkTourStatus();
   }
 
   // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
