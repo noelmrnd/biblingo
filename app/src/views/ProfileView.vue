@@ -93,6 +93,7 @@
                 type="text" 
                 placeholder="Tu nombre de usuario"
                 class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
+                @keyup.enter="saveProfile"
               />
             </div>
           </div>
@@ -187,6 +188,7 @@ watch(() => props.user, (newUser) => {
 }, { immediate: true });
 
 const saveProfile = async () => {
+  document.activeElement?.blur();
   const newName = editDisplayName.value.trim();
   if (!newName) {
     ToastService.error('El nombre no puede estar vacío.');

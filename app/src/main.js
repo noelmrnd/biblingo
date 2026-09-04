@@ -4,6 +4,9 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar } from '@capacitor/status-bar';
 import App from './App.vue';
 import './style.css';
+import { setupKeyboardDismiss } from './utils/keyboard';
+
+setupKeyboardDismiss();
 
 createApp(App).mount('#app');
 

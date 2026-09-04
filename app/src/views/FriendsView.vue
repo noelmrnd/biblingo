@@ -239,6 +239,7 @@ const loadFriends = async () => {
 
 const addFriend = async () => {
   if (!inputCode.value || loading.value) return;
+  document.activeElement?.blur();
   loading.value = true;
 
   try {

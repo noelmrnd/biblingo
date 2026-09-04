@@ -12,7 +12,10 @@
       <AppHeader :streak-count="currentUser.streak_count || 0" />
 
       <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
-      <main class="flex-1 overflow-y-auto w-full no-scrollbar">
+      <main 
+        class="flex-1 overflow-y-auto w-full no-scrollbar transition-[padding] duration-200"
+        :style="keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined"
+      >
         <div class="max-w-md mx-auto p-4 space-y-4">
           <DashboardView 
             v-if="currentTab === 'dashboard'" 
@@ -42,6 +45,7 @@
 import { ref, onMounted } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
+import { keyboardHeight } from './utils/keyboard';
 import LoginView from './views/LoginView.vue';
 import DashboardView from './views/DashboardView.vue';
 import FriendsView from './views/FriendsView.vue';
