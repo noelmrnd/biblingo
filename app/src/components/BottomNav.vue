@@ -30,7 +30,7 @@
         />
 
         <!-- Texto -->
-        <span class="text-base font-medium tracking-wide pointer-events-none relative z-10">
+        <span class="text-sm font-bold tracking-wide pointer-events-none relative z-10">
           {{ tab.label }}
         </span>
       </button>

@@ -14,10 +14,10 @@
           <div class="flex-shrink-0 pb-2">
             <div class="flex items-start justify-between gap-3">
               <div class="space-y-1">
-                <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                  <span>¿Cómo estuvo tu lectura?</span>
+                <h3 class="text-xl text-white font-black">
+                  ¿Cómo estuvo tu lectura?
                 </h3>
-                <p class="text-sm text-slate-300 font-medium">
+                <p class="text-base text-slate-300 font-medium">
                   Elige tu reacción sobre lo que leíste hoy:
                 </p>
               </div>
@@ -55,7 +55,7 @@
                   <p class="font-black text-base text-white tracking-wide truncate">
                     {{ item.label }}
                   </p>
-                  <p class="text-xs text-slate-400 font-medium truncate">
+                  <p class="text-sm text-slate-400 font-medium truncate">
                     {{ item.desc }}
                   </p>
                 </div>
