@@ -49,12 +49,13 @@
         />
       </div>
 
-      <button 
+      <AppButton 
+        color="green"
+        block
         @click="saveReminder" 
-        class="btn-3d-green w-full text-base py-3.5"
       >
         Guardar recordatorio
-      </button>
+      </AppButton>
     </div>
 
     <!-- Datos de Perfil (Desplegable / Accordion) -->
@@ -64,7 +65,7 @@
         class="flex items-center justify-between cursor-pointer select-none gap-3"
       >
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
             <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
           </div>
           <div>
@@ -130,14 +131,15 @@
           </div>
         </div>
 
-        <button 
-          @click="saveProfile" 
+        <AppButton 
+          color="green"
+          block
           :disabled="savingProfile || !isNameChanged"
-          class="btn-3d-green w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="saveProfile" 
         >
           <span v-if="savingProfile">Guardando...</span>
           <span v-else>Guardar datos</span>
-        </button>
+        </AppButton>
       </div>
     </div>
 
@@ -145,7 +147,7 @@
     <div class="card-duo">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
             <Compass class="w-5 h-5 text-amber-400 stroke-[2.5]" />
           </div>
           <div>
@@ -155,13 +157,12 @@
             </p>
           </div>
         </div>
-        <button 
-          type="button" 
+        <AppButton 
+          color="blue"
           @click="openTour"
-          class="btn-3d-blue text-base py-3 px-5 font-extrabold flex-none"
         >
           Ver tour
-        </button>
+        </AppButton>
       </div>
     </div>
 
@@ -180,6 +181,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import AppButton from '../components/AppButton.vue';
 import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass } from '@lucide/vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';

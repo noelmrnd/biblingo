@@ -1,13 +1,15 @@
 <template>
   <div class="w-full">
-    <button
-      @click="openReactionModal"
+    <AppButton
+      color="green"
+      size="lg"
+      block
       :disabled="loading"
-      class="btn-3d-green w-full text-lg py-5 font-black rounded-2xl flex items-center justify-center gap-3 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      @click="openReactionModal"
     >
       <BookOpen class="w-6 h-6 stroke-[2.5]" />
       <span>Marcar lectura de hoy</span>
-    </button>
+    </AppButton>
 
     <!-- Modal de Reacción al Marcar Lectura -->
     <ReactionModal
@@ -22,6 +24,7 @@
 <script setup>
 import { ref } from 'vue';
 import { BookOpen } from '@lucide/vue';
+import AppButton from './AppButton.vue';
 import confetti from 'canvas-confetti';
 import ReactionModal from './ReactionModal.vue';
 import { ApiService } from '../services/api';

@@ -77,15 +77,17 @@
 
           <!-- Botón de Confirmación (Fijo abajo, siempre visible) -->
           <div class="flex-shrink-0 pt-3 border-t border-slate-800/80">
-            <button
-              @click="onConfirm"
+            <AppButton
+              color="green"
+              size="lg"
+              block
               :disabled="!selectedReaction || loading"
-              class="btn-3d-green w-full py-4 text-base font-black rounded-2xl flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+              @click="onConfirm"
             >
               <span v-if="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               <BookOpen v-else class="w-5 h-5 stroke-[2.5]" />
               <span>{{ loading ? 'Registrando lectura...' : 'Registrar lectura' }}</span>
-            </button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -95,6 +97,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import AppButton from './AppButton.vue';
 import { X, Check, BookOpen } from '@lucide/vue';
 import { READING_REACTIONS } from '../constants';
 

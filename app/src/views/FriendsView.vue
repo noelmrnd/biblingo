@@ -30,13 +30,13 @@
               {{ user.invite_code || 'BIBLINGO1' }}
             </span>
           </div>
-          <button 
+          <AppButton 
+            color="green"
             @click="shareInvite" 
-            class="btn-3d-green text-base py-3 px-5 font-extrabold flex items-center gap-3"
           >
             <Share2 class="w-5 h-5 stroke-[2.5]" />
             <span>Compartir</span>
-          </button>
+          </AppButton>
         </div>
 
         <p v-if="copyMsg" class="text-emerald-400 text-base font-extrabold text-center pt-1">
@@ -60,13 +60,13 @@
             maxlength="12"
             @keyup.enter="addFriend"
           />
-          <button 
-            @click="addFriend"
+          <AppButton 
+            color="blue"
             :disabled="loading || !inputCode"
-            class="btn-3d-blue text-base py-3 px-5 font-extrabold disabled:opacity-50"
+            @click="addFriend"
           >
             Agregar
-          </button>
+          </AppButton>
         </div>
         <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-base font-bold">
           {{ statusMsg }}
@@ -151,6 +151,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import AppButton from '../components/AppButton.vue';
 import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2 } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';

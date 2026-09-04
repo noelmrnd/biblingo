@@ -53,11 +53,11 @@
           </div>
 
           <!-- Textos: Título y Descripción -->
-          <div class="space-y-2">
+          <div class="space-y-2.5">
             <h3 class="text-2xl font-extrabold text-white leading-tight">
               {{ currentStepData.title }}
             </h3>
-            <p class="text-slate-300 text-base font-medium">
+            <p class="text-slate-300 text-base font-medium leading-relaxed">
               {{ currentStepData.description }}
             </p>
           </div>
@@ -73,32 +73,33 @@
 
         <!-- Footer: Botones de Acción -->
         <div class="pt-2 flex items-center gap-3 flex-none">
-          <button 
+          <AppButton 
             v-if="currentStep > 0"
             @click="prevStep"
-            class="btn-3d-dark py-3.5 px-4 text-sm font-bold flex items-center justify-center gap-1"
+            color="dark"
           >
             <ChevronLeft class="w-4 h-4 stroke-[3]" />
-            <span>Atrás</span>
-          </button>
+          </AppButton>
 
-          <button 
+          <AppButton 
             v-if="currentStep < steps.length - 1"
             @click="nextStep"
-            class="btn-3d-green flex-1 py-3.5 text-base font-black flex items-center justify-center gap-2"
+            color="green"
+            block
           >
             <span>Siguiente</span>
             <ChevronRight class="w-4 h-4 stroke-[3]" />
-          </button>
+          </AppButton>
 
-          <button 
+          <AppButton 
             v-else
             @click="finishTour"
-            class="btn-3d-green flex-1 py-3.5 text-base font-black flex items-center justify-center gap-2 shadow-emerald-500/30"
+            color="green"
+            block
           >
             <span>¡Empezar a leer!</span>
             <span>🚀</span>
-          </button>
+          </AppButton>
         </div>
       </div>
     </div>
@@ -107,6 +108,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import AppButton from './AppButton.vue';
 import { 
   CheckCircle2, 
   ChevronRight, 

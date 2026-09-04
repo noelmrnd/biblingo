@@ -67,13 +67,14 @@
               class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-white focus:outline-none focus:border-brand-green"
               @keyup.enter="loginDev"
             />
-            <button 
-              @click="loginDev"
+            <AppButton 
+              color="green"
+              size="sm"
               :disabled="loading"
-              class="btn-3d-green text-sm py-2.5 px-4 whitespace-nowrap"
+              @click="loginDev"
             >
               Entrar dev
-            </button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -87,6 +88,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import AppButton from '../components/AppButton.vue';
 import { AuthService } from '../services/authService';
 import { IS_DEV } from '../constants';
 
