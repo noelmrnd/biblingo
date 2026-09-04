@@ -59,7 +59,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
-      - name: Construir y publicar paquete Docker (All-in-One: Web, App, API)
+      - name: Construir y publicar paquete Docker
         uses: docker/build-push-action@v6
         with:
           context: .
