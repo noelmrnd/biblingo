@@ -8,6 +8,7 @@
     "allowNavigation": ["app.biblingo.me", "*.biblingo.me"],
     "errorPath": "offline.html"
   },
+  "backgroundColor": "#1F293D",
   "plugins": {
     "Preferences": {
       "group": "app"
@@ -21,7 +22,12 @@
     },
     "SplashScreen": {
       "launchAutoHide": true,
-      "launchShowDuration": 3000
+      "launchShowDuration": 3000,
+      "backgroundColor": "#1F293D"
+    },
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK"
     },
     "Keyboard": {
       "resize": "none",

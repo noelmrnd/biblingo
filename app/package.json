@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "assets": "npx @capacitor/assets generate --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#222222' --splashBackgroundColor '#ffffff' --splashBackgroundColorDark '#222222'"
+    "assets": "npx @capacitor/assets generate --iconBackgroundColor '#1F293D' --iconBackgroundColorDark '#1F293D' --splashBackgroundColor 'transparent' --splashBackgroundColorDark 'transparent'"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.0",

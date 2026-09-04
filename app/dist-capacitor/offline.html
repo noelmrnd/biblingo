@@ -1,98 +1,318 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sin conexión</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>Sin conexión • Biblingo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     :root {
-      color-scheme: light dark;
+      --brand-dark: #131927;
+      --brand-card: #1F293D;
+      --brand-border: #2B384E;
+      --brand-green: #58CC02;
+      --brand-green-dark: #46A302;
+      --brand-green-border: #047857;
+      --brand-flame: #FF9600;
+      --slate-100: #F1F5F9;
+      --slate-400: #94A3B8;
+      --slate-800: #1E293B;
+      --slate-900: #0F172A;
+      color-scheme: dark;
     }
 
     * {
       box-sizing: border-box;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     html, body {
       height: 100%;
+      width: 100%;
       margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: fixed;
+      background-color: var(--brand-dark);
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--slate-100);
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #ffffff;
-      color: #1a1a1a;
-      padding: 24px;
-      text-align: center;
+      padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      background: radial-gradient(circle at 50% 20%, rgba(88, 204, 2, 0.09) 0%, transparent 55%),
+                  radial-gradient(circle at 80% 80%, rgba(255, 150, 0, 0.06) 0%, transparent 50%),
+                  var(--brand-dark);
     }
 
-    @media (prefers-color-scheme: dark) {
-      body {
-        background: #121212;
-        color: #f2f2f2;
+    /* Tarjeta Card-Duo estilo Biblingo */
+    .card-duo {
+      width: 100%;
+      max-width: 350px;
+      background-color: var(--brand-card);
+      border: 2px solid var(--brand-border);
+      border-radius: 28px;
+      padding: 36px 24px 28px;
+      box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: enter-card 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes enter-card {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.96);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
     }
 
-    .wrap {
-      max-width: 320px;
+    /* Mascota / Icono de Estado */
+    .mascot-wrapper {
+      position: relative;
+      margin-bottom: 22px;
     }
 
-    .icon {
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 20px;
-      opacity: 0.6;
+    .mascot-box {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, var(--brand-green) 0%, #10B981 100%);
+      border: 4px solid var(--slate-800);
+      border-radius: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 28px rgba(88, 204, 2, 0.25);
     }
 
+    .mascot-emoji {
+      font-size: 48px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    .mascot-badge {
+      position: absolute;
+      bottom: -7px;
+      background: var(--brand-flame);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      border: 2px solid var(--slate-900);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .mascot-badge svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: 3;
+    }
+
+    /* Textos */
     h1 {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 22px;
+      font-weight: 900;
+      color: #FFFFFF;
       margin: 0 0 8px;
+      letter-spacing: -0.02em;
     }
 
     p {
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 500;
       line-height: 1.5;
-      opacity: 0.7;
+      color: var(--slate-400);
       margin: 0 0 24px;
     }
 
-    button {
+    /* Botón 3D Green estilo Biblingo */
+    .btn-3d-green {
+      width: 100%;
       appearance: none;
       border: none;
-      background: #222;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 28px;
-      border-radius: 100px;
+      background-color: var(--brand-green);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      padding: 15px 24px;
+      border-radius: 16px;
+      border-bottom: 4px solid var(--brand-green-border);
+      box-shadow: 0 10px 20px rgba(88, 204, 2, 0.25);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: all 0.08s ease-in-out;
+      text-decoration: none;
     }
 
-    button:active {
-      opacity: 0.85;
+    .btn-3d-green:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+      box-shadow: 0 4px 10px rgba(88, 204, 2, 0.2);
+    }
+
+    .btn-3d-green.loading {
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .btn-icon {
+      width: 19px;
+      height: 19px;
+      stroke-width: 2.7;
+    }
+
+    /* Nota sutil de auto-reconexión */
+    .status-hint {
+      margin-top: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--slate-400);
+      letter-spacing: 0.01em;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--brand-green);
+      box-shadow: 0 0 6px var(--brand-green);
+      animation: pulse-dot 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    /* Spinner Animado */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="currentColor"/>
-      <path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2c-3.87-3.87-10.14-3.87-14 0z" fill="currentColor"/>
-      <path d="M9 17l3 3 3-3c-1.66-1.66-4.34-1.66-6 0z" fill="currentColor"/>
-      <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2"/>
-    </svg>
+  <div class="card-duo">
+    <!-- Mascota con Badge Offline -->
+    <div class="mascot-wrapper">
+      <div class="mascot-box">
+        <span class="mascot-emoji">🦉📖</span>
+      </div>
+      <div class="mascot-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="2" y1="2" x2="22" y2="22"></line>
+          <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+          <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
+          <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
+          <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
+          <path d="M5 13a10 10 0 0 1 5.24-2.76"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+        <span>Sin red</span>
+      </div>
+    </div>
+
     <h1>Sin conexión a internet</h1>
-    <p>No pudimos cargar Biblingo. Revisa tu conexión e intenta de nuevo.</p>
-    <button id="retry">Reintentar</button>
+    <p>No pudimos cargar Biblingo. Revisa tu conexión Wi-Fi o datos móviles para continuar con tu lectura.</p>
+
+    <!-- Botón 3D Green Reintentar -->
+    <button id="retry" class="btn-3d-green" type="button">
+      <svg id="retry-icon" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+      </svg>
+      <span id="retry-text">Reintentar</span>
+    </button>
+
+    <!-- Indicador discreto de auto-reconexión -->
+    <div class="status-hint">
+      <span class="pulse-dot"></span>
+      <span id="status-hint-text">Reconecta automáticamente al volver la red</span>
+    </div>
   </div>
+
   <script>
-    document.getElementById('retry').addEventListener('click', function () {
-      window.location.href = 'https://app.biblingo.me';
+    var retryBtn = document.getElementById('retry');
+    var retryIcon = document.getElementById('retry-icon');
+    var retryText = document.getElementById('retry-text');
+    var statusHintText = document.getElementById('status-hint-text');
+
+    function reconnect() {
+      if (retryBtn.classList.contains('loading')) return;
+      retryBtn.classList.add('loading');
+
+      if (retryIcon) {
+        retryIcon.outerHTML = '<span class="spinner"></span>';
+      }
+      if (retryText) {
+        retryText.textContent = 'Conectando...';
+      }
+      if (statusHintText) {
+        statusHintText.textContent = 'Comprobando conexión...';
+      }
+
+      setTimeout(function () {
+        window.location.href = 'https://app.biblingo.me';
+      }, 250);
+    }
+
+    retryBtn.addEventListener('click', reconnect);
+
+    // Auto-reconexión cuando regrese la señal
+    window.addEventListener('online', function () {
+      if (statusHintText) {
+        statusHintText.textContent = '¡Conexión restaurada!';
+      }
+      reconnect();
     });
+
+    // Sondeo pasivo cada 4s si el navegador detecta que volvió la red
+    setInterval(function () {
+      if (navigator.onLine && !retryBtn.classList.contains('loading')) {
+        reconnect();
+      }
+    }, 4000);
   </script>
 </body>
 </html>

@@ -5,14 +5,168 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-itunes-app" content="app-id=6808283100" />
+    <meta name="theme-color" content="#1F293D" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Biblingo - Hábito Diario de Lectura</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+    html, body {
+      background-color: #1F293D;
+      color: #F1F5F9;
+    }
+
+    #initial-loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #1F293D;
+      z-index: 9999;
+      opacity: 0;
+      animation: initial-loader-appear 0s linear 1s forwards;
+      transition: opacity 0.2s ease;
+      padding: 24px;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #initial-loader.hide {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    #initial-loader .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #initial-loader .spinner {
+      width: 42px;
+      height: 42px;
+      border: 3.5px solid rgba(255, 255, 255, 0.12);
+      border-top-color: #58CC02;
+      border-radius: 50%;
+      animation: initial-loader-spin 0.8s linear infinite;
+    }
+
+    #initial-loader .loader-hint {
+      display: none;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #94A3B8;
+      text-align: center;
+    }
+
+    #initial-loader .loader-hint.show {
+      display: block;
+    }
+
+    #initial-loader .loader-error {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+      max-width: 320px;
+      padding: 24px;
+      background: #1F293D;
+      border: 2px solid #2B384E;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    #initial-loader .loader-error.show {
+      display: flex;
+    }
+
+    #initial-loader .loader-error p {
+      color: #CBD5E1;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    #initial-loader .loader-error button {
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 12px 26px;
+      border: none;
+      border-radius: 14px;
+      background-color: #58CC02;
+      border-bottom: 3px solid #047857;
+      color: #FFFFFF;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+
+    #initial-loader .loader-error button:active {
+      transform: translateY(2px);
+      border-bottom-width: 1px;
+    }
+
+    @keyframes initial-loader-appear {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes initial-loader-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    </style>
   </head>
   <body class="bg-brand-dark text-white font-sans antialiased select-none overflow-x-hidden">
     <div id="app"></div>
+
+    <div id="initial-loader">
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="loader-hint">
+          Por favor, espera...
+          <br/>
+          Cargando Biblingo
+        </div>
+      </div>
+      <div class="loader-error">
+        <p>Ocurrió un error al cargar la aplicación.</p>
+        <button onclick="location.reload()">Recargar</button>
+      </div>
+    </div>
+
+    <script>
+      // Carga lenta genuina: mostrar aviso sin ocultar el spinner
+      setTimeout(function () {
+        var hint = document.querySelector('#initial-loader .loader-hint');
+        if (hint) hint.classList.add('show');
+      }, 7000);
+
+      function showLoaderError() {
+        var loader = document.getElementById('initial-loader');
+        var wrap = document.querySelector('#initial-loader .spinner-wrap');
+        var errorBox = document.querySelector('#initial-loader .loader-error');
+        if (loader && loader.classList.contains('hide')) return;
+        if (wrap) wrap.style.display = 'none';
+        if (errorBox) errorBox.classList.add('show');
+      }
+
+      window.addEventListener('error', showLoaderError);
+      window.addEventListener('unhandledrejection', showLoaderError);
+    </script>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

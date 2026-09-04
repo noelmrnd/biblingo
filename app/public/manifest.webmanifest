@@ -3,11 +3,11 @@
   "short_name": "Biblingo",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF6EA",
+  "background_color": "#1F293D",
   "lang": "es",
   "scope": "/",
   "description": "Biblingo",
-  "theme_color": "#FAF6EA",
+  "theme_color": "#1F293D",
   "icons": [
     {
       "src": "/icons/icon-48.webp",
