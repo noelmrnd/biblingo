@@ -32,5 +32,10 @@ echo -e "${BLUE}⚡ Iniciando Frontend App (pnpm dev)...${NC}"
 pnpm --prefix "$ROOT_DIR/app" dev &
 VITE_PID=$!
 
+# 3. Iniciar Servidor Landing Page Web
+echo -e "${YELLOW}🌐 Iniciando Landing Page Web en http://0.0.0.0:8080 ...${NC}"
+php -S 0.0.0.0:8080 -t "$ROOT_DIR/web" &
+WEB_PID=$!
+
 # Esperar a que los procesos terminen
-wait $PHP_PID $VITE_PID
+wait $PHP_PID $VITE_PID $WEB_PID

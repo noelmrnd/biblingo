@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "35KW5KGTS6.me.biblingo.app",
+        "paths": [ "/invite/*", "/*" ]
+      }
+    ]
+  }
+}

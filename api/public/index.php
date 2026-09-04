@@ -29,6 +29,23 @@ if (!$userId) {
     $userId = $input['user_id'] ?? null;
 }
 
+// Rutas públicas .well-known (Universal Links / App Links)
+if ($requestUri === '/.well-known/apple-app-site-association') {
+    $file = __DIR__ . '/.well-known/apple-app-site-association';
+    if (file_exists($file)) {
+        header("Content-Type: application/json; charset=UTF-8");
+        echo file_get_contents($file);
+        exit;
+    }
+} elseif ($requestUri === '/.well-known/assetlinks.json') {
+    $file = __DIR__ . '/.well-known/assetlinks.json';
+    if (file_exists($file)) {
+        header("Content-Type: application/json; charset=UTF-8");
+        echo file_get_contents($file);
+        exit;
+    }
+}
+
 // Rutas API
 if ($requestUri === '/api/auth/social' && $method === 'POST') {
     AuthController::handleSocialAuth();

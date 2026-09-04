@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "./bin/dev.sh",
     "dev:api": "./bin/api.sh",
-    "dev:app": "./bin/app.sh"
+    "dev:app": "./bin/app.sh",
+    "dev:web": "./bin/web.sh"
   }
 }

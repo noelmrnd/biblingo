@@ -1,0 +1,9 @@
+FROM php:8.3-fpm-alpine
+
+# Instalar extensión pdo_mysql para conexión a la base de datos MySQL
+RUN docker-php-ext-install pdo pdo_mysql
+
+WORKDIR /var/www/api
+
+EXPOSE 9000
+CMD ["php-fpm"]
