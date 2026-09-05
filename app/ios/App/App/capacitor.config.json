@@ -38,6 +38,7 @@
 		}
 	},
 	"packageClassList": [
+		"InAppReviewPlugin",
 		"AppPlugin",
 		"KeyboardPlugin",
 		"LocalNotificationsPlugin",

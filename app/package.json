@@ -10,6 +10,7 @@
     "assets": "npx @capacitor/assets generate --iconBackgroundColor '#1F293D' --iconBackgroundColorDark '#1F293D' --splashBackgroundColor 'transparent' --splashBackgroundColorDark 'transparent'"
   },
   "dependencies": {
+    "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.4.1",
     "@capacitor/keyboard": "^8.0.5",
