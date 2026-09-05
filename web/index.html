@@ -3,21 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="apple-itunes-app" content="app-id=6808283100" />
   <link rel="icon" type="image/png" href="/assets/logo-256.png" />
-  <title>Biblingo - Lectura entre amigos</title>
-  <meta name="description" content="Construye un hábito diario de lectura con Biblingo: Lectura entre amigos. Mantén tu racha de días, compite con amigos y no leas nunca más en soledad." />
-  <meta property="og:title" content="Biblingo - Lectura entre amigos" />
-  <meta property="og:description" content="Lectura entre amigos. Mantén viva tu racha de días, compite con tus amigos y disfruta de la lectura." />
+  <title>Biblingo - Muy pronto</title>
+  <meta name="description" content="Biblingo: lectura entre amigos. Muy pronto disponible. Síguenos en Instagram y TikTok para no perderte el lanzamiento." />
+  <meta property="og:title" content="Biblingo - Muy pronto" />
+  <meta property="og:description" content="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://biblingo.me" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Biblingo - Lectura entre amigos" />
-  <meta name="twitter:description" content="Lectura entre amigos. Mantén viva tu racha de días, compite con tus amigos y disfruta de la lectura." />
+  <meta name="twitter:title" content="Biblingo - Muy pronto" />
+  <meta name="twitter:description" content="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento." />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .teaser {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 100px 0 60px;
+    }
+    .teaser-inner {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .teaser-mascot {
+      width: 200px;
+      height: auto;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    .teaser-badge {
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .teaser-social {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+    .teaser-social a {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: #182030;
+      border: 1px solid #2b384e;
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .teaser-social a:hover {
+      border-color: #58cc02;
+      transform: translateY(-2px);
+    }
+    .teaser-social svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+  </style>
 </head>
 <body>
   <!-- Top Navigation -->
@@ -27,123 +78,59 @@
         <img src="/assets/logo-256.png" alt="Biblingo" class="logo-img" />
         <span class="logo-text">Biblingo</span>
       </div>
-      <a href="#descargar" class="btn btn-primary">Descargar App</a>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container hero-grid">
-      <div class="hero-content">
-        <div class="badge">🔥 ¡Construye tu Racha!</div>
-        <h1 class="hero-title">Lee 5 minutos al día. Entre amigos.</h1>
+  <!-- Teaser de Próximo Lanzamiento -->
+  <section class="teaser">
+    <div class="container">
+      <div class="teaser-inner">
+        <img src="/assets/mascot-teaser.png" alt="Mascota de Biblingo celebrando" class="teaser-mascot" />
+        <div class="teaser-badge badge">🔥 Muy pronto</div>
+        <h1 class="hero-title">Lectura entre amigos.</h1>
         <p class="hero-subtitle">
-          Biblingo convierte la lectura en un hábito diario entre amigos.
-          Mantén viva tu racha, compite con tus amigos y no vuelvas a abandonar un libro.
+          Estamos puliendo los últimos detalles de Biblingo. Síguenos en Instagram y TikTok para enterarte primero del lanzamiento.
         </p>
-        <div class="hero-buttons" id="descargar">
-          <a href="https://apps.apple.com/app/id6808283100" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Descargar en App Store">
-            <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.9.04-2.02.6-2.66 1.34-.57.65-1.07 1.71-.93 2.74 1.01.08 2.06-.5 2.67-1.21z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="store-subtitle">Descárgalo en el</span>
-              <span class="store-title">App Store</span>
-            </div>
-          </a>
-          <a href="https://play.google.com/store/apps/details?id=me.biblingo.app" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Disponible en Google Play">
-            <svg class="store-icon" viewBox="0 0 24 24">
-              <path fill="#00C3FF" d="M3.6 1.9C3.2 2.3 3 2.9 3 3.7v16.6c0 .8.2 1.4.6 1.8l.1.1 9.4-9.4v-.2L3.7 1.8l-.1.1z"/>
-              <path fill="#FFC800" d="M16.2 15.7l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.5 0 2.1l-3.7 2.1-.1.1z"/>
-              <path fill="#FF3A44" d="M13.1 12.6l-9.5 9.5c.5.5 1.3.6 2.2.1l10.4-6-3.1-3.6z"/>
-              <path fill="#00E676" d="M13.1 12.4l3.1-3.5-10.4-6c-.9-.5-1.7-.4-2.2.1l9.5 9.4z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="store-subtitle">Disponible en</span>
-              <span class="store-title">Google Play</span>
-            </div>
-          </a>
-        </div>
-      </div>
 
-      <div class="hero-preview">
-        <div class="phone-mockup">
-          <div class="screen">
-            <div class="flame-badge">
-              <span class="flame">🔥</span>
-              <span class="streak-num">14 Días</span>
-            </div>
-            <h3>¡Lectura de hoy completada!</h3>
-            <p>Has leído 12 páginas hoy.</p>
-            <div class="week-row">
-              <span class="day active">L</span>
-              <span class="day active">M</span>
-              <span class="day active">X</span>
-              <span class="day active">J</span>
-              <span class="day active">V</span>
-              <span class="day active">S</span>
-              <span class="day active">D</span>
-            </div>
-          </div>
+        <div class="teaser-social">
+          <a href="https://www.instagram.com/biblingo.me" target="_blank" rel="noopener noreferrer" aria-label="Seguinos en Instagram">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C8.74 0 8.333.014 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.014 8.333 0 8.74 0 12s.014 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.986 8.74 24 12 24s3.667-.014 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.014-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.014 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm6.406-11.845c-.796 0-1.44.645-1.44 1.44s.644 1.44 1.44 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span>Instagram</span>
+          </a>
+          <a href="https://www.tiktok.com/@biblingo.me" target="_blank" rel="noopener noreferrer" aria-label="Seguinos en TikTok">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.02 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.31 1.38V7.3s-1.88.09-3.25-1.48z"/>
+            </svg>
+            <span>TikTok</span>
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
+  <!-- Adelanto de lo que se viene -->
   <section id="features" class="features">
     <div class="container text-center">
-      <h2 class="section-title">¿Por qué Biblingo funciona?</h2>
+      <h2 class="section-title">Así funcionará Biblingo</h2>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🔥</div>
           <h3>Rachas Gamificadas</h3>
-          <p>Siente la satisfacción de ver crecer tu contador de días consecutivos leyendo.</p>
+          <p>Cada día de lectura suma a tu racha. Verla crecer es adictivo, y perderla duele lo justo para no dejarla caer.</p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">👥</div>
           <h3>Amigos & Competencia</h3>
-          <p>Añade a tus amigos con un enlace único y compite por la mejor racha de la semana.</p>
+          <p>Sumá a tus amigos con un código de invitación y competí sanamente por quién sostiene la racha más larga.</p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">🔔</div>
           <h3>Recordatorios Inteligentes</h3>
-          <p>Ráfaga escalonada de notificaciones locales que protegen tu racha sin molestarte.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download CTA Section -->
-  <section class="cta-section">
-    <div class="container text-center">
-      <div class="cta-box">
-        <h2 class="cta-title">¡Empieza tu racha hoy mismo!</h2>
-        <p class="cta-subtitle">Descarga Biblingo gratis en iOS o Android y haz de la lectura tu mejor hábito diario.</p>
-        <div class="store-buttons-wrap">
-          <a href="https://apps.apple.com/app/id6808283100" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Descargar en App Store">
-            <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.9.04-2.02.6-2.66 1.34-.57.65-1.07 1.71-.93 2.74 1.01.08 2.06-.5 2.67-1.21z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="store-subtitle">Descárgalo en el</span>
-              <span class="store-title">App Store</span>
-            </div>
-          </a>
-          <a href="https://play.google.com/store/apps/details?id=me.biblingo.app" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Disponible en Google Play">
-            <svg class="store-icon" viewBox="0 0 24 24">
-              <path fill="#00C3FF" d="M3.6 1.9C3.2 2.3 3 2.9 3 3.7v16.6c0 .8.2 1.4.6 1.8l.1.1 9.4-9.4v-.2L3.7 1.8l-.1.1z"/>
-              <path fill="#FFC800" d="M16.2 15.7l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.5 0 2.1l-3.7 2.1-.1.1z"/>
-              <path fill="#FF3A44" d="M13.1 12.6l-9.5 9.5c.5.5 1.3.6 2.2.1l10.4-6-3.1-3.6z"/>
-              <path fill="#00E676" d="M13.1 12.4l3.1-3.5-10.4-6c-.9-.5-1.7-.4-2.2.1l9.5 9.4z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="store-subtitle">Disponible en</span>
-              <span class="store-title">Google Play</span>
-            </div>
-          </a>
+          <p>Notificaciones que te avisan justo a tiempo para no romper tu racha, sin bombardearte todo el día.</p>
         </div>
       </div>
     </div>
@@ -157,19 +144,10 @@
         <a href="/privacidad">Privacidad</a>
         <a href="/terminos">Términos</a>
         <a href="/contacto">Contacto</a>
+        <a href="https://www.instagram.com/biblingo.me" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.tiktok.com/@biblingo.me" target="_blank" rel="noopener noreferrer">TikTok</a>
       </div>
     </div>
   </footer>
-
-  <script>
-    // Redirección inteligente si se accede mediante enlace de invitación /invite/CODIGO
-    const path = window.location.pathname;
-    if (path.includes('/invite/')) {
-      const code = path.split('/invite/')[1];
-      if (code) {
-        window.location.href = 'https://app.biblingo.me?invite=' + code;
-      }
-    }
-  </script>
 </body>
 </html>
