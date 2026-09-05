@@ -68,6 +68,15 @@
       height: 20px;
       flex-shrink: 0;
     }
+    #features .features-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .features-closing {
+      margin-top: 40px;
+      font-size: 18px;
+      font-style: italic;
+      color: #cbd5e1;
+    }
   </style>
 </head>
 <body>
@@ -87,9 +96,12 @@
       <div class="teaser-inner">
         <img src="/assets/mascot-teaser.png" alt="Mascota de Biblingo celebrando" class="teaser-mascot" />
         <div class="teaser-badge badge">🔥 Muy pronto</div>
-        <h1 class="hero-title">Lectura entre amigos.</h1>
+        <h1 class="hero-title">Biblingo: la app para leer con amigos.</h1>
         <p class="hero-subtitle">
-          Estamos puliendo los últimos detalles de Biblingo. Síguenos en Instagram y TikTok para enterarte primero del lanzamiento.
+          Convierte la lectura en un hábito compartido. Lee al menos 5 minutos al día y mantén tu racha junto a tus amigos: cada quien lee el libro que quiera, lo importante es avanzar juntos.
+        </p>
+        <p class="hero-subtitle">
+          Estamos afinando los últimos detalles. Síguenos en Instagram y TikTok para enterarte en cuanto esté listo.
         </p>
 
         <div class="teaser-social">
@@ -117,22 +129,32 @@
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🔥</div>
-          <h3>Rachas Gamificadas</h3>
-          <p>Cada día de lectura suma a tu racha. Verla crecer es adictivo, y perderla duele lo justo para no dejarla caer.</p>
+          <h3>Mantén tu racha</h3>
+          <p>Lee durante al menos 5 minutos y termina tu sesión para completar el día. Recibe recordatorios diarios que te ayudan a no perderla.</p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">👥</div>
-          <h3>Amigos & Competencia</h3>
-          <p>Sumá a tus amigos con un código de invitación y competí sanamente por quién sostiene la racha más larga.</p>
+          <h3>Comparte el hábito</h3>
+          <p>Agrega a tus amigos y descubre quién ya completó su lectura y quién todavía tiene el día pendiente.</p>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">🔔</div>
-          <h3>Recordatorios Inteligentes</h3>
-          <p>Notificaciones que te avisan justo a tiempo para no romper tu racha, sin bombardearte todo el día.</p>
+          <div class="feature-icon">💬</div>
+          <h3>Comparte lo que te pareció</h3>
+          <p>Al terminar, elige una reacción rápida para contar cómo te fue con tu lectura.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3>Lee lo que quieras</h3>
+          <p>Clásicos, ciencia, historia, negocios, filosofía, desarrollo personal o cualquier otro libro que estés disfrutando.</p>
         </div>
       </div>
+
+      <p class="features-closing">
+        Biblingo no se trata de leer más rápido, sino de leer un poco todos los días.
+      </p>
     </div>
   </section>
 
