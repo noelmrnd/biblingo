@@ -372,6 +372,8 @@ const saveReminder = async () => {
     await NotificationService.initPushNotifications(props.user.id);
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
 
+    emit('user-updated', { ...props.user, reminder_time: reminderTime.value });
+
     ToastService.success('¡Recordatorio guardado! ⏰');
     isReminderExpanded.value = false;
   } catch (e) {

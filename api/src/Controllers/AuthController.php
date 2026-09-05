@@ -85,6 +85,11 @@ class AuthController {
         // Token de sesión básico en base64
         $authToken = base64_encode($user['id'] . ':' . time() . ':' . bin2hex(random_bytes(8)));
 
+        $userTz = $user['timezone'] ?? 'UTC';
+        $today = DateUtils::getUserToday($userTz);
+        $yesterday = DateUtils::getUserYesterday($userTz);
+        $lastRead = $user['last_read_date'];
+
         sendJsonResponse([
             'success' => true,
             'token'   => $authToken,
@@ -95,9 +100,11 @@ class AuthController {
                 'invite_code'      => $user['invite_code'],
                 'streak_count'     => (int)$user['streak_count'],
                 'max_streak_count' => (int)$user['max_streak_count'],
-                'last_read_date'   => $user['last_read_date'],
+                'last_read_date'   => $lastRead,
+                'last_read_label'  => DateUtils::formatReadDateLabel($lastRead, $today, $yesterday),
+                'has_read_today'   => $lastRead === $today,
                 'reminder_time'    => $user['reminder_time'] ?? '20:00',
-                'timezone'         => $user['timezone'] ?? 'UTC',
+                'timezone'         => $userTz,
                 'platform'         => $user['platform']
             ]
         ]);

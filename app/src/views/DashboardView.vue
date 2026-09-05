@@ -179,7 +179,8 @@ const onReadingLogged = ({ res, reaction }) => {
     streak_count: res.streak_count,
     max_streak_count: res.max_streak_count,
     last_read_date: res.last_read_date,
-    last_read_label: res.last_read_label
+    last_read_label: res.last_read_label,
+    has_read_today: true
   });
 };
 
@@ -201,8 +202,11 @@ const loadReadingStatus = async () => {
         streak_count: res.streak_count,
         max_streak_count: res.max_streak_count,
         last_read_date: res.last_read_date,
-        last_read_label: res.last_read_label
+        last_read_label: res.last_read_label,
+        has_read_today: res.has_read_today
       });
+
+      return res;
     }
   } catch (e) {
     console.warn('No se pudo actualizar estado:', e.message);
@@ -213,9 +217,10 @@ const loadReadingStatus = async () => {
 };
 
 onMounted(async () => {
-  await loadReadingStatus();
+  const res = await loadReadingStatus();
   const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-  NotificationService.schedule7DayBurst(savedTime, props.user.streak_count, hasReadToday.value);
+  const streakCount = res?.success ? res.streak_count : props.user.streak_count;
+  NotificationService.schedule7DayBurst(savedTime, streakCount, hasReadToday.value);
 });
 
 
