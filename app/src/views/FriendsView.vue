@@ -135,16 +135,13 @@
               <!-- Badge de Racha Unificado -->
               <div 
                 :class="[
-                  friend.has_read_today
-                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                    : friend.is_streak_lost
+                  friend.is_streak_lost
                     ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
                     : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                 ]"
                 class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
               >
-                <CheckCircle2 v-if="friend.has_read_today" class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-                <span v-else-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
+                <span v-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
                 <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
                 <span>{{ friend.streak_count }}</span>
               </div>
@@ -212,7 +209,7 @@ import { ref, computed, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import SwipeItem from '../components/SwipeItem.vue';
-import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2, ChevronDown, ChevronUp, UserMinus } from '@lucide/vue';
+import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, ChevronDown, ChevronUp, UserMinus } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
