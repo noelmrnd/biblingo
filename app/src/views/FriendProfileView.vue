@@ -27,8 +27,12 @@
           <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
         <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
-          <span><strong class="text-white font-extrabold">{{ friend.followers_count || 0 }}</strong> {{ friend.followers_count === 1 ? 'seguidor' : 'seguidores' }}</span>
-          <span><strong class="text-white font-extrabold">{{ friend.following_count || 0 }}</strong> seguidos</span>
+          <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">
+            <strong class="text-white font-extrabold">{{ friend.followers_count || 0 }}</strong> {{ friend.followers_count === 1 ? 'seguidor' : 'seguidores' }}
+          </button>
+          <button type="button" @click="openFollowList('following')" class="cursor-pointer hover:text-white transition-colors">
+            <strong class="text-white font-extrabold">{{ friend.following_count || 0 }}</strong> seguidos
+          </button>
         </div>
       </div>
 
@@ -38,6 +42,21 @@
           <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
           días leídos en total
         </span>
+      </div>
+
+      <div v-if="reactionBreakdown.length > 0" class="card-duo bg-slate-900/90 border-slate-800 p-4 space-y-3">
+        <h4 class="font-extrabold text-white text-base">Lecturas favoritas</h4>
+        <div class="flex flex-wrap gap-2">
+          <div
+            v-for="r in reactionBreakdown"
+            :key="r.id"
+            class="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-1.5"
+          >
+            <span class="text-lg leading-none">{{ r.emoji }}</span>
+            <span class="text-slate-200 text-sm font-bold">{{ r.count }}</span>
+            <span class="text-slate-400 text-sm font-medium">{{ r.label }}</span>
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -119,15 +138,27 @@
         </div>
       </template>
     </AppModal>
+
+    <FollowListModal
+      :is-open="isFollowListOpen"
+      :user-id="props.id"
+      :initial-tab="followListInitialTab"
+      :display-name="friend?.display_name"
+      @close="closeFollowList"
+      @change-tab="switchFollowListTab"
+      @select-user="goToFriendProfile"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
+import FollowListModal from '../components/FollowListModal.vue';
+import { READING_REACTIONS } from '../constants';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
@@ -138,6 +169,7 @@ const props = defineProps({
   user: { type: Object, required: true }
 });
 
+const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
@@ -149,9 +181,42 @@ const removeLoading = ref(false);
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
-onMounted(async () => {
+const reactionBreakdown = computed(() => {
+  const counts = friend.value?.reaction_counts || {};
+  return READING_REACTIONS
+    .map((r) => ({ ...r, count: counts[r.id] || 0 }))
+    .filter((r) => r.count > 0)
+    .sort((a, b) => b.count - a.count);
+});
+
+// El modal se sincroniza con ?panel= en la URL: abrirlo empuja una entrada al
+// historial, asi el boton atras del navegador lo cierra solo, y al volver desde el
+// perfil de otro amigo (navegado desde la lista) se reabre automaticamente.
+const isFollowListOpen = computed(() => !!route.query.panel);
+const followListInitialTab = computed(() => route.query.panel === 'following' ? 'following' : 'followers');
+
+const openFollowList = (tab) => {
+  router.push({ query: { ...route.query, panel: tab } });
+};
+
+const switchFollowListTab = (tab) => {
+  router.replace({ query: { ...route.query, panel: tab } });
+};
+
+const closeFollowList = () => {
+  router.back();
+};
+
+const goToFriendProfile = (id) => {
+  router.push({ name: 'friend-profile', params: { id } });
+};
+
+const loadFriendProfile = async (friendId) => {
+  loading.value = true;
+  friend.value = null;
+  nudged.value = false;
   try {
-    const res = await ApiService.getFriendProfile(props.id);
+    const res = await ApiService.getFriendProfile(friendId);
     if (res.success) {
       friend.value = {
         ...res.user,
@@ -167,7 +232,13 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(() => loadFriendProfile(props.id));
+
+// La ruta reutiliza el componente al navegar entre perfiles de amigos (mismo nombre
+// de ruta, distinto id), asi que onMounted no vuelve a dispararse por si solo.
+watch(() => props.id, (newId) => loadFriendProfile(newId));
 
 const sendNudge = async () => {
   if (nudged.value || nudgeLoading.value) return;

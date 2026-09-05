@@ -49,6 +49,11 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     $friendId = $_GET['friend_id'] ?? null;
     if (!$friendId) sendJsonResponse(['error' => 'friend_id requerido'], 400);
     FriendController::getFriendProfile($userId, $friendId);
+} elseif ($requestUri === '/api/friends/list' && $method === 'GET') {
+    $targetId = $_GET['user_id'] ?? null;
+    $type = $_GET['type'] ?? null;
+    if (!$targetId || !$type) sendJsonResponse(['error' => 'user_id y type son requeridos'], 400);
+    FriendController::getFollowList($userId, $targetId, $type);
 } elseif ($requestUri === '/api/friends/follow' && $method === 'POST') {
     FriendController::follow($userId);
 } elseif (($requestUri === '/api/friends/unfollow' && $method === 'POST') || ($requestUri === '/api/friends' && $method === 'DELETE')) {

@@ -12,8 +12,12 @@
           <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
         <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
-          <span><strong class="text-white font-extrabold">{{ user.followers_count || 0 }}</strong> {{ user.followers_count === 1 ? 'seguidor' : 'seguidores' }}</span>
-          <span><strong class="text-white font-extrabold">{{ user.following_count || 0 }}</strong> seguidos</span>
+          <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">
+            <strong class="text-white font-extrabold">{{ user.followers_count || 0 }}</strong> {{ user.followers_count === 1 ? 'seguidor' : 'seguidores' }}
+          </button>
+          <button type="button" @click="openFollowList('following')" class="cursor-pointer hover:text-white transition-colors">
+            <strong class="text-white font-extrabold">{{ user.following_count || 0 }}</strong> seguidos
+          </button>
         </div>
       </div>
 
@@ -24,6 +28,22 @@
           <span class="text-brand-green font-extrabold text-xl">{{ user.total_days_read || 0 }}</span>
           días leídos en total
         </span>
+      </div>
+
+      <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
+      <div v-if="reactionBreakdown.length > 0" class="card-duo bg-slate-900/90 border-slate-800 p-4 space-y-3">
+        <h4 class="font-extrabold text-white text-base">Tus lecturas favoritas</h4>
+        <div class="flex flex-wrap gap-2">
+          <div
+            v-for="r in reactionBreakdown"
+            :key="r.id"
+            class="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-1.5"
+          >
+            <span class="text-lg leading-none">{{ r.emoji }}</span>
+            <span class="text-slate-200 text-sm font-bold">{{ r.count }}</span>
+            <span class="text-slate-400 text-sm font-medium">{{ r.label }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Estadísticas Globales -->
@@ -315,13 +335,27 @@
         </div>
       </template>
     </AppModal>
+
+    <!-- Lista de Seguidores / Seguidos -->
+    <FollowListModal
+      :is-open="isFollowListOpen"
+      :user-id="user.id"
+      :initial-tab="followListInitialTab"
+      :display-name="user.display_name"
+      is-own-profile
+      @close="closeFollowList"
+      @change-tab="switchFollowListTab"
+      @select-user="goToFriendProfile"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
+import FollowListModal from '../components/FollowListModal.vue';
 import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star, BookOpenCheck } from '@lucide/vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { NotificationService } from '../services/notifications';
@@ -330,6 +364,7 @@ import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 import { ReviewService } from '../services/review';
 import { formatMemberSince } from '../utils/dateFormatter';
+import { READING_REACTIONS } from '../constants';
 import versionInfo from '../version.json';
 
 const appVersion = versionInfo.version;
@@ -340,7 +375,43 @@ const props = defineProps({
 
 const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
 
+const route = useRoute();
+const router = useRouter();
+
 const isLogoutModalOpen = ref(false);
+
+const reactionBreakdown = computed(() => {
+  const counts = props.user.reaction_counts || {};
+  return READING_REACTIONS
+    .map((r) => ({ ...r, count: counts[r.id] || 0 }))
+    .filter((r) => r.count > 0)
+    .sort((a, b) => b.count - a.count);
+});
+
+// El modal se sincroniza con ?panel= en la URL: abrirlo empuja una entrada al
+// historial, asi el boton atras del navegador lo cierra solo, y al volver desde el
+// perfil de un amigo (navegado desde la lista) se reabre automaticamente.
+const isFollowListOpen = computed(() => !!route.query.panel);
+const followListInitialTab = computed(() => route.query.panel === 'following' ? 'following' : 'followers');
+
+const openFollowList = (tab) => {
+  router.push({ query: { ...route.query, panel: tab } });
+};
+
+// Cambiar entre Seguidores/Seguidos reemplaza la entrada actual en vez de apilar una
+// nueva, para que "atras" cierre el modal en un solo paso sin importar cuantas veces
+// se cambio de tab.
+const switchFollowListTab = (tab) => {
+  router.replace({ query: { ...route.query, panel: tab } });
+};
+
+const closeFollowList = () => {
+  router.back();
+};
+
+const goToFriendProfile = (id) => {
+  router.push({ name: 'friend-profile', params: { id } });
+};
 
 const openTour = () => {
   emit('open-tour');

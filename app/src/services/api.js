@@ -102,6 +102,11 @@ export const ApiService = {
     });
   },
 
+  // type: 'followers' | 'following'. Publica: puede consultarse la de cualquier usuario.
+  async getFollowList(userId, type) {
+    return request(`/friends/list?user_id=${userId}&type=${type}`);
+  },
+
   async updateProfile(userId, data) {
     return request('/user/update', {
       method: 'POST',

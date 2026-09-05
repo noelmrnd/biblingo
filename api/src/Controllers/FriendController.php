@@ -287,6 +287,7 @@ class FriendController {
                 'has_read_today'   => $status->hasReadToday,
                 'is_streak_lost'   => $status->isStreakLost,
                 'total_days_read'  => self::countTotalDaysRead($db, $friendId),
+                'reaction_counts'  => self::countReactions($db, $friendId),
                 'member_since'     => substr((string)$friend['created_at'], 0, 10),
                 'followers_count'  => self::countFollowers($db, $friendId),
                 'following_count'  => self::countFollowing($db, $friendId),
@@ -297,6 +298,53 @@ class FriendController {
             'history'              => self::fetchHistory($db, $friendId, $status->today),
             'nudged_today'         => ($isSelf || !$isMutual) ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
             'mutual_friends_count' => $isSelf ? 0 : self::countMutualFriends($db, $userId, $friendId),
+        ]);
+    }
+
+    /**
+     * Lista de seguidores o seguidos de cualquier usuario. Publica, como en Duolingo:
+     * cualquier usuario autenticado puede consultar la lista de cualquier otro.
+     */
+    public static function getFollowList(string $userId, string $targetId, string $type) {
+        if (!in_array($type, ['followers', 'following'], true)) {
+            sendJsonResponse(['error' => 'type debe ser "followers" o "following".'], 400);
+        }
+
+        $db = getDbConnection();
+
+        if ($type === 'followers') {
+            $stmt = $db->prepare("
+                SELECT u.id, u.display_name, u.streak_count
+                FROM follows f
+                JOIN users u ON f.follower_id = u.id
+                WHERE f.followed_id = ?
+                ORDER BY u.streak_count DESC, u.display_name ASC
+            ");
+        } else {
+            $stmt = $db->prepare("
+                SELECT u.id, u.display_name, u.streak_count
+                FROM follows f
+                JOIN users u ON f.followed_id = u.id
+                WHERE f.follower_id = ?
+                ORDER BY u.streak_count DESC, u.display_name ASC
+            ");
+        }
+        $stmt->execute([$targetId]);
+        $rows = $stmt->fetchAll();
+
+        sendJsonResponse([
+            'success' => true,
+            'users' => array_map(function ($r) use ($db, $userId) {
+                $id = (string)$r['id'];
+                $isSelf = ($id === $userId);
+                return [
+                    'id'           => $id,
+                    'display_name' => $r['display_name'],
+                    'streak_count' => (int)$r['streak_count'],
+                    'is_self'      => $isSelf,
+                    'is_following' => $isSelf ? true : self::isFollowing($db, $userId, $id),
+                ];
+            }, $rows)
         ]);
     }
 
@@ -328,6 +376,23 @@ class FriendController {
         $stmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
         $stmt->execute([$userId]);
         return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
+    /** Conteo de reacciones registradas por dia de lectura, ej. {"loved": 12, "peaceful": 5}. */
+    public static function countReactions(\PDO $db, string $userId): array {
+        $stmt = $db->prepare("
+            SELECT reaction, COUNT(*) AS total
+            FROM reading_logs
+            WHERE user_id = ? AND reaction IS NOT NULL
+            GROUP BY reaction
+        ");
+        $stmt->execute([$userId]);
+
+        $counts = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $counts[$row['reaction']] = (int)$row['total'];
+        }
+        return $counts;
     }
 
     /** Historial de 30 dias de lectura, usado para el tracker semanal. */

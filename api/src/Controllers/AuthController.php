@@ -119,6 +119,7 @@ class AuthController {
                 'streak_freezes'   => (int)$user['streak_freezes'],
                 'streak_freezes_used' => (int)$user['streak_freezes_used'],
                 'total_days_read'  => $totalDaysRead,
+                'reaction_counts'  => FriendController::countReactions($db, $userId),
                 'member_since'     => substr((string)$user['created_at'], 0, 10),
                 'followers_count'  => FriendController::countFollowers($db, $userId),
                 'following_count'  => FriendController::countFollowing($db, $userId),
