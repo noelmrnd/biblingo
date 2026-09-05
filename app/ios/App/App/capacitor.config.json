@@ -23,6 +23,14 @@
 				"alert"
 			]
 		},
+		"LocalNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"banner",
+				"list"
+			]
+		},
 		"SplashScreen": {
 			"launchAutoHide": true,
 			"launchShowDuration": 3000,

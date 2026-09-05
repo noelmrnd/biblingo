@@ -139,6 +139,7 @@ export const NotificationService = {
           body: messages[msgIndex],
           schedule: { at: scheduleDate },
           sound: 'beep.wav',
+          badge: 1,
           actionTypeId: 'OPEN_READING',
           extra: { dayOffset }
         });
