@@ -97,71 +97,122 @@
       </div>
 
       <div v-else class="space-y-3">
-        <div 
+        <SwipeItem 
           v-for="(friend, index) in sortedFriends" 
           :key="friend.id"
-          class="card-duo py-3.5 px-4 flex items-center justify-between bg-slate-900/80 border-slate-800 hover:border-slate-700 transition-colors gap-4"
+          :disabled="friend.id === user.id"
+          :is-open="activeSwipeFriendId === friend.id"
+          :action-width="88"
+          @open="activeSwipeFriendId = friend.id"
+          @close="handleSwipeClose(friend.id)"
+          @action="promptRemoveFriend(friend)"
         >
-          <div class="flex items-center gap-5 min-w-0 flex-1">
-            <!-- Medallas de ranking -->
-            <div class="w-7 text-center font-black text-4xl flex-none">
-              <span v-if="index === 0">🥇</span>
-              <span v-else-if="index === 1">🥈</span>
-              <span v-else-if="index === 2">🥉</span>
-              <span v-else class="text-slate-400 font-bold">#{{ index + 1 }}</span>
+          <div 
+            class="card-duo py-3.5 px-4 flex items-center justify-between bg-slate-900 border-slate-800 hover:border-slate-700 transition-colors gap-4"
+          >
+            <div class="flex items-center gap-5 min-w-0 flex-1">
+              <!-- Medallas de ranking -->
+              <div class="w-7 text-center font-black text-4xl flex-none">
+                <span v-if="index === 0">🥇</span>
+                <span v-else-if="index === 1">🥈</span>
+                <span v-else-if="index === 2">🥉</span>
+                <span v-else class="text-slate-400 font-bold">#{{ index + 1 }}</span>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h4 class="font-bold text-white text-base flex items-center gap-3 truncate">
+                  {{ friend.display_name }}
+                  <span v-if="friend.id === user.id" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
+                </h4>
+                <p class="text-slate-300 text-base font-medium truncate">
+                  {{ formatFriendlyDate(friend.last_read_date) }}
+                </p>
+              </div>
             </div>
 
-            <div class="min-w-0 flex-1">
-              <h4 class="font-bold text-white text-base flex items-center gap-3 truncate">
-                {{ friend.display_name }}
-                <span v-if="friend.id === user.id" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
-              </h4>
-              <p class="text-slate-300 text-base font-medium truncate">
-                {{ formatFriendlyDate(friend.last_read_date) }}
-              </p>
+            <!-- Acciones de Racha & Recordatorio -->
+            <div class="flex items-center gap-2 flex-none">
+              <!-- Badge de Racha Unificado -->
+              <div 
+                :class="[
+                  friend.has_read_today
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                    : friend.is_streak_lost
+                    ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
+                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                ]"
+                class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
+              >
+                <CheckCircle2 v-if="friend.has_read_today" class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+                <span v-else-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
+                <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+                <span>{{ friend.streak_count }}</span>
+              </div>
+
+              <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
+              <button
+                v-if="friend.id !== user.id && !friend.has_read_today"
+                @click.stop="sendNudge(friend)"
+                :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
+                class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
+              >
+                <BellRing class="w-4 h-4 stroke-[2.5]" />
+                <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
+              </button>
             </div>
           </div>
-
-          <!-- Acciones de Racha & Recordatorio -->
-          <div class="flex items-center gap-2 flex-none">
-            <!-- Badge de Racha Unificado -->
-            <div 
-              :class="[
-                friend.has_read_today
-                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                  : friend.is_streak_lost
-                  ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
-                  : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-              ]"
-              class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
-            >
-              <CheckCircle2 v-if="friend.has_read_today" class="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-              <span v-else-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
-              <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-              <span>{{ friend.streak_count }}</span>
-            </div>
-
-            <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
-            <button
-              v-if="friend.id !== user.id && !friend.has_read_today"
-              @click="sendNudge(friend)"
-              :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
-              class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
-            >
-              <BellRing class="w-4 h-4 stroke-[2.5]" />
-              <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
-            </button>
-          </div>
-        </div>
+        </SwipeItem>
       </div>
     </div>
+
+    <!-- Modal Confirmación de Eliminar Amigo -->
+    <AppModal
+      :is-open="isRemoveModalOpen"
+      :title="friendToRemove ? `¿Eliminar a ${friendToRemove.display_name}?` : '¿Eliminar amigo?'"
+      description="Ya no verás su progreso en el ranking ni podrán enviarse toques mutuamente."
+      @close="closeRemoveModal"
+      :show-close="false"
+    >
+      <template #icon>
+        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
+          <UserMinus class="w-5 h-5 text-rose-400 stroke-[2.5]" />
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center gap-3 w-full">
+          <div class="flex-1">
+            <AppButton
+              color="dark"
+              block
+              :disabled="removeLoading"
+              @click="closeRemoveModal"
+            >
+              Cancelar
+            </AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton
+              color="rose"
+              block
+              :disabled="removeLoading"
+              @click="confirmRemoveFriend"
+            >
+              {{ removeLoading ? 'Eliminando...' : 'Eliminar' }}
+            </AppButton>
+          </div>
+        </div>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
-import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/vue';
+import AppModal from '../components/AppModal.vue';
+import SwipeItem from '../components/SwipeItem.vue';
+import { QrCode, Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, CheckCircle2, ChevronDown, ChevronUp, UserMinus } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
@@ -182,6 +233,10 @@ const qrDataUrl = ref('');
 const copyMsg = ref('');
 const nudgedFriends = ref({});
 const nudgeLoading = ref({});
+const isRemoveModalOpen = ref(false);
+const friendToRemove = ref(null);
+const removeLoading = ref(false);
+const activeSwipeFriendId = ref(null);
 
 const sendNudge = async (friend) => {
   if (nudgedFriends.value[friend.id] || nudgeLoading.value[friend.id]) return;
@@ -272,6 +327,44 @@ const shareInvite = async () => {
   const res = await ShareService.shareInviteCode(props.user.invite_code, props.user.display_name);
   if (res.success && res.method === 'clipboard') {
     ToastService.success('¡Enlace y código copiado! 📋');
+  }
+};
+
+const handleSwipeClose = (friendId) => {
+  if (activeSwipeFriendId.value === friendId) {
+    activeSwipeFriendId.value = null;
+  }
+};
+
+const promptRemoveFriend = (friend) => {
+  friendToRemove.value = friend;
+  isRemoveModalOpen.value = true;
+};
+
+const closeRemoveModal = () => {
+  if (removeLoading.value) return;
+  isRemoveModalOpen.value = false;
+  friendToRemove.value = null;
+  activeSwipeFriendId.value = null;
+};
+
+const confirmRemoveFriend = async () => {
+  if (!friendToRemove.value || removeLoading.value) return;
+  const friend = friendToRemove.value;
+  removeLoading.value = true;
+  try {
+    const res = await ApiService.removeFriend(props.user.id, friend.id);
+    if (res.success) {
+      ToastService.success(`Eliminaste a ${friend.display_name} de tus amigos.`);
+      friends.value = friends.value.filter(f => f.id !== friend.id);
+      delete nudgedFriends.value[friend.id];
+      activeSwipeFriendId.value = null;
+      closeRemoveModal();
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'Error al eliminar amigo.');
+  } finally {
+    removeLoading.value = false;
   }
 };
 

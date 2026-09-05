@@ -219,4 +219,53 @@ class FriendController {
             'friend_id' => $friendId
         ]);
     }
+
+    public static function removeFriend(string $userId) {
+        $input = getJsonInput();
+        $friendId = $input['friend_id'] ?? ($_GET['friend_id'] ?? null);
+
+        if (empty($friendId)) {
+            sendJsonResponse(['error' => 'friend_id es requerido.'], 400);
+        }
+
+        $friendId = (string)$friendId;
+
+        if ($friendId === $userId) {
+            sendJsonResponse(['error' => 'No puedes eliminarte a ti mismo.'], 400);
+        }
+
+        $db = getDbConnection();
+
+        try {
+            $db->beginTransaction();
+
+            // Eliminar la relación de amistad en ambas direcciones
+            $deleteFriendship = $db->prepare("
+                DELETE FROM friendships 
+                WHERE (user_id = ? AND friend_id = ?) 
+                   OR (user_id = ? AND friend_id = ?)
+            ");
+            $deleteFriendship->execute([$userId, $friendId, $friendId, $userId]);
+
+            // Eliminar los toques intercambiados entre ambos usuarios
+            $deleteNudges = $db->prepare("
+                DELETE FROM friend_nudges 
+                WHERE (sender_id = ? AND receiver_id = ?) 
+                   OR (sender_id = ? AND receiver_id = ?)
+            ");
+            $deleteNudges->execute([$userId, $friendId, $friendId, $userId]);
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            sendJsonResponse(['error' => 'Error al eliminar amigo: ' . $e->getMessage()], 500);
+        }
+
+        sendJsonResponse([
+            'success'   => true,
+            'message'   => 'Amigo eliminado correctamente.',
+            'friend_id' => $friendId
+        ]);
+    }
 }
+

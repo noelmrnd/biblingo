@@ -82,5 +82,12 @@ export const ApiService = {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, friend_id: friendId })
     });
+  },
+
+  async removeFriend(userId, friendId) {
+    return request('/friends/remove', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, friend_id: friendId })
+    });
   }
 };

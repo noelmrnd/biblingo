@@ -50,6 +50,9 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
 } elseif ($requestUri === '/api/friends/nudge' && $method === 'POST') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     FriendController::nudgeFriend($userId);
+} elseif ((($requestUri === '/api/friends/remove' && $method === 'POST') || ($requestUri === '/api/friends' && $method === 'DELETE'))) {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    FriendController::removeFriend($userId);
 } elseif ($requestUri === '/api/user/update' && $method === 'POST') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     UserController::updateProfile($userId);
