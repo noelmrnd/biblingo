@@ -47,33 +47,6 @@
       @reading-logged="onReadingLogged"
     />
 
-    <!-- Tracker semanal de 7 días (Lun - Dom) -->
-    <div class="card-duo space-y-4">
-      <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
-        <Calendar class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-        <span>Esta semana</span>
-      </h3>
-      <div class="grid grid-cols-7 gap-1.5 text-center">
-        <div 
-          v-for="(day, index) in weekDays" 
-          :key="index"
-          class="flex flex-col items-center space-y-2"
-        >
-          <span class="text-base font-extrabold text-slate-300">{{ day.label }}</span>
-          <div 
-            :class="[
-              day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-800 text-slate-600 border-slate-700',
-              day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
-            ]"
-            class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
-          >
-            <span v-if="day.isRead">✓</span>
-            <span v-else>{{ day.dateNum }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Temporizador de lectura de 10 minutos -->
     <!--
     <div class="card-duo bg-slate-900/90 border-slate-700 space-y-4 text-center">
@@ -117,13 +90,12 @@ let lastLoadedUserId = null;
 </script>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { BookOpen, CheckCircle2, Calendar } from '@lucide/vue';
+import { ref, onMounted } from 'vue';
+import { BookOpen, CheckCircle2 } from '@lucide/vue';
 import ReadingButton from '../components/ReadingButton.vue';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { StorageService } from '../services/storage';
-import { toLocalDateString } from '../utils/dateFormatter';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -139,41 +111,9 @@ if (lastLoadedUserId !== props.user?.id) {
 
 const initialLoading = ref(isFirstAppLoad);
 const hasReadToday = ref(null);
-const todayReaction = ref(null);
-const historyDates = ref([]);
 
-const weekDays = computed(() => {
-  const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-  const today = new Date();
-  const currentDayOfWeek = (today.getDay() + 6) % 7; // 0 = Lunes, 6 = Domingo
-  
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - currentDayOfWeek);
-
-  return labels.map((label, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dateStr = toLocalDateString(d);
-    const isToday = (i === currentDayOfWeek);
-    const isRead = historyDates.value.includes(dateStr) || (isToday && hasReadToday.value);
-
-    return {
-      label,
-      dateNum: d.getDate(),
-      dateStr,
-      isToday,
-      isRead
-    };
-  });
-});
-
-const onReadingLogged = ({ res, reaction }) => {
+const onReadingLogged = ({ res }) => {
   hasReadToday.value = true;
-  todayReaction.value = reaction;
-  const todayStr = toLocalDateString(new Date());
-  if (!historyDates.value.includes(todayStr)) {
-    historyDates.value.push(todayStr);
-  }
   emit('user-updated', {
     ...props.user,
     streak_count: res.streak_count,
@@ -189,8 +129,6 @@ const loadReadingStatus = async () => {
     const res = await ApiService.getReadingStatus(props.user.id);
     if (res.success) {
       hasReadToday.value = res.has_read_today;
-      todayReaction.value = res.today_reaction || null;
-      historyDates.value = res.history || [];
 
       // Si ya completó la lectura de hoy, asegurar limpieza de alertas locales y badge
       if (res.has_read_today) {
