@@ -34,7 +34,7 @@ class ReadingController {
         $yesterday = DateUtils::getUserYesterday($userTz);
         $lastRead = $user['last_read_date'];
         $streakCount = (int)$user['streak_count'];
-        $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $today && $lastRead !== $yesterday));
+        $isStreakLost = ($streakCount > 0 && $lastRead !== $today && $lastRead !== $yesterday);
 
         // Obtener la reacción más reciente (la de hoy) directamente de los registros ya obtenidos
         $todayReaction = null;

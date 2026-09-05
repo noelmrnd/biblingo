@@ -51,7 +51,7 @@ class FriendController {
                 $streakCount = (int)$f['streak_count'];
                 $lastRead = $f['last_read_date'];
                 $hasReadToday = (!empty($lastRead) && $lastRead === $friendToday);
-                $isStreakLost = ($streakCount === 0 || empty($lastRead) || ($lastRead !== $friendToday && $lastRead !== $friendYesterday));
+                $isStreakLost = ($streakCount > 0 && $lastRead !== $friendToday && $lastRead !== $friendYesterday);
 
                 $lastNudgeDate = $nudgeMap[$friendId] ?? null;
                 $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $friendToday);
