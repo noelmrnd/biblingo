@@ -101,7 +101,7 @@ const handleContentClick = (e) => {
     hasDragged = false;
     return;
   }
-  if (isOpen.value) {
+  if (isOpenInternal.value || props.isOpen) {
     e.stopPropagation();
     e.preventDefault();
     close();
