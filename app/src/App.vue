@@ -134,6 +134,9 @@ onMounted(async () => {
   // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
   currentUser.value = await UserService.initSession();
 
+  // Inicializar listeners de notificaciones locales
+  NotificationService.attachLocalListeners();
+
   if (currentUser.value && currentUser.value.id) {
     NotificationService.initPushNotifications(currentUser.value.id);
 

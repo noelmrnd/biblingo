@@ -176,5 +176,69 @@ export const NotificationService = {
     } catch (e) {
       console.warn('Error al desregistrar push token:', e.message || e);
     }
+  },
+
+  /**
+   * Configura listeners para notificaciones locales (cuando la app está abierta o se interactúa).
+   */
+  async attachLocalListeners() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await LocalNotifications.addListener('localNotificationReceived', (notification) => {
+        console.log('[LocalNotificationReceived]', notification);
+        const title = notification.title || '📖 Biblingo';
+        const body = notification.body || '¡Recordatorio de lectura!';
+        ToastService.info(`${title}: ${body}`);
+      });
+
+      await LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
+        console.log('[LocalNotificationActionPerformed]', notificationAction);
+      });
+    } catch (e) {
+      console.warn('Error al configurar listeners de notificaciones locales:', e);
+    }
+  },
+
+  /**
+   * Programa una notificación local de prueba tras N segundos (por defecto 3s).
+   */
+  async sendTestNotification(delaySeconds = 3) {
+    if (!Capacitor.isNativePlatform()) {
+      ToastService.info(`[Simulación Web] 🔔 Notificación en ${delaySeconds}s: "¡Las notificaciones locales funcionan! 🎉"`);
+      return true;
+    }
+
+    try {
+      await this.attachLocalListeners();
+      const localStatus = await LocalNotifications.requestPermissions();
+      if (localStatus.display !== 'granted') {
+        ToastService.error('Permiso de notificaciones denegado en los ajustes del dispositivo.');
+        return false;
+      }
+
+      const scheduleDate = new Date(Date.now() + delaySeconds * 1000);
+      const notifId = Math.floor(10000 + Math.random() * 90000);
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notifId,
+            title: '📖 Biblingo: Notificación de prueba',
+            body: '¡Las notificaciones locales funcionan perfectamente! 🎉 Tu libro te espera hoy.',
+            schedule: { at: scheduleDate },
+            sound: 'beep.wav',
+            actionTypeId: 'OPEN_READING',
+            extra: { isTest: true }
+          }
+        ]
+      });
+
+      ToastService.success(`Notificación en ${delaySeconds}s. ¡Bloquea o sal de la app para ver el aviso! 📲`);
+      return true;
+    } catch (e) {
+      console.error('Error al programar notificación de prueba:', e);
+      ToastService.error(`Error: ${e.message || 'No se pudo programar'}`);
+      return false;
+    }
   }
 };

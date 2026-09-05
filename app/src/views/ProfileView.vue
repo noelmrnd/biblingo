@@ -77,13 +77,25 @@
             />
           </div>
 
-          <AppButton 
-            color="green"
-            block
-            @click="saveReminder" 
-          >
-            Guardar recordatorio
-          </AppButton>
+          <div class="flex flex-col gap-2.5 pt-1">
+            <AppButton 
+              color="green"
+              block
+              @click="saveReminder" 
+            >
+              Guardar recordatorio
+            </AppButton>
+
+            <button 
+              type="button"
+              @click="triggerTestNotification" 
+              :disabled="testingNotification"
+              class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+              <span>{{ testingNotification ? 'Programando...' : 'Probar notificación (en 3 segundos)' }}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -360,6 +372,19 @@ const saveReminder = async () => {
     isReminderExpanded.value = false;
   } catch (e) {
     ToastService.error('No se pudo guardar el recordatorio.');
+  }
+};
+
+const testingNotification = ref(false);
+
+const triggerTestNotification = async () => {
+  testingNotification.value = true;
+  try {
+    await NotificationService.sendTestNotification(3);
+  } finally {
+    setTimeout(() => {
+      testingNotification.value = false;
+    }, 3500);
   }
 };
 
