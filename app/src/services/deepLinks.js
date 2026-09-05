@@ -2,10 +2,14 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
 export const DeepLinkService = {
+  /**
+   * Registra el listener de deep links. Devuelve el handle de Capacitor (con .remove())
+   * cuando aplica, o null en Web, para permitir limpieza en onUnmounted.
+   */
   async initListener(onInviteReceived) {
     // Escuchar cambios de URL en Native App
     if (Capacitor.isNativePlatform()) {
-      App.addListener('appUrlOpen', (event) => {
+      const handle = await App.addListener('appUrlOpen', (event) => {
         const url = event.url;
         const code = this.extractInviteCode(url);
         if (code) {
@@ -25,6 +29,8 @@ export const DeepLinkService = {
       } catch (e) {
         console.warn('Error al verificar launchUrl:', e);
       }
+
+      return handle;
     } else {
       // Comprobar URL inicial en Web
       const currentUrl = window.location.href;
@@ -38,6 +44,7 @@ export const DeepLinkService = {
           }
         } catch (e) {}
       }
+      return null;
     }
   },
 

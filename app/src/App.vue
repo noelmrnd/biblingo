@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
@@ -77,7 +77,7 @@ const { processInvite, resolvePendingInvite } = useInviteFlow({
   onFriendAdded: () => { currentTab.value = 'friends'; }
 });
 
-const { init: initAppLifecycle } = useAppLifecycle({
+const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle({
   onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
 });
 
@@ -123,11 +123,15 @@ onMounted(async () => {
   }
 
   // Registrar listeners globales: push, retorno a primer plano, deep links
-  initAppLifecycle();
+  await initAppLifecycle();
 
   if (currentUser.value && currentUser.value.id) {
     // Procesar invitación pendiente guardada si existe sesión activa
     await resolvePendingInvite(currentUser.value);
   }
+});
+
+onUnmounted(() => {
+  cleanupAppLifecycle();
 });
 </script>
