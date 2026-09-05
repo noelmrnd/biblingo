@@ -126,7 +126,7 @@ const onReadingLogged = ({ res }) => {
 
 const loadReadingStatus = async () => {
   try {
-    const res = await ApiService.getReadingStatus(props.user.id);
+    const res = await ApiService.getReadingStatus();
     if (res.success) {
       hasReadToday.value = res.has_read_today;
 

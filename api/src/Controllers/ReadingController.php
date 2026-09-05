@@ -18,40 +18,17 @@ class ReadingController {
 
         $userTz = $user['timezone'] ?? 'UTC';
         $today = DateUtils::getUserToday($userTz);
-
-        // Obtener historial de lecturas y reacciones de los últimos 30 días en una sola consulta
-        $logsStmt = $db->prepare("
-            SELECT read_date, reaction FROM reading_logs 
-            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY) 
-            ORDER BY read_date DESC
-        ");
-        $logsStmt->execute([$userId, $today]);
-        $logs = $logsStmt->fetchAll();
-
-        $historyDates = array_column($logs, 'read_date');
-
-        $hasReadToday = $user['last_read_date'] === $today;
         $yesterday = DateUtils::getUserYesterday($userTz);
         $lastRead = $user['last_read_date'];
-        $streakCount = (int)$user['streak_count'];
-        $isStreakLost = ($streakCount > 0 && $lastRead !== $today && $lastRead !== $yesterday);
-
-        // Obtener la reacción más reciente (la de hoy) directamente de los registros ya obtenidos
-        $todayReaction = null;
-        if ($hasReadToday && !empty($logs) && $logs[0]['read_date'] === $today) {
-            $todayReaction = $logs[0]['reaction'] ?? null;
-        }
+        $hasReadToday = $lastRead === $today;
 
         sendJsonResponse([
             'success'          => true,
-            'streak_count'     => $streakCount,
+            'streak_count'     => (int)$user['streak_count'],
             'max_streak_count' => (int)$user['max_streak_count'],
             'last_read_date'   => $lastRead,
             'last_read_label'  => DateUtils::formatReadDateLabel($lastRead, $today, $yesterday),
             'has_read_today'   => $hasReadToday,
-            'today_reaction'   => $todayReaction,
-            'is_streak_lost'   => $isStreakLost,
-            'history'          => $historyDates,
         ]);
     }
 

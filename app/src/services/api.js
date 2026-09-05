@@ -65,8 +65,9 @@ export const ApiService = {
     });
   },
 
-  async getReadingStatus(userId) {
-    return request(`/reading/status?user_id=${userId}`);
+  // El backend deriva el usuario del token Bearer, no de un user_id en la URL.
+  async getReadingStatus() {
+    return request('/reading/status');
   },
 
   async logReading(userId, reaction = null) {
@@ -84,8 +85,8 @@ export const ApiService = {
     return request(`/friends/requests?user_id=${userId}`);
   },
 
-  async getFriendHistory(userId, friendId) {
-    return request(`/friends/history?user_id=${userId}&friend_id=${friendId}`);
+  async getFriendHistory(friendId) {
+    return request(`/friends/history?friend_id=${friendId}`);
   },
 
   async sendFriendRequest(userId, inviteCode) {

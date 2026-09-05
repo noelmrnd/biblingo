@@ -33,10 +33,9 @@ import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
 
 const props = defineProps({
-  userId: { type: String, required: true },
-  // Si se pasa, carga el historial de ese amigo (validado por friendship en el backend)
-  // en vez del historial propio.
-  friendId: { type: String, default: null }
+  // Id del usuario cuyo historial se muestra: el propio, o el de un amigo. El
+  // backend valida amistad salvo cuando targetId es el propio usuario autenticado.
+  targetId: { type: String, required: true }
 });
 
 const hasReadToday = ref(null);
@@ -63,9 +62,7 @@ const weekDays = computed(() => {
 
 onMounted(async () => {
   try {
-    const res = props.friendId
-      ? await ApiService.getFriendHistory(props.userId, props.friendId)
-      : await ApiService.getReadingStatus(props.userId);
+    const res = await ApiService.getFriendHistory(props.targetId);
     if (res.success) {
       hasReadToday.value = res.has_read_today;
       historyDates.value = res.history || [];

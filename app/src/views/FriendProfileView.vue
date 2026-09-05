@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <WeeklyTracker :user-id="user.id" :friend-id="id" />
+      <WeeklyTracker :target-id="id" />
 
       <button
         v-if="!friend.has_read_today"

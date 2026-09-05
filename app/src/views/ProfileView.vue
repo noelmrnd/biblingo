@@ -31,7 +31,7 @@
       </div>
 
       <!-- Tracker semanal de 7 días (Lun - Dom) -->
-      <WeeklyTracker :user-id="user.id" />
+      <WeeklyTracker :target-id="user.id" />
     </div>
 
     <div class="space-y-4">
