@@ -3,13 +3,22 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../Utils/JwtVerifier.php';
+require_once __DIR__ . '/../Utils/Auth.php';
 
 class AuthController {
+    // Identificadores publicos de la app (no son secretos), usados como audiencia
+    // esperada al verificar los id_tokens de Apple/Google.
+    private const GOOGLE_AUDIENCES = [
+        '56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com',
+        '56637027170-5bckf6oali35ir6m2qisr9urm5qknncg.apps.googleusercontent.com',
+    ];
+    private const APPLE_AUDIENCES = ['me.biblingo.app', 'me.biblingo.app.service'];
+
     public static function handleSocialAuth() {
         $input = getJsonInput();
-        $provider    = $input['provider'] ?? ''; // 'apple' or 'google'
-        $idToken     = $input['id_token'] ?? $input['user_id'] ?? '';
-        $email       = $input['email'] ?? null;
+        $provider    = $input['provider'] ?? '';
+        $idToken     = (string)($input['id_token'] ?? '');
         $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
         $platform    = $input['platform'] ?? 'ios';
         $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');
@@ -19,71 +28,71 @@ class AuthController {
             sendJsonResponse(['error' => 'Identificador o token requerido.'], 400);
         }
 
-        // Si idToken es un JWT, extraer la clave 'sub' (User ID de Apple/Google)
-        if (is_string($idToken) && strpos($idToken, '.') !== false) {
-            $jwtParts = explode('.', $idToken);
-            if (count($jwtParts) >= 2) {
-                $payloadJson = base64_decode(strtr($jwtParts[1], '-_', '+/'));
-                $jwtPayload = json_decode($payloadJson, true);
-                if (!empty($jwtPayload['sub'])) {
-                    $idToken = $jwtPayload['sub'];
-                }
-            }
+        // Verificar el id_token contra el proveedor real. Antes se confiaba en el
+        // valor "sub" del JWT sin validar su firma, lo que permitia iniciar sesion
+        // como cualquier usuario fabricando un token con su id.
+        if ($provider === 'apple') {
+            $verified = JwtVerifier::verifyAppleIdToken($idToken, self::APPLE_AUDIENCES);
+        } elseif ($provider === 'google') {
+            $verified = JwtVerifier::verifyGoogleIdToken($idToken, self::GOOGLE_AUDIENCES);
+        } elseif ($provider === 'dev' && getEnvVar('APP_ENV') === 'dev') {
+            // Login local sin OAuth real, solo habilitado explicitamente via APP_ENV=dev.
+            $verified = ['sub' => substr($idToken, 0, 255), 'email' => $input['email'] ?? null];
+        } else {
+            sendJsonResponse(['error' => 'Proveedor de autenticación invalido o no verificable.'], 401);
         }
-        $idToken = substr((string)$idToken, 0, 255);
+
+        if (!$verified || empty($verified['sub'])) {
+            sendJsonResponse(['error' => 'No se pudo verificar la identidad con el proveedor.'], 401);
+        }
+
+        $providerId = substr((string)$verified['sub'], 0, 255);
+        $verifiedEmail = $verified['email'] ?? null;
 
         $db = getDbConnection();
-        $user = null;
 
         if ($provider === 'apple') {
-            $stmt = $db->prepare("SELECT * FROM users WHERE apple_id = ? OR email = ?");
-            $stmt->execute([$idToken, $email]);
-            $user = $stmt->fetch();
-        } else if ($provider === 'google') {
-            $stmt = $db->prepare("SELECT * FROM users WHERE google_id = ? OR email = ?");
-            $stmt->execute([$idToken, $email]);
-            $user = $stmt->fetch();
+            $stmt = $db->prepare("SELECT * FROM users WHERE apple_id = ?");
+            $stmt->execute([$providerId]);
+        } elseif ($provider === 'google') {
+            $stmt = $db->prepare("SELECT * FROM users WHERE google_id = ?");
+            $stmt->execute([$providerId]);
         } else {
-            // Fallback genérico para desarrollo/pruebas
-            $stmt = $db->prepare("SELECT * FROM users WHERE email = ? OR apple_id = ?");
-            $stmt->execute([$email, $idToken]);
-            $user = $stmt->fetch();
+            $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$verifiedEmail]);
         }
+        $user = $stmt->fetch();
 
         if (!$user) {
-            // Generar invite_code único
             do {
                 $inviteCode = generateInviteCode(8);
                 $checkStmt = $db->prepare("SELECT id FROM users WHERE invite_code = ?");
                 $checkStmt->execute([$inviteCode]);
             } while ($checkStmt->fetch());
 
-            $appleId = ($provider === 'apple') ? $idToken : null;
-            $googleId = ($provider === 'google') ? $idToken : null;
+            $appleId = ($provider === 'apple') ? $providerId : null;
+            $googleId = ($provider === 'google') ? $providerId : null;
 
-            // Generar Snowflake ID único para el nuevo usuario
             $userId = SnowflakeId::nextId();
 
             $insertStmt = $db->prepare("
-                INSERT INTO users (id, apple_id, google_id, email, display_name, invite_code, platform, timezone) 
+                INSERT INTO users (id, apple_id, google_id, email, display_name, invite_code, platform, timezone)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $insertStmt->execute([$userId, $appleId, $googleId, $email, $displayName, $inviteCode, $platform, $timezone]);
+            $insertStmt->execute([$userId, $appleId, $googleId, $verifiedEmail, $displayName, $inviteCode, $platform, $timezone]);
 
             $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$userId]);
             $user = $stmt->fetch();
         } else {
             $userId = (string)$user['id'];
-            // Actualizar plataforma y timezone si han cambiado
             $updateStmt = $db->prepare("UPDATE users SET platform = ?, timezone = ? WHERE id = ?");
             $updateStmt->execute([$platform, $timezone, $userId]);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;
         }
 
-        // Token de sesión básico en base64
-        $authToken = base64_encode($user['id'] . ':' . time() . ':' . bin2hex(random_bytes(8)));
+        $authToken = Auth::issueToken($userId);
 
         $userTz = $user['timezone'] ?? 'UTC';
         $today = DateUtils::getUserToday($userTz);

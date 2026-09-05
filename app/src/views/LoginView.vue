@@ -99,7 +99,7 @@ const handleAuth = async (authPromise) => {
   try {
     const res = await authPromise;
     if (res && res.user) {
-      emit('login-success', res.user);
+      emit('login-success', res.user, res.token);
     }
   } catch (err) {
     errorMsg.value = err.message || 'Error al iniciar sesión. Inténtalo de nuevo.';

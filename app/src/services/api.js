@@ -1,6 +1,27 @@
 import { API_BASE_URL } from '../constants';
+import { StorageService } from './storage';
 
 export { API_BASE_URL };
+
+const AUTH_TOKEN_KEY = 'auth_token';
+
+export async function saveAuthToken(token) {
+  await StorageService.set(AUTH_TOKEN_KEY, token);
+}
+
+export async function clearAuthToken() {
+  await StorageService.remove(AUTH_TOKEN_KEY);
+}
+
+let unauthorizedHandler = null;
+
+/**
+ * Registra el callback a invocar cuando el servidor responde 401 (token invalido,
+ * expirado o revocado) — App.vue lo usa para forzar el logout automáticamente.
+ */
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+}
 
 export async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -9,6 +30,13 @@ export async function request(endpoint, options = {}) {
     ...(options.headers || {})
   };
 
+  // Autentica la peticion ante el backend; el login (/auth/social) todavia no tiene
+  // token que mandar, todo lo demas lo necesita desde que el servidor exige sesion.
+  const token = await StorageService.get(AUTH_TOKEN_KEY);
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -16,6 +44,9 @@ export async function request(endpoint, options = {}) {
     });
     const data = await response.json();
     if (!response.ok) {
+      if (response.status === 401 && endpoint !== '/auth/social') {
+        unauthorizedHandler?.();
+      }
       throw new Error(data.error || 'Error de conexión con la API');
     }
     return data;

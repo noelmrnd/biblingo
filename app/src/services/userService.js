@@ -1,5 +1,5 @@
 import { StorageService } from './storage';
-import { ApiService } from './api';
+import { ApiService, saveAuthToken, clearAuthToken } from './api';
 
 const USER_STORAGE_KEY = 'user_session';
 
@@ -28,10 +28,15 @@ export const UserService = {
 
   /**
    * Guarda o actualiza la sesión del usuario en almacenamiento nativo.
+   * El token solo se pasa (y se persiste) en el login inicial; las actualizaciones
+   * posteriores del objeto user no lo tocan.
    */
-  async saveSession(user) {
+  async saveSession(user, token = null) {
     if (!user) return;
     await StorageService.set(USER_STORAGE_KEY, user);
+    if (token) {
+      await saveAuthToken(token);
+    }
   },
 
   /**
@@ -41,5 +46,6 @@ export const UserService = {
     await StorageService.remove(USER_STORAGE_KEY);
     await StorageService.remove('push_token');
     await StorageService.remove('push_user_id');
+    await clearAuthToken();
   }
 };

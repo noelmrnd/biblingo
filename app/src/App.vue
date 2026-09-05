@@ -52,6 +52,7 @@ import ToastNotification from './components/ToastNotification.vue';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
+import { setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 
@@ -69,9 +70,12 @@ const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle
   onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
 });
 
-const onLoginSuccess = async (user) => {
+const onLoginSuccess = async (user, token) => {
+  // Guardar el token antes de exponer currentUser: al asignarlo se monta
+  // DashboardView de inmediato y dispara llamadas a la API que ya necesitan
+  // el token guardado, o fallan con 401 por la condición de carrera.
+  await UserService.saveSession(user, token);
   currentUser.value = user;
-  await UserService.saveSession(user);
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
 
   // Procesar invitación pendiente si existía
@@ -104,7 +108,25 @@ const onLogout = async () => {
   // ToastService.info('Sesión cerrada correctamente.');
 };
 
+// Token invalido/expirado/revocado: no tiene caso llamar endpoints autenticados
+// (unregisterPushToken volveria a fallar con 401), solo limpiar sesion local.
+let forcingLogout = false;
+const forceLogout = async () => {
+  if (forcingLogout || !currentUser.value) return;
+  forcingLogout = true;
+  try {
+    currentUser.value = null;
+    await UserService.clearSession();
+    router.push({ name: 'dashboard' });
+    ToastService.error('Tu sesión expiró. Inicia sesión de nuevo.');
+  } finally {
+    forcingLogout = false;
+  }
+};
+
 onMounted(async () => {
+  setUnauthorizedHandler(forceLogout);
+
   // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
   try {
     currentUser.value = await UserService.initSession();
