@@ -23,11 +23,15 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 100px 0 60px;
+      padding: 70px 0 60px;
     }
     .teaser-inner {
       max-width: 560px;
       margin: 0 auto;
+    }
+    .teaser-logo {
+      justify-content: center;
+      margin-bottom: 28px;
     }
     .teaser-mascot {
       width: 200px;
@@ -68,9 +72,6 @@
       height: 20px;
       flex-shrink: 0;
     }
-    #features .features-grid {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
     .features-closing {
       margin-top: 40px;
       font-size: 18px;
@@ -80,26 +81,25 @@
   </style>
 </head>
 <body>
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container flex-between">
-      <div class="logo">
-        <img src="/assets/logo-256.png" alt="Biblingo" class="logo-img" />
-        <span class="logo-text">Biblingo</span>
-      </div>
-    </div>
-  </header>
-
   <!-- Teaser de Próximo Lanzamiento -->
   <section class="teaser">
     <div class="container">
       <div class="teaser-inner">
         <img src="/assets/mascot-teaser.png" alt="Mascota de Biblingo celebrando" class="teaser-mascot" />
-        <div class="teaser-badge badge">🔥 Muy pronto en iOS y Android</div>
+        <div class="teaser-badge badge" style="margin-bottom: 2rem">🔥 Muy pronto en iOS y Android</div>
         <h1 class="hero-title">Biblingo: lectura entre amigos.</h1>
         <div class="hero-subtitle">
-          <p>Convierte la lectura en un hábito compartido. Lee al menos 5 minutos al día y mantén tu racha junto a tus amigos: cada quien lee el libro que quiera, lo importante es avanzar juntos.</p>
-          <p style="margin-top: 1rem">Estamos afinando los últimos detalles. Síguenos en Instagram y TikTok para enterarte en cuanto esté listo: quienes descarguen la app primero tendrán ventaja para construir la racha más larga.</p>
+          <p>
+            Tú eliges qué libro leer y tus amigos hacen lo mismo.
+<!--            La misión es sencilla: leer todos los días, mantener la racha y avanzar juntos.-->
+            Recibe recordatorios, mira el progreso de tus amigos y motívense juntos para mantener la racha viva el mayor tiempo posible.
+          </p>
+          <p style="margin-top: 1rem; font-weight: 600;">
+            Los primeros en descargar la app tendrán ventaja para construir la racha más larga. 🔥
+          </p>
+          <p style="margin-top: 1rem">
+            Síguenos para enterarte en cuanto Biblingo esté disponible.
+          </p>
         </div>
 
         <div class="teaser-social">
@@ -117,35 +117,6 @@
           </a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Adelanto de lo que se viene -->
-  <section id="features" class="features">
-    <div class="container text-center">
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🔥</div>
-          <h3>Mantén tu racha</h3>
-          <p>Lee durante al menos 5 minutos y termina tu sesión para completar el día. Recibe recordatorios diarios que te ayudan a no perderla.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">👥</div>
-          <h3>Comparte el hábito</h3>
-          <p>Agrega a tus amigos y descubre quién ya completó su lectura y quién todavía tiene el día pendiente.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">📚</div>
-          <h3>Lee lo que quieras</h3>
-          <p>Clásicos, ciencia, historia, negocios, filosofía, desarrollo personal o cualquier otro libro que estés disfrutando.</p>
-        </div>
-      </div>
-
-      <p class="features-closing">
-        Biblingo no se trata de leer más rápido, sino de leer un poco todos los días.
-      </p>
     </div>
   </section>
 
