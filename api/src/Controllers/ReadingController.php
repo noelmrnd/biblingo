@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
+namespace Biblingo\Controllers;
+
+use Biblingo\Utils\DateUtils;
+use Biblingo\Utils\SnowflakeId;
+use Biblingo\Utils\StreakUtils;
 
 class ReadingController {
     public static function getStatus(string $userId) {
         $db = getDbConnection();
-        
+
         $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
@@ -104,7 +108,7 @@ class ReadingController {
                 $logStmt->execute([$logId, $userId, $today, $reaction]);
 
                 $db->commit();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $db->rollBack();
                 sendJsonResponse(['error' => 'Error de base de datos al registrar lectura: ' . $e->getMessage()], 500);
             }

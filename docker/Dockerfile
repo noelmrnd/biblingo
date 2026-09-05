@@ -1,3 +1,10 @@
+# --- Etapa de build: resuelve el autoloader de Composer en una imagen aparte, para
+# que el binario de composer y su cache nunca lleguen a la imagen final ---
+FROM composer:2 AS composer-build
+WORKDIR /app
+COPY api/ ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
 FROM php:8.3-fpm-alpine AS base
 
 # Instalar Nginx, Supervisor, curl y la extensión pdo_mysql
@@ -26,5 +33,5 @@ FROM base AS dev
 FROM base AS prod
 COPY web /var/www/web
 COPY app/dist /var/www/app
-COPY api /var/www/api
+COPY --from=composer-build /app /var/www/api
 

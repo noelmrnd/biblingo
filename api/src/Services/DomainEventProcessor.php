@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/DomainEventStore.php';
-require_once __DIR__ . '/FCMService.php';
+namespace Biblingo\Services;
 
 class DomainEventProcessor {
     /**
@@ -25,7 +23,7 @@ class DomainEventProcessor {
                 self::handleEvent($eventName, $payload);
                 DomainEventStore::markAsProcessed($eventId);
                 $processed++;
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 DomainEventStore::markAsFailed($eventId, $e->getMessage());
                 $failed++;
             }

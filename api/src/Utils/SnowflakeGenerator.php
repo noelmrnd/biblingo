@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Utils;
+
 /**
  * @link https://www.callicoder.com/distributed-unique-id-sequence-number-generator
  * @link https://github.com/godruoyi/php-snowflake/blob/master/src/Snowflake.php

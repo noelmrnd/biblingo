@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/DateUtils.php';
-require_once __DIR__ . '/StreakStatus.php';
+namespace Biblingo\Utils;
 
 /**
  * Estado de racha calculado en vivo a partir de columnas guardadas (streak_count,

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Utils;
+
 /**
  * Sesion por token Bearer. Antes del login se emite un token opaco (issueToken);
  * cada request posterior debe mandarlo en "Authorization: Bearer <token>" para que

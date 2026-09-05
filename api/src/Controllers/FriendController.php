@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../Services/DomainEventStore.php';
-require_once __DIR__ . '/../Events/FriendAddedEvent.php';
-require_once __DIR__ . '/../Events/FriendNudgedEvent.php';
-require_once __DIR__ . '/../Events/FriendRequestSentEvent.php';
-require_once __DIR__ . '/../Events/FriendRequestAcceptedEvent.php';
+namespace Biblingo\Controllers;
+
+use Biblingo\Events\FriendNudgedEvent;
+use Biblingo\Events\FriendRequestAcceptedEvent;
+use Biblingo\Events\FriendRequestSentEvent;
+use Biblingo\Services\DomainEventStore;
+use Biblingo\Utils\DateUtils;
+use Biblingo\Utils\SnowflakeId;
+use Biblingo\Utils\StreakUtils;
 
 class FriendController {
     public static function getFriends(string $userId) {
@@ -141,7 +144,7 @@ class FriendController {
                 DomainEventStore::record($event, $db);
 
                 $db->commit();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $db->rollBack();
                 sendJsonResponse(['error' => 'Error al aceptar solicitud: ' . $e->getMessage()], 500);
             }
@@ -181,7 +184,7 @@ class FriendController {
             DomainEventStore::record($event, $db);
 
             $db->commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $db->rollBack();
             sendJsonResponse(['error' => 'Error al enviar solicitud de amistad: ' . $e->getMessage()], 500);
         }
@@ -334,7 +337,7 @@ class FriendController {
             DomainEventStore::record($event, $db);
 
             $db->commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $db->rollBack();
             sendJsonResponse(['error' => 'Error al aceptar solicitud: ' . $e->getMessage()], 500);
         }
@@ -444,7 +447,7 @@ class FriendController {
             DomainEventStore::record($event, $db);
 
             $db->commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $db->rollBack();
             sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
         }
@@ -477,30 +480,30 @@ class FriendController {
 
             // Eliminar la relación de amistad en ambas direcciones
             $deleteFriendship = $db->prepare("
-                DELETE FROM friendships 
-                WHERE (user_id = ? AND friend_id = ?) 
+                DELETE FROM friendships
+                WHERE (user_id = ? AND friend_id = ?)
                    OR (user_id = ? AND friend_id = ?)
             ");
             $deleteFriendship->execute([$userId, $friendId, $friendId, $userId]);
 
             // Eliminar los toques intercambiados entre ambos usuarios
             $deleteNudges = $db->prepare("
-                DELETE FROM friend_nudges 
-                WHERE (sender_id = ? AND receiver_id = ?) 
+                DELETE FROM friend_nudges
+                WHERE (sender_id = ? AND receiver_id = ?)
                    OR (sender_id = ? AND receiver_id = ?)
             ");
             $deleteNudges->execute([$userId, $friendId, $friendId, $userId]);
 
             // Eliminar cualquier solicitud de amistad pendiente entre ambos
             $deleteRequests = $db->prepare("
-                DELETE FROM friend_requests 
-                WHERE (sender_id = ? AND receiver_id = ?) 
+                DELETE FROM friend_requests
+                WHERE (sender_id = ? AND receiver_id = ?)
                    OR (sender_id = ? AND receiver_id = ?)
             ");
             $deleteRequests->execute([$userId, $friendId, $friendId, $userId]);
 
             $db->commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $db->rollBack();
             sendJsonResponse(['error' => 'Error al eliminar amigo: ' . $e->getMessage()], 500);
         }
@@ -547,4 +550,3 @@ class FriendController {
         ]);
     }
 }
-

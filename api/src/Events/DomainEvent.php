@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Events;
+
 abstract class DomainEvent {
     protected string $id;
     protected string $occurredOn;

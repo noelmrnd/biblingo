@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../Utils/JwtVerifier.php';
-require_once __DIR__ . '/../Utils/Auth.php';
+namespace Biblingo\Controllers;
+
+use Biblingo\Utils\Auth;
+use Biblingo\Utils\DateUtils;
+use Biblingo\Utils\JwtVerifier;
+use Biblingo\Utils\SnowflakeId;
+use Biblingo\Utils\StreakUtils;
 
 class AuthController {
     // Identificadores publicos de la app (no son secretos), usados como audiencia
@@ -73,7 +77,7 @@ class AuthController {
             $appleId = ($provider === 'apple') ? $providerId : null;
             $googleId = ($provider === 'google') ? $providerId : null;
 
-            $userId = SnowflakeId::nextId();
+            $userId = (string)SnowflakeId::nextId();
 
             $insertStmt = $db->prepare("
                 INSERT INTO users (id, apple_id, google_id, email, display_name, invite_code, platform, timezone)

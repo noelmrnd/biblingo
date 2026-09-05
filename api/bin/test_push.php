@@ -3,9 +3,11 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../src/Services/FCMService.php';
+
+use Biblingo\Services\FCMService;
 
 echo "=================================================\n";
 echo "🔔 Biblingo - Diagnóstico y Prueba de Notificaciones Push\n";

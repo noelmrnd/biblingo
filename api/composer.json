@@ -1,0 +1,19 @@
+{
+    "name": "biblingo/api",
+    "description": "Backend PHP nativo de Biblingo",
+    "type": "project",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Biblingo\\Controllers\\": "src/Controllers/",
+            "Biblingo\\Services\\": "src/Services/",
+            "Biblingo\\Events\\": "src/Events/",
+            "Biblingo\\Utils\\": "src/Utils/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

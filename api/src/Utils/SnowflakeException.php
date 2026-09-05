@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-final class SnowflakeException extends Exception
+namespace Biblingo\Utils;
+
+final class SnowflakeException extends \Exception
 {
     private function __construct(string $message, int $code)
     {

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Services;
+
 class FCMService {
     private static ?string $cachedAccessToken = null;
     private static int $tokenExpiresAt = 0;
@@ -239,7 +241,7 @@ class FCMService {
                 $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE token = ?");
                 $stmt->execute([$token]);
             }
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             error_log("[FCMService] Error al eliminar token desactualizado: " . $e->getMessage());
         }
     }
@@ -255,7 +257,7 @@ class FCMService {
         $db = getDbConnection();
         $stmt = $db->prepare("SELECT token FROM user_push_tokens WHERE user_id = ?");
         $stmt->execute([$userId]);
-        $tokens = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $tokens = $stmt->fetchAll(\PDO::FETCH_COLUMN);
 
         if (empty($tokens)) {
             return false;

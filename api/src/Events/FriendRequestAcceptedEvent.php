@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/DomainEvent.php';
+namespace Biblingo\Events;
 
 class FriendRequestAcceptedEvent extends DomainEvent {
     private string $acceptorId;

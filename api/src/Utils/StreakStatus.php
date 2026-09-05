@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Utils;
+
 /**
  * Resultado de StreakUtils::computeStatus. Propiedades publicas de solo lectura
  * en vez de un array asociativo, para tener autocompletado y errores en tiempo

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../Events/DomainEvent.php';
+namespace Biblingo\Services;
+
+use Biblingo\Events\DomainEvent;
 
 class DomainEventStore {
     /**
      * Guarda un evento de dominio en MySQL.
      * Puede recibir una conexión PDO existente para ejecutarse dentro de una transacción de base de datos.
      */
-    public static function record(DomainEvent $event, ?PDO $pdo = null): void {
+    public static function record(DomainEvent $event, ?\PDO $pdo = null): void {
         $db = $pdo ?? getDbConnection();
 
         $stmt = $db->prepare("
@@ -31,7 +32,7 @@ class DomainEventStore {
     /**
      * Obtiene una lista de eventos pendientes ordenados cronológicamente.
      */
-    public static function getPendingEvents(int $limit = 50, ?PDO $pdo = null): array {
+    public static function getPendingEvents(int $limit = 50, ?\PDO $pdo = null): array {
         $db = $pdo ?? getDbConnection();
 
         $stmt = $db->prepare("
@@ -41,16 +42,16 @@ class DomainEventStore {
             ORDER BY occurred_on ASC
             LIMIT ?
         ");
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
      * Marca un evento como procesado exitosamente.
      */
-    public static function markAsProcessed(string $eventId, ?PDO $pdo = null): void {
+    public static function markAsProcessed(string $eventId, ?\PDO $pdo = null): void {
         $db = $pdo ?? getDbConnection();
 
         $stmt = $db->prepare("
@@ -64,7 +65,7 @@ class DomainEventStore {
     /**
      * Marca un evento como fallido y almacena el mensaje de error.
      */
-    public static function markAsFailed(string $eventId, string $errorMessage, ?PDO $pdo = null): void {
+    public static function markAsFailed(string $eventId, string $errorMessage, ?\PDO $pdo = null): void {
         $db = $pdo ?? getDbConnection();
 
         $stmt = $db->prepare("

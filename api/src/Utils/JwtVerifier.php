@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Utils;
+
 /**
  * Verifica id_tokens de Apple (JWKS + firma RS256) y Google (endpoint tokeninfo).
  * Sin esto, cualquier JWT con el "sub" de otra persona era aceptado sin validar

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Biblingo\Utils;
+
 class DateUtils {
     /**
      * Valida y retorna un objeto DateTimeZone seguro.

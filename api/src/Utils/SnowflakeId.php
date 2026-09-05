@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/SnowflakeException.php';
-require_once __DIR__ . '/SnowflakeGenerator.php';
+namespace Biblingo\Utils;
 
 class SnowflakeId
 {
@@ -72,10 +71,10 @@ class SnowflakeId
         return new static($parts['timestamp'], $parts['sequence'], $parts['worker'], $parts['datacenter'], $startTime);
     }
 
-    public function getDate(): DateTimeImmutable
+    public function getDate(): \DateTimeImmutable
     {
         $ts = SnowflakeGenerator::getRealTimestamp($this->startTime, $this->timestamp);
-        return (new DateTimeImmutable())->setTimestamp($ts);
+        return (new \DateTimeImmutable())->setTimestamp($ts);
     }
 
     public function getValue(): int

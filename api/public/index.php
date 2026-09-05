@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../src/Utils/SnowflakeId.php';
-require_once __DIR__ . '/../src/Utils/DateUtils.php';
-require_once __DIR__ . '/../src/Utils/StreakUtils.php';
-require_once __DIR__ . '/../src/Utils/Auth.php';
-require_once __DIR__ . '/../src/Controllers/AuthController.php';
-require_once __DIR__ . '/../src/Controllers/ReadingController.php';
-require_once __DIR__ . '/../src/Controllers/FriendController.php';
-require_once __DIR__ . '/../src/Controllers/UserController.php';
+
+use Biblingo\Controllers\AuthController;
+use Biblingo\Controllers\FriendController;
+use Biblingo\Controllers\ReadingController;
+use Biblingo\Controllers\UserController;
+use Biblingo\Utils\Auth;
 
 // Manejo de cabeceras CORS globales
 header("Access-Control-Allow-Origin: *");

@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/db.php';
+namespace Biblingo\Controllers;
+
+use Biblingo\Utils\DateUtils;
+use Biblingo\Utils\SnowflakeId;
+use Biblingo\Utils\StreakUtils;
 
 class UserController {
     public static function updateProfile(string $userId) {
@@ -136,7 +140,7 @@ class UserController {
                 'success' => true,
                 'message' => $removeAll ? 'Todos los tokens Push fueron eliminados.' : 'Token Push eliminado con éxito.'
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             sendJsonResponse(['error' => 'Error al eliminar el token Push: ' . $e->getMessage()], 500);
         }
     }
@@ -163,10 +167,8 @@ class UserController {
                 'success' => true,
                 'message' => 'Tu cuenta y todos tus datos fueron eliminados permanentemente.'
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             sendJsonResponse(['error' => 'Error al eliminar la cuenta: ' . $e->getMessage()], 500);
         }
     }
 }
-
-
