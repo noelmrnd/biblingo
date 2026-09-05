@@ -207,19 +207,58 @@
       </button>
 
       <button 
-        @click="logout" 
+        @click="isLogoutModalOpen = true" 
         class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
         <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
         <span>Cerrar sesión</span>
       </button>
     </div>
+
+    <!-- Modal Confirmación de Cerrar Sesión -->
+    <AppModal
+      :is-open="isLogoutModalOpen"
+      title="¿Cerrar sesión?"
+      description="Tu racha y tus progresos de lectura están guardados en tu cuenta."
+      @close="isLogoutModalOpen = false"
+      :show-close="false"
+    >
+      <template #icon>
+        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
+          <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center gap-3 w-full">
+          <div class="flex-1">
+            <AppButton
+              color="dark"
+              block
+              @click="isLogoutModalOpen = false"
+            >
+              Cancelar
+            </AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton
+              color="rose"
+              block
+              @click="confirmLogout"
+            >
+              Cerrar sesión
+            </AppButton>
+          </div>
+        </div>
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
+import AppModal from '../components/AppModal.vue';
 import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star } from '@lucide/vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
@@ -233,8 +272,15 @@ const props = defineProps({
 
 const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
 
+const isLogoutModalOpen = ref(false);
+
 const openTour = () => {
   emit('open-tour');
+};
+
+const confirmLogout = () => {
+  isLogoutModalOpen.value = false;
+  emit('logout');
 };
 
 const rateApp = async () => {
@@ -313,7 +359,7 @@ const saveReminder = async () => {
 };
 
 const logout = () => {
-  emit('logout');
+  isLogoutModalOpen.value = true;
 };
 
 onMounted(async () => {

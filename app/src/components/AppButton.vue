@@ -22,7 +22,7 @@ const props = defineProps({
   color: {
     type: String,
     default: 'green',
-    validator: (val) => ['green', 'blue', 'dark', 'orange'].includes(val)
+    validator: (val) => ['green', 'blue', 'dark', 'orange', 'rose'].includes(val)
   },
   size: {
     type: String,
@@ -67,6 +67,8 @@ const colorClass = computed(() => {
       return 'bg-brand-card hover:bg-slate-800 text-slate-200 border-slate-900';
     case 'orange':
       return 'bg-brand-flame hover:bg-brand-flame-dark text-white border-amber-700';
+    case 'rose':
+      return 'bg-rose-600 hover:bg-rose-500 text-white border-rose-800';
     case 'green':
     default:
       return 'bg-brand-green hover:bg-brand-green-dark text-white border-emerald-700';
