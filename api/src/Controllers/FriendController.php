@@ -175,8 +175,13 @@ class FriendController {
             $db->beginTransaction();
 
             $requestId = SnowflakeId::nextId();
-            $insertReq = $db->prepare("INSERT INTO friend_requests (id, sender_id, receiver_id) VALUES (?, ?, ?)");
+            $insertReq = $db->prepare("INSERT IGNORE INTO friend_requests (id, sender_id, receiver_id) VALUES (?, ?, ?)");
             $insertReq->execute([$requestId, $userId, $friendId]);
+
+            if ($insertReq->rowCount() === 0) {
+                $db->rollBack();
+                sendJsonResponse(['error' => "Ya le enviaste una solicitud de amistad a {$friend['display_name']}. ⏳"], 400);
+            }
 
             $event = new FriendRequestSentEvent($userId, $friendId, $myDisplayName);
             DomainEventStore::record($event, $db);

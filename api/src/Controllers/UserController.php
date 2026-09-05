@@ -135,6 +135,33 @@ class UserController {
             sendJsonResponse(['error' => 'Error al eliminar el token Push: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Elimina permanentemente la cuenta del usuario y todos sus datos asociados
+     * (rachas, amistades, solicitudes, toques, tokens push) vía ON DELETE CASCADE.
+     * Requerido por Apple App Store Review Guideline 5.1.1(v).
+     */
+    public static function deleteAccount(string $userId) {
+        $db = getDbConnection();
+
+        $checkStmt = $db->prepare("SELECT id FROM users WHERE id = ?");
+        $checkStmt->execute([$userId]);
+        if (!$checkStmt->fetch()) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        try {
+            $deleteStmt = $db->prepare("DELETE FROM users WHERE id = ?");
+            $deleteStmt->execute([$userId]);
+
+            sendJsonResponse([
+                'success' => true,
+                'message' => 'Tu cuenta y todos tus datos fueron eliminados permanentemente.'
+            ]);
+        } catch (Exception $e) {
+            sendJsonResponse(['error' => 'Error al eliminar la cuenta: ' . $e->getMessage()], 500);
+        }
+    }
 }
 
 

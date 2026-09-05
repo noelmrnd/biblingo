@@ -218,18 +218,22 @@
         <span>Calificar la aplicación</span>
       </button>
 
-      <button 
-        @click="isLogoutModalOpen = true" 
+      <button
+        @click="isLogoutModalOpen = true"
         class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
         <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
         <span>Cerrar sesión</span>
       </button>
 
-      <!-- Branding / Eslogan -->
-      <div class="text-center pt-2 pb-1 text-xs font-semibold text-slate-500 tracking-wider uppercase select-none">
-        Biblingo • Lectura entre amigos
-      </div>
+      <a
+        href="https://www.biblingo.me/privacidad"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block text-center text-sm font-semibold text-slate-500 hover:text-slate-300 py-2"
+      >
+        Política de privacidad
+      </a>
     </div>
 
     <!-- Modal Confirmación de Cerrar Sesión -->
