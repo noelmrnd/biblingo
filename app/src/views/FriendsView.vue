@@ -1,37 +1,23 @@
 <template>
   <div class="space-y-6">
-    <!-- Card Desplegable: Invitar amigos (Estilo similar a Datos de perfil con resplandor) -->
-    <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 relative overflow-hidden transition-all duration-200">
-      <div 
-        @click="isInviteExpanded = !isInviteExpanded" 
-        class="flex items-center justify-between cursor-pointer select-none gap-3"
-      >
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
-            <UserRoundPlus class="w-5 h-5 text-brand-green stroke-[2.5]" />
-          </div>
-          <div>
-            <h3 class="font-extrabold text-white text-lg">Invitar amigos</h3>
-            <p class="text-slate-300 text-base font-medium">
-              {{ isInviteExpanded ? 'Ocultar opciones de invitación' : 'Comparte tu código QR o agrega a tus amigos' }}
-            </p>
-          </div>
-        </div>
-        <component 
-          :is="isInviteExpanded ? ChevronUp : ChevronDown" 
-          class="w-6 h-6 text-slate-400 stroke-[2.5] transition-transform duration-200" 
-        />
-      </div>
+    <!-- Invitar amigos -->
+    <ExpandableCard
+      v-model="isInviteExpanded"
+      title="Invitar amigos"
+      description="Comparte tu código QR o agrega a tus amigos"
+      icon-bg-class="bg-brand-green/10 border-brand-green/30"
+      card-class="bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30"
+    >
+      <template #icon>
+        <UserRoundPlus class="w-5 h-5 text-brand-green stroke-[2.5]" />
+      </template>
 
-      <!-- Contenido desplegable -->
-      <div v-if="isInviteExpanded" class="space-y-4 mt-4 text-center">
+      <div class="space-y-4 text-center">
         <!-- Contenedor del QR Code -->
-        <div class="py-2">
-          <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
-            <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
-            <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
-              Generando QR...
-            </div>
+        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
+          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
+          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
+            Generando QR...
           </div>
         </div>
 
@@ -43,9 +29,9 @@
               {{ user.invite_code || 'BIBLINGO1' }}
             </span>
           </div>
-          <AppButton 
+          <AppButton
             color="green"
-            @click="shareInvite" 
+            @click="shareInvite"
           >
             <Share2 class="w-5 h-5 stroke-[2.5]" />
             <span>Compartir</span>
@@ -60,15 +46,15 @@
         <div class="space-y-2.5 pt-3 border-t border-slate-800/80 text-left">
           <label class="text-xs text-slate-300 uppercase tracking-wider block font-bold">¿Tienes el código de un amigo?</label>
           <div class="flex gap-2.5">
-            <input 
-              v-model="inputCode" 
-              type="text" 
+            <input
+              v-model="inputCode"
+              type="text"
               placeholder="Código"
               class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-base uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green min-w-0"
               maxlength="12"
               @keyup.enter="addFriend"
             />
-            <AppButton 
+            <AppButton
               color="blue"
               :disabled="loading || !inputCode"
               @click="addFriend"
@@ -81,7 +67,7 @@
           </p>
         </div>
       </div>
-    </div>
+    </ExpandableCard>
 
     <!-- Tabla de Clasificación de Personas que sigues -->
     <div class="space-y-3">
@@ -212,7 +198,8 @@ import { useRouter } from 'vue-router';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import SwipeItem from '../components/SwipeItem.vue';
-import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, ChevronDown, ChevronUp, UserMinus } from '@lucide/vue';
+import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, UserMinus } from '@lucide/vue';
+import ExpandableCard from '../components/ExpandableCard.vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';

@@ -44,9 +44,16 @@
         </span>
       </div>
 
-      <div v-if="reactionBreakdown.length > 0" class="card-duo bg-slate-900/90 border-slate-800 p-4 space-y-3">
-        <h4 class="font-extrabold text-white text-base">Lecturas favoritas</h4>
-        <div class="flex flex-wrap gap-2">
+      <ExpandableCard
+        :collapsible="false"
+        title="Reacciones"
+        icon-bg-class="bg-rose-500/10 border-rose-500/30"
+      >
+        <template #icon>
+          <Heart class="w-5 h-5 text-rose-400 stroke-[2.5]" />
+        </template>
+
+        <div v-if="reactionBreakdown.length > 0" class="flex flex-wrap gap-2">
           <div
             v-for="r in reactionBreakdown"
             :key="r.id"
@@ -57,7 +64,8 @@
             <span class="text-slate-400 text-sm font-medium">{{ r.label }}</span>
           </div>
         </div>
-      </div>
+        <p v-else class="text-slate-400 text-base font-medium">Aún no ha registrado reacciones.</p>
+      </ExpandableCard>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
@@ -154,7 +162,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
+import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
+import ExpandableCard from '../components/ExpandableCard.vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';

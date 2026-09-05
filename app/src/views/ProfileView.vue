@@ -31,9 +31,16 @@
       </div>
 
       <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
-      <div v-if="reactionBreakdown.length > 0" class="card-duo bg-slate-900/90 border-slate-800 p-4 space-y-3">
-        <h4 class="font-extrabold text-white text-base">Tus lecturas favoritas</h4>
-        <div class="flex flex-wrap gap-2">
+      <ExpandableCard
+        :collapsible="false"
+        title="Tus reacciones"
+        icon-bg-class="bg-rose-500/10 border-rose-500/30"
+      >
+        <template #icon>
+          <Heart class="w-5 h-5 text-rose-400 stroke-[2.5]" />
+        </template>
+
+        <div v-if="reactionBreakdown.length > 0" class="flex flex-wrap gap-2">
           <div
             v-for="r in reactionBreakdown"
             :key="r.id"
@@ -44,7 +51,10 @@
             <span class="text-slate-400 text-sm font-medium">{{ r.label }}</span>
           </div>
         </div>
-      </div>
+        <p v-else class="text-slate-400 text-base font-medium">
+          Elige una reacción al registrar tu lectura y aquí verás cuáles se repiten más.
+        </p>
+      </ExpandableCard>
 
       <!-- Estadísticas Globales -->
       <div class="grid grid-cols-2 gap-3">
@@ -94,174 +104,138 @@
         <span>Configuración</span>
       </h3>
 
-      <!-- Ajustes de Notificación Diaria (Desplegable / Accordion) -->
-      <div class="card-duo transition-all duration-200">
-        <div 
-          @click="isReminderExpanded = !isReminderExpanded" 
-          class="flex items-center justify-between cursor-pointer select-none gap-3"
-        >
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Bell class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-            </div>
-            <div>
-              <h3 class="font-extrabold text-white text-lg">Recordatorio diario</h3>
-              <p class="text-slate-300 text-base font-medium">
-                {{ isReminderExpanded ? 'Ocultar ajustes de hora' : `Programado a las ${reminderTime || '20:00'} hrs` }}
-              </p>
-            </div>
-          </div>
-          <component 
-            :is="isReminderExpanded ? ChevronUp : ChevronDown" 
-            class="w-6 h-6 text-slate-400 stroke-[2.5] transition-transform duration-200" 
+      <!-- Ajustes de Notificación Diaria -->
+      <ExpandableCard
+        v-model="isReminderExpanded"
+        title="Recordatorio diario"
+        :description="`Programado a las ${reminderTime || '20:00'} hrs`"
+        icon-bg-class="bg-amber-500/10 border-amber-500/30"
+      >
+        <template #icon>
+          <Bell class="w-5 h-5 text-amber-400 stroke-[2.5]" />
+        </template>
+
+        <p class="text-slate-300 text-base font-medium">
+          Te notificaremos cada día para ayudarte a mantener y proteger tu racha de lectura.
+        </p>
+
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
+          <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
+          <input
+            v-model="reminderTime"
+            type="time"
+            step="600"
+            class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
           />
         </div>
 
-        <!-- Contenido desplegable -->
-        <div v-if="isReminderExpanded" class="space-y-4 pt-4 mt-4 border-t border-slate-800">
-          <p class="text-slate-300 text-base font-medium">
-            Te notificaremos cada día para ayudarte a mantener y proteger tu racha de lectura.
-          </p>
-
-          <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
-            <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
-            <input 
-              v-model="reminderTime" 
-              type="time" 
-              step="600"
-              class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
-            />
-          </div>
-
-          <div class="flex flex-col gap-2.5 pt-1">
-            <AppButton 
-              color="green"
-              block
-              @click="saveReminder" 
-            >
-              Guardar recordatorio
-            </AppButton>
-
-            <button 
-              type="button"
-              @click="triggerTestNotification" 
-              :disabled="testingNotification"
-              class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-              <span>{{ testingNotification ? 'Programando...' : 'Probar notificación (en 3 segundos)' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Datos de Perfil (Desplegable / Accordion) -->
-      <div class="card-duo transition-all duration-200">
-        <div 
-          @click="isProfileExpanded = !isProfileExpanded" 
-          class="flex items-center justify-between cursor-pointer select-none gap-3"
-        >
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
-              <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
-            </div>
-            <div>
-              <h3 class="font-extrabold text-white text-lg">Datos de perfil</h3>
-              <p class="text-slate-300 text-base font-medium">
-                {{ isProfileExpanded ? 'Ocultar información personal' : 'Toca para ver o editar tu información' }}
-              </p>
-            </div>
-          </div>
-          <component 
-            :is="isProfileExpanded ? ChevronUp : ChevronDown" 
-            class="w-6 h-6 text-slate-400 stroke-[2.5] transition-transform duration-200" 
-          />
-        </div>
-
-        <!-- Contenido del formulario al desplegar -->
-        <div v-if="isProfileExpanded" class="space-y-4 pt-4 mt-4 border-t border-slate-800">
-          <div class="space-y-3">
-            <!-- Nombre de Usuario (Editable) -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre</label>
-              <div class="relative flex items-center">
-                <UserRound class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-                <input 
-                  v-model="editDisplayName" 
-                  type="text" 
-                  placeholder="Tu nombre de usuario"
-                  class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
-                  @keyup.enter="saveProfile"
-                />
-              </div>
-            </div>
-
-            <!-- Correo Electrónico (Solo Lectura con Badge) -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Correo electrónico</label>
-              <div class="relative flex items-center">
-                <Mail class="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-                <input 
-                  :value="user.email || 'Autenticación Social'" 
-                  type="email" 
-                  disabled 
-                  class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-400 font-medium rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
-                />
-                <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
-                  <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
-                </span>
-              </div>
-            </div>
-
-            <!-- Zona Horaria (Auto-detectada) -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Zona horaria</label>
-              <div class="relative flex items-center">
-                <Globe class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-                <input 
-                  :value="currentTimezone" 
-                  type="text" 
-                  disabled
-                  class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 font-medium rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
-                />
-              </div>
-            </div>
-          </div>
-
-          <AppButton 
+        <div class="flex flex-col gap-2.5 pt-1">
+          <AppButton
             color="green"
             block
-            :disabled="savingProfile || !isNameChanged"
-            @click="saveProfile" 
+            @click="saveReminder"
           >
-            <span v-if="savingProfile">Guardando...</span>
-            <span v-else>Guardar datos</span>
+            Guardar recordatorio
           </AppButton>
-        </div>
-      </div>
 
-      <!-- Guía y Tutorial / Tour de Bienvenida -->
-      <div class="card-duo">
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0">
-              <Compass class="w-5 h-5 text-indigo-400 stroke-[2.5]" />
-            </div>
-            <div>
-              <h3 class="font-extrabold text-white text-lg">Guía de inicio</h3>
-              <p class="text-slate-300 text-base font-medium">
-                Aprende cómo funciona la racha y los amigos
-              </p>
+          <button
+            type="button"
+            @click="triggerTestNotification"
+            :disabled="testingNotification"
+            class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+            <span>{{ testingNotification ? 'Programando...' : 'Probar notificación (en 3 segundos)' }}</span>
+          </button>
+        </div>
+      </ExpandableCard>
+
+      <!-- Datos de Perfil -->
+      <ExpandableCard
+        v-model="isProfileExpanded"
+        title="Datos de perfil"
+        :description="isProfileExpanded ? 'Ocultar información personal' : 'Toca para ver o editar tu información'"
+        icon-bg-class="bg-brand-green/10 border-brand-green/30"
+      >
+        <template #icon>
+          <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
+        </template>
+
+        <div class="space-y-3">
+          <!-- Nombre de Usuario (Editable) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre</label>
+            <div class="relative flex items-center">
+              <UserRound class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input
+                v-model="editDisplayName"
+                type="text"
+                placeholder="Tu nombre de usuario"
+                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
+                @keyup.enter="saveProfile"
+              />
             </div>
           </div>
-          <AppButton 
-            color="blue"
-            @click="openTour"
-          >
+
+          <!-- Correo Electrónico (Solo Lectura con Badge) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Correo electrónico</label>
+            <div class="relative flex items-center">
+              <Mail class="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input
+                :value="user.email || 'Autenticación Social'"
+                type="email"
+                disabled
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-400 font-medium rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
+              />
+              <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
+                <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
+              </span>
+            </div>
+          </div>
+
+          <!-- Zona Horaria (Auto-detectada) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Zona horaria</label>
+            <div class="relative flex items-center">
+              <Globe class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
+              <input
+                :value="currentTimezone"
+                type="text"
+                disabled
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 font-medium rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
+              />
+            </div>
+          </div>
+        </div>
+
+        <AppButton
+          color="green"
+          block
+          :disabled="savingProfile || !isNameChanged"
+          @click="saveProfile"
+        >
+          <span v-if="savingProfile">Guardando...</span>
+          <span v-else>Guardar datos</span>
+        </AppButton>
+      </ExpandableCard>
+
+      <!-- Guía y Tutorial / Tour de Bienvenida -->
+      <ExpandableCard
+        :collapsible="false"
+        title="Guía de inicio"
+        description="Aprende cómo funciona la racha y los amigos"
+        icon-bg-class="bg-indigo-500/10 border-indigo-500/30"
+      >
+        <template #icon>
+          <Compass class="w-5 h-5 text-indigo-400 stroke-[2.5]" />
+        </template>
+        <template #action>
+          <AppButton color="blue" @click="openTour">
             Ver tour
           </AppButton>
-        </div>
-      </div>
+        </template>
+      </ExpandableCard>
     </div>
 
     <!-- Botones de Acción -->
@@ -356,7 +330,8 @@ import { useRoute, useRouter } from 'vue-router';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
-import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star, BookOpenCheck } from '@lucide/vue';
+import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, BookOpenCheck, Heart } from '@lucide/vue';
+import ExpandableCard from '../components/ExpandableCard.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
