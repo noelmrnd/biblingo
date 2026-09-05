@@ -3,8 +3,8 @@
 	"appName": "Biblingo",
 	"webDir": "dist-capacitor",
 	"server": {
-		"url": "http://192.168.68.124:8083",
-		"cleartext": true,
+		"url": "https://app.biblingo.me",
+		"cleartext": false,
 		"allowNavigation": [
 			"app.biblingo.me",
 			"*.biblingo.me"
