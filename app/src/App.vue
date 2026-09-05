@@ -58,6 +58,7 @@ import ProfileView from './views/ProfileView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import { DeepLinkService } from './services/deepLinks';
 import { ApiService } from './services/api';
+import { App as CapApp } from '@capacitor/app';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
@@ -131,6 +132,17 @@ const onLogout = async () => {
 };
 
 onMounted(async () => {
+  // Caso 1: Quitar notificaciones Push entregadas al abrir la app
+  NotificationService.clearPushNotifications();
+
+  // Escuchar cuando la app regresa a primer plano desde segundo plano
+  CapApp.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) {
+      // Caso 1: Quitar notificaciones Push al volver a la app
+      NotificationService.clearPushNotifications();
+    }
+  });
+
   // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
   currentUser.value = await UserService.initSession();
 

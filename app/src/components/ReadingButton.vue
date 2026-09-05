@@ -54,6 +54,9 @@ const handleReactionConfirmed = async (reaction) => {
     if (res.success) {
       showReactionModal.value = false;
 
+      // Caso 2: Limpiar las notificaciones locales entregadas y el badge solo tras haber leído
+      await NotificationService.clearLocalNotifications();
+
       // Efecto Confeti 🎉
       confetti({
         particleCount: 100,

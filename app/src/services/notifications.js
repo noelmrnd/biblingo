@@ -240,5 +240,33 @@ export const NotificationService = {
       ToastService.error(`Error: ${e.message || 'No se pudo programar'}`);
       return false;
     }
+  },
+
+  /**
+   * Caso 1: Limpia las notificaciones Push remotas entregadas (ej. toques de amigos).
+   * Se invoca al abrir la app o regresar a ella desde segundo plano.
+   */
+  async clearPushNotifications() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await PushNotifications.removeAllDeliveredNotifications();
+      console.log('[NotificationService] Notificaciones push entregadas limpiadas.');
+    } catch (e) {
+      console.warn('Error al limpiar notificaciones push:', e.message || e);
+    }
+  },
+
+  /**
+   * Caso 2: Limpia las notificaciones locales entregadas y resetea el badge del icono a 0.
+   * Se invoca únicamente tras haber completado la lectura del día.
+   */
+  async clearLocalNotifications() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await LocalNotifications.removeAllDeliveredNotifications();
+      console.log('[NotificationService] Notificaciones locales y badge de lectura limpiados tras leer.');
+    } catch (e) {
+      console.warn('Error al limpiar notificaciones locales:', e.message || e);
+    }
   }
 };

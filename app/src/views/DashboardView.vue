@@ -184,6 +184,12 @@ const loadReadingStatus = async () => {
       hasReadToday.value = res.has_read_today;
       todayReaction.value = res.today_reaction || null;
       historyDates.value = res.history || [];
+
+      // Si ya completó la lectura de hoy, asegurar limpieza de alertas locales y badge
+      if (res.has_read_today) {
+        NotificationService.clearLocalNotifications();
+      }
+
       emit('user-updated', {
         ...props.user,
         streak_count: res.streak_count,
