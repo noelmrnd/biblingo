@@ -123,6 +123,7 @@ import ReadingButton from '../components/ReadingButton.vue';
 import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { StorageService } from '../services/storage';
+import { toLocalDateString } from '../utils/dateFormatter';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -152,7 +153,7 @@ const weekDays = computed(() => {
   return labels.map((label, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = toLocalDateString(d);
     const isToday = (i === currentDayOfWeek);
     const isRead = historyDates.value.includes(dateStr) || (isToday && hasReadToday.value);
 
@@ -169,6 +170,10 @@ const weekDays = computed(() => {
 const onReadingLogged = ({ res, reaction }) => {
   hasReadToday.value = true;
   todayReaction.value = reaction;
+  const todayStr = toLocalDateString(new Date());
+  if (!historyDates.value.includes(todayStr)) {
+    historyDates.value.push(todayStr);
+  }
   emit('user-updated', {
     ...props.user,
     streak_count: res.streak_count,

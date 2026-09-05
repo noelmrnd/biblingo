@@ -36,17 +36,37 @@ export function formatDateDDMMYYYY(dateInput, fallbackText = 'Sin registro') {
 }
 
 /**
+ * Convierte una fecha a string YYYY-MM-DD usando la zona horaria local.
+ * 
+ * @param {string|Date|number|null} dateInput 
+ * @returns {string} Fecha en formato 'YYYY-MM-DD' o '' si es inválida.
+ */
+export function toLocalDateString(dateInput = new Date()) {
+  if (!dateInput) return '';
+  if (typeof dateInput === 'string') {
+    return dateInput.split('T')[0];
+  }
+  const dateObj = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (isNaN(dateObj.getTime())) return '';
+
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Formatea una fecha indicando 'Hoy', 'Ayer' o la fecha en DD/MM/YYYY.
  */
 export function formatFriendlyDate(dateInput) {
   if (!dateInput) return 'Sin racha';
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = toLocalDateString(new Date());
   const yesterdayDate = new Date();
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+  const yesterdayStr = toLocalDateString(yesterdayDate);
 
-  const dateStr = typeof dateInput === 'string' ? dateInput.split('T')[0] : new Date(dateInput).toISOString().split('T')[0];
+  const dateStr = toLocalDateString(dateInput);
 
   if (dateStr === todayStr) return 'Hoy';
   if (dateStr === yesterdayStr) return 'Ayer';
