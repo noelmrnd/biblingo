@@ -1,5 +1,14 @@
 <template>
-  <div class="space-y-6">
+  <FriendProfileView
+    v-if="selectedFriend"
+    :friend="selectedFriend"
+    :nudged="!!nudgedFriends[selectedFriend.id]"
+    :nudge-loading="!!nudgeLoading[selectedFriend.id]"
+    @back="selectedFriend = null"
+    @nudge="sendNudge"
+    @remove="(friend) => { promptRemoveFriend(friend); selectedFriend = null; }"
+  />
+  <div v-else class="space-y-6">
     <!-- Card Desplegable: Invitar amigos (Estilo similar a Datos de perfil con resplandor) -->
     <div class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30 relative overflow-hidden transition-all duration-200">
       <div 
@@ -262,7 +271,11 @@
           @close="handleSwipeClose(friend.id)"
           @action="promptRemoveFriend(friend)"
         >
-          <div class="card-duo flex items-center justify-between transition-colors gap-3">
+          <div
+            @click="!friend.is_self && (selectedFriend = friend)"
+            :class="!friend.is_self && 'cursor-pointer'"
+            class="card-duo flex items-center justify-between transition-colors gap-3"
+          >
             <!-- Medallas de ranking -->
             <div class="min-w-8 text-center">
               <span class="text-4xl" v-if="index === 0">🥇</span>
@@ -361,6 +374,7 @@ import { ref, computed, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import SwipeItem from '../components/SwipeItem.vue';
+import FriendProfileView from './FriendProfileView.vue';
 import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, ChevronDown, ChevronUp, UserMinus, UserCheck, Check, X, Clock } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
@@ -389,6 +403,7 @@ const isRemoveModalOpen = ref(false);
 const friendToRemove = ref(null);
 const removeLoading = ref(false);
 const activeSwipeFriendId = ref(null);
+const selectedFriend = ref(null);
 
 const sendNudge = async (friend) => {
   if (nudgedFriends.value[friend.id] || nudgeLoading.value[friend.id]) return;
