@@ -520,7 +520,9 @@ const addFriend = async () => {
       ToastService.success(res.message || `¡Solicitud de amistad enviada! 👥`);
       inputCode.value = '';
       isInviteExpanded.value = false;
-      activeRequestTab.value = 'sent';
+      if (!res.auto_accepted) {
+        activeRequestTab.value = 'sent';
+      }
       loadFriends();
       loadFriendRequests();
     }

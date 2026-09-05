@@ -154,9 +154,10 @@ class FriendController {
             }
 
             sendJsonResponse([
-                'success' => true,
-                'message' => "¡{$friend['display_name']} te había enviado una solicitud! Ahora son amigos. 🎉",
-                'friend'  => [
+                'success'       => true,
+                'auto_accepted' => true,
+                'message'       => "¡{$friend['display_name']} te había enviado una solicitud! Ahora son amigos. 🎉",
+                'friend'        => [
                     'id'           => $friendId,
                     'display_name' => $friend['display_name']
                 ]
