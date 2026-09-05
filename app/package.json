@@ -24,7 +24,8 @@
     "@lucide/vue": "^1.39.0",
     "canvas-confetti": "^1.9.4",
     "qrcode": "^1.5.4",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@capacitor/android": "^8.4.1",

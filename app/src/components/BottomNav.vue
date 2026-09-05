@@ -5,9 +5,9 @@
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
-        @click="selectTab(tab.id)"
+        @click="router.push(tab.to)"
         :class="[
-          modelValue === tab.id
+          isActive(tab)
             ? tab.activeColor
             : 'text-slate-400 hover:text-slate-200'
         ]"
@@ -16,7 +16,7 @@
       >
         <!-- Glow radial en el tab activo -->
         <div
-          v-if="modelValue === tab.id"
+          v-if="isActive(tab)"
           :style="{
             background: `radial-gradient(ellipse at center, ${tab.glowColor} 0%, transparent 70%)`
           }"
@@ -39,22 +39,17 @@
 </template>
 
 <script setup>
+import { useRoute, useRouter } from 'vue-router';
 import { Flame, UsersRound, UserRound } from '@lucide/vue';
 
-const props = defineProps({
-  modelValue: {
-    type: String,
-    required: true,
-    default: 'dashboard'
-  }
-});
-
-const emit = defineEmits(['update:modelValue', 'change']);
+const route = useRoute();
+const router = useRouter();
 
 const tabs = [
   {
     id: 'dashboard',
     label: 'Racha',
+    to: { name: 'dashboard' },
     icon: Flame,
     activeColor: 'text-brand-flame',
     glowColor: 'rgba(255,150,0,0.35)'
@@ -62,22 +57,23 @@ const tabs = [
   {
     id: 'friends',
     label: 'Amigos',
+    to: { name: 'friends' },
     icon: UsersRound,
     activeColor: 'text-brand-green',
-    glowColor: 'rgba(88,204,2,0.35)'
+    glowColor: 'rgba(88,204,2,0.35)',
+    matchNames: ['friends', 'friend-profile']
   },
   {
     id: 'profile',
     label: 'Perfil',
+    to: { name: 'profile' },
     icon: UserRound,
     activeColor: 'text-brand-blue',
     glowColor: 'rgba(28,176,246,0.35)'
   }
 ];
 
-const selectTab = (tabId) => {
-  if (tabId === props.modelValue) return;
-  emit('update:modelValue', tabId);
-  emit('change', tabId);
+const isActive = (tab) => {
+  return (tab.matchNames || [tab.id]).includes(route.name);
 };
 </script>

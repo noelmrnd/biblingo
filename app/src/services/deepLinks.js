@@ -1,6 +1,10 @@
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
+// Capturada al cargar el módulo (antes de que vue-router resuelva/redirija la ruta inicial),
+// para no perder un deep link tipo /invite/CODIGO si el router lo saca de la URL primero.
+const INITIAL_URL = typeof window !== 'undefined' ? window.location.href : '';
+
 export const DeepLinkService = {
   /**
    * Registra el listener de deep links. Devuelve el handle de Capacitor (con .remove())
@@ -32,9 +36,8 @@ export const DeepLinkService = {
 
       return handle;
     } else {
-      // Comprobar URL inicial en Web
-      const currentUrl = window.location.href;
-      const code = this.extractInviteCode(currentUrl);
+      // Comprobar URL inicial en Web (capturada antes de que el router redirija)
+      const code = this.extractInviteCode(INITIAL_URL);
       if (code) {
         onInviteReceived(code);
         // Limpiar URL en el navegador para evitar reprocesar si el usuario recarga

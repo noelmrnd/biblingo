@@ -20,46 +20,34 @@
       <AppHeader :streak-count="currentUser.streak_count || 0" />
 
       <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
-      <main 
+      <main
         class="flex-1 overflow-y-auto w-full no-scrollbar transition-[padding] duration-200"
         :style="keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined"
       >
         <div class="max-w-md mx-auto p-4 space-y-4">
-          <DashboardView 
-            v-if="currentTab === 'dashboard'" 
-            :user="currentUser" 
-            @user-updated="onUserUpdated" 
-          />
-          <FriendsView 
-            v-else-if="currentTab === 'friends'" 
-            :user="currentUser" 
-          />
-          <ProfileView 
-            v-else-if="currentTab === 'profile'" 
-            :user="currentUser" 
-            @logout="onLogout" 
+          <router-view
+            :user="currentUser"
             @user-updated="onUserUpdated"
+            @logout="onLogout"
             @open-tour="tourRef?.open"
           />
         </div>
       </main>
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
-      <BottomNav v-model="currentTab" />
+      <BottomNav />
     </template>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
 import { keyboardHeight } from './utils/keyboard';
 import LoginView from './views/LoginView.vue';
-import DashboardView from './views/DashboardView.vue';
-import FriendsView from './views/FriendsView.vue';
-import ProfileView from './views/ProfileView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
@@ -67,27 +55,14 @@ import { NotificationService } from './services/notifications';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 
+const router = useRouter();
 const currentUser = ref(null);
-const TAB_SESSION_KEY = 'current_tab';
-const readStoredTab = () => {
-  try {
-    return sessionStorage.getItem(TAB_SESSION_KEY);
-  } catch (e) {
-    return null;
-  }
-};
-const currentTab = ref(readStoredTab() || 'dashboard');
-watch(currentTab, (tab) => {
-  try {
-    sessionStorage.setItem(TAB_SESSION_KEY, tab);
-  } catch (e) {}
-});
 const tourRef = ref(null);
 const isInitializing = ref(true);
 
 const { processInvite, resolvePendingInvite } = useInviteFlow({
   getCurrentUser: () => currentUser.value,
-  onFriendAdded: () => { currentTab.value = 'friends'; }
+  onFriendAdded: () => { router.push({ name: 'friends' }); }
 });
 
 const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle({
@@ -109,7 +84,7 @@ const currentUserId = computed(() => currentUser.value?.id);
 watch(currentUserId, (id) => {
   if (id) {
     NotificationService.initPushNotifications(id, () => {
-      currentTab.value = 'friends';
+      router.push({ name: 'friends' });
     }).catch((e) => {
       console.warn('No se pudo inicializar notificaciones push:', e.message);
     });
@@ -125,6 +100,7 @@ const onLogout = async () => {
   await NotificationService.unregisterPushToken();
   currentUser.value = null;
   await UserService.clearSession();
+  router.push({ name: 'dashboard' });
   // ToastService.info('Sesión cerrada correctamente.');
 };
 

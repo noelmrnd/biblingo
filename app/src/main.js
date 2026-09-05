@@ -2,12 +2,13 @@ import { createApp } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import App from './App.vue';
+import { router } from './router';
 import './assets/style.css';
 import { setupKeyboardDismiss } from './utils/keyboard';
 
 setupKeyboardDismiss();
 
-createApp(App).mount('#app');
+createApp(App).use(router).mount('#app');
 
 const initialLoader = document.getElementById('initial-loader')
 if (initialLoader) {
