@@ -26,7 +26,7 @@ export const NotificationService = {
    * Inicializa el registro de notificaciones Push, solicita permisos,
    * escucha eventos de registro y envía el token a la API del servidor.
    */
-  async initPushNotifications(userId) {
+  async initPushNotifications(userId, onFriendNotificationTapped) {
     if (!Capacitor.isNativePlatform() || !userId) return;
 
     try {
@@ -82,6 +82,11 @@ export const NotificationService = {
       // Escuchar al tocar una notificación Push desde la barra de estado
       await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
         console.log('[PushActionPerformed]', notificationAction);
+        const type = notificationAction.notification?.data?.type;
+        const friendTypes = ['friend_request', 'friend_added', 'nudge'];
+        if (friendTypes.includes(type)) {
+          onFriendNotificationTapped?.();
+        }
       });
 
     } catch (e) {
