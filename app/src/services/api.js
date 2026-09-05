@@ -49,10 +49,39 @@ export const ApiService = {
     return request(`/friends?user_id=${userId}`);
   },
 
-  async addFriend(userId, inviteCode) {
-    return request('/friends/add', {
+  async getFriendRequests(userId) {
+    return request(`/friends/requests?user_id=${userId}`);
+  },
+
+  async sendFriendRequest(userId, inviteCode) {
+    return request('/friends/request', {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, invite_code: inviteCode })
+    });
+  },
+
+  async addFriend(userId, inviteCode) {
+    return this.sendFriendRequest(userId, inviteCode);
+  },
+
+  async acceptFriendRequest(userId, senderId, requestId = null) {
+    return request('/friends/accept', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, sender_id: senderId, request_id: requestId })
+    });
+  },
+
+  async rejectFriendRequest(userId, senderId, requestId = null) {
+    return request('/friends/reject', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, sender_id: senderId, request_id: requestId })
+    });
+  },
+
+  async cancelFriendRequest(userId, receiverId, requestId = null) {
+    return request('/friends/cancel', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, receiver_id: receiverId, request_id: requestId })
     });
   },
 

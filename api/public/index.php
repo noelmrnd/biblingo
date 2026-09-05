@@ -44,9 +44,21 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
 } elseif ($requestUri === '/api/friends' && $method === 'GET') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     FriendController::getFriends($userId);
-} elseif ($requestUri === '/api/friends/add' && $method === 'POST') {
+} elseif ($requestUri === '/api/friends/requests' && $method === 'GET') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
-    FriendController::addFriend($userId);
+    FriendController::getFriendRequests($userId);
+} elseif (($requestUri === '/api/friends/request' || $requestUri === '/api/friends/add') && $method === 'POST') {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    FriendController::sendFriendRequest($userId);
+} elseif ($requestUri === '/api/friends/accept' && $method === 'POST') {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    FriendController::acceptFriendRequest($userId);
+} elseif ($requestUri === '/api/friends/reject' && $method === 'POST') {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    FriendController::rejectFriendRequest($userId);
+} elseif ($requestUri === '/api/friends/cancel' && $method === 'POST') {
+    if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
+    FriendController::cancelFriendRequest($userId);
 } elseif ($requestUri === '/api/friends/nudge' && $method === 'POST') {
     if (!$userId) sendJsonResponse(['error' => 'user_id requerido'], 400);
     FriendController::nudgeFriend($userId);

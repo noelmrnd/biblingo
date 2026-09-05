@@ -92,7 +92,7 @@ const processInvite = async (inviteCode, user = currentUser.value) => {
   try {
     const res = await ApiService.addFriend(user.id, inviteCode);
     if (res.success) {
-      ToastService.success(`¡Has aceptado la invitación de ${res.friend.display_name}! 👥🎉`);
+      ToastService.success(res.message || `¡Solicitud de amistad enviada a ${res.friend?.display_name}! 👥🎉`);
       currentTab.value = 'friends';
     }
   } catch (e) {

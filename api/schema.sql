@@ -40,7 +40,18 @@ CREATE TABLE IF NOT EXISTS friendships (
     FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Registro de toques/recordatorios diarios entre amigos
+-- 4. Solicitudes de Amistad (Pendientes de aprobación)
+CREATE TABLE IF NOT EXISTS friend_requests (
+    id BIGINT PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_request (sender_id, receiver_id),
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. Registro de toques/recordatorios diarios entre amigos
 CREATE TABLE IF NOT EXISTS friend_nudges (
     id BIGINT PRIMARY KEY,
     sender_id BIGINT NOT NULL,

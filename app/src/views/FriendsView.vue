@@ -83,6 +83,161 @@
       </div>
     </div>
 
+    <!-- Solicitudes de Amistad (Recibidas y Enviadas) -->
+    <div 
+      v-if="receivedRequests.length > 0 || sentRequests.length > 0" 
+      class="card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.15),_transparent_65%)] border-brand-green/30 space-y-4 transition-all duration-200"
+    >
+      <!-- Header de la Card consistente con el resto de la app -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-center shrink-0">
+            <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
+          </div>
+          <div>
+            <h3 class="font-extrabold text-white text-lg">Solicitudes de amistad</h3>
+            <p class="text-slate-300 text-base font-medium">
+              {{ receivedRequests.length > 0 
+                  ? `Tienes ${receivedRequests.length} solicitud${receivedRequests.length > 1 ? 'es' : ''} pendiente${receivedRequests.length > 1 ? 's' : ''}` 
+                  : 'Gestiona tus solicitudes enviadas' }}
+            </p>
+          </div>
+        </div>
+        <span class="bg-brand-green/20 text-brand-green text-sm font-black px-3 py-1 rounded-full border border-brand-green/30 shrink-0">
+          {{ receivedRequests.length + sentRequests.length }}
+        </span>
+      </div>
+
+      <!-- Segmented Control con Estilo Duolingo -->
+      <div class="grid grid-cols-2 gap-2 bg-slate-950/80 p-1.5 rounded-2xl border-2 border-slate-800">
+        <button
+          type="button"
+          @click="activeRequestTab = 'received'"
+          :class="activeRequestTab === 'received' 
+            ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black' 
+            : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
+          class="py-2.5 px-3 rounded-xl text-base flex items-center justify-center gap-2 transition-all border cursor-pointer select-none active:scale-95"
+        >
+          <span>Recibidas</span>
+          <span 
+            v-if="receivedRequests.length > 0" 
+            class="bg-brand-green text-slate-950 text-xs font-black px-2 py-0.5 rounded-full"
+          >
+            {{ receivedRequests.length }}
+          </span>
+        </button>
+        <button
+          type="button"
+          @click="activeRequestTab = 'sent'"
+          :class="activeRequestTab === 'sent' 
+            ? 'bg-brand-card text-brand-blue border-sky-500/50 shadow-md font-black' 
+            : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
+          class="py-2.5 px-3 rounded-xl text-base flex items-center justify-center gap-2 transition-all border cursor-pointer select-none active:scale-95"
+        >
+          <span>Enviadas</span>
+          <span 
+            v-if="sentRequests.length > 0" 
+            class="bg-brand-blue text-white text-xs font-black px-2 py-0.5 rounded-full"
+          >
+            {{ sentRequests.length }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Tab: Recibidas -->
+      <div v-if="activeRequestTab === 'received'" class="space-y-3">
+        <div v-if="receivedRequests.length === 0" class="py-8 text-center text-slate-400 space-y-2">
+          <UserCheck class="w-10 h-10 text-slate-600 mx-auto stroke-[2]" />
+          <p class="text-base font-extrabold text-white">No tienes solicitudes recibidas.</p>
+          <p class="text-sm text-slate-400">Cuando alguien te agregue, aparecerá aquí para que lo aceptes.</p>
+        </div>
+        <div 
+          v-for="req in receivedRequests" 
+          :key="req.request_id"
+          class="bg-slate-950/70 border-2 border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 hover:border-slate-700 transition-colors"
+        >
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-green/30 to-emerald-500/20 border border-brand-green/40 flex items-center justify-center shrink-0 text-emerald-300 font-black text-base shadow-sm">
+              {{ (req.display_name || '?').charAt(0).toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-extrabold text-white text-base truncate">
+                {{ req.display_name }}
+              </h4>
+              <p class="text-slate-300 text-sm font-medium truncate flex items-center gap-1.5 mt-0.5">
+                <Flame class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+                <span>Racha: <strong class="text-amber-400">{{ req.streak_count }}</strong> días</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Botones Aceptar / Rechazar con 3D AppButton -->
+          <div class="flex items-center gap-2 shrink-0">
+            <AppButton
+              color="green"
+              size="sm"
+              :disabled="requestActionLoading[req.request_id]"
+              @click="acceptRequest(req)"
+            >
+              <Check class="w-4 h-4 stroke-[3]" />
+              <span>Aceptar</span>
+            </AppButton>
+            <AppButton
+              color="dark"
+              size="sm"
+              :disabled="requestActionLoading[req.request_id]"
+              @click="rejectRequest(req)"
+              aria-label="Rechazar solicitud"
+            >
+              <X class="w-4 h-4 stroke-[2.5] text-rose-400" />
+            </AppButton>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Enviadas -->
+      <div v-if="activeRequestTab === 'sent'" class="space-y-3">
+        <div v-if="sentRequests.length === 0" class="py-8 text-center text-slate-400 space-y-2">
+          <Clock class="w-10 h-10 text-slate-600 mx-auto stroke-[2]" />
+          <p class="text-base font-extrabold text-white">No tienes solicitudes enviadas pendientes.</p>
+          <p class="text-sm text-slate-400">Las solicitudes que envíes por código o enlace aparecerán aquí.</p>
+        </div>
+        <div 
+          v-for="req in sentRequests" 
+          :key="req.request_id"
+          class="bg-slate-950/70 border-2 border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 hover:border-slate-700 transition-colors"
+        >
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-blue/30 to-sky-500/20 border border-sky-500/40 flex items-center justify-center shrink-0 text-sky-300 font-black text-base shadow-sm">
+              {{ (req.display_name || '?').charAt(0).toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-extrabold text-white text-base truncate">
+                {{ req.display_name }}
+              </h4>
+              <p class="text-slate-400 text-sm font-medium truncate flex items-center gap-1.5 mt-0.5">
+                <Clock class="w-4 h-4 text-sky-400 stroke-[2.5]" />
+                <span class="text-sky-300/90">Esperando respuesta...</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón Cancelar con 3D AppButton -->
+          <div class="shrink-0">
+            <AppButton
+              color="dark"
+              size="sm"
+              :disabled="requestActionLoading[req.request_id]"
+              @click="cancelRequest(req)"
+            >
+              <X class="w-4 h-4 stroke-[2.5] text-slate-400" />
+              <span class="text-slate-300">Cancelar</span>
+            </AppButton>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabla de Clasificación de Amigos -->
     <div class="space-y-3">
       <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
@@ -165,6 +320,7 @@
     <!-- Modal Confirmación de Eliminar Amigo -->
     <AppModal
       :is-open="isRemoveModalOpen"
+      :loading="removeLoading"
       :title="friendToRemove ? `¿Eliminar a ${friendToRemove.display_name}?` : '¿Eliminar amigo?'"
       description="Ya no verás su progreso en el ranking ni podrán enviarse toques mutuamente."
       @close="closeRemoveModal"
@@ -209,7 +365,7 @@ import { ref, computed, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import SwipeItem from '../components/SwipeItem.vue';
-import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, ChevronDown, ChevronUp, UserMinus } from '@lucide/vue';
+import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, ChevronDown, ChevronUp, UserMinus, UserCheck, Check, X, Clock } from '@lucide/vue';
 import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
@@ -221,6 +377,10 @@ const props = defineProps({
 });
 
 const friends = ref([]);
+const receivedRequests = ref([]);
+const sentRequests = ref([]);
+const activeRequestTab = ref('received');
+const requestActionLoading = ref({});
 const inputCode = ref('');
 const loading = ref(false);
 const isInviteExpanded = ref(false);
@@ -300,21 +460,89 @@ const loadFriends = async () => {
   }
 };
 
+const loadFriendRequests = async () => {
+  try {
+    const res = await ApiService.getFriendRequests(props.user.id);
+    if (res.success) {
+      receivedRequests.value = res.received || res.requests || [];
+      sentRequests.value = res.sent || [];
+      if (receivedRequests.value.length === 0 && sentRequests.value.length > 0) {
+        activeRequestTab.value = 'sent';
+      } else if (receivedRequests.value.length > 0 && sentRequests.value.length === 0) {
+        activeRequestTab.value = 'received';
+      }
+    }
+  } catch (e) {
+    console.warn('Error al cargar solicitudes de amistad:', e.message);
+  }
+};
+
+const acceptRequest = async (req) => {
+  if (requestActionLoading.value[req.request_id]) return;
+  requestActionLoading.value[req.request_id] = true;
+  try {
+    const res = await ApiService.acceptFriendRequest(props.user.id, req.sender_id, req.request_id);
+    if (res.success) {
+      ToastService.success(`¡Ahora tú y ${req.display_name} son amigos! 🎉`);
+      receivedRequests.value = receivedRequests.value.filter(r => r.request_id !== req.request_id);
+      loadFriends();
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'Error al aceptar solicitud.');
+  } finally {
+    requestActionLoading.value[req.request_id] = false;
+  }
+};
+
+const rejectRequest = async (req) => {
+  if (requestActionLoading.value[req.request_id]) return;
+  requestActionLoading.value[req.request_id] = true;
+  try {
+    const res = await ApiService.rejectFriendRequest(props.user.id, req.sender_id, req.request_id);
+    if (res.success) {
+      ToastService.info('Solicitud de amistad rechazada.');
+      receivedRequests.value = receivedRequests.value.filter(r => r.request_id !== req.request_id);
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'Error al rechazar solicitud.');
+  } finally {
+    requestActionLoading.value[req.request_id] = false;
+  }
+};
+
+const cancelRequest = async (req) => {
+  if (requestActionLoading.value[req.request_id]) return;
+  requestActionLoading.value[req.request_id] = true;
+  try {
+    const res = await ApiService.cancelFriendRequest(props.user.id, req.receiver_id, req.request_id);
+    if (res.success) {
+      ToastService.info('Solicitud cancelada.');
+      sentRequests.value = sentRequests.value.filter(r => r.request_id !== req.request_id);
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'Error al cancelar solicitud.');
+  } finally {
+    requestActionLoading.value[req.request_id] = false;
+  }
+};
+
 const addFriend = async () => {
   if (!inputCode.value || loading.value) return;
   document.activeElement?.blur();
   loading.value = true;
 
   try {
-    const res = await ApiService.addFriend(props.user.id, inputCode.value);
+    const res = await ApiService.sendFriendRequest(props.user.id, inputCode.value);
     if (res.success) {
-      ToastService.success(`¡${res.friend.display_name} agregado a tus amigos! 🎉`);
+      ToastService.success(res.message || `¡Solicitud de amistad enviada! 👥`);
       inputCode.value = '';
       isInviteExpanded.value = false;
+      activeRequestTab.value = 'sent';
       loadFriends();
+      loadFriendRequests();
     }
   } catch (e) {
-    ToastService.error(e.message || 'Error al agregar amigo.');
+    ToastService.error(e.message || 'Error al enviar solicitud.');
   } finally {
     loading.value = false;
   }
@@ -339,7 +567,6 @@ const promptRemoveFriend = (friend) => {
 };
 
 const closeRemoveModal = () => {
-  if (removeLoading.value) return;
   isRemoveModalOpen.value = false;
   friendToRemove.value = null;
   activeSwipeFriendId.value = null;
@@ -355,7 +582,6 @@ const confirmRemoveFriend = async () => {
       ToastService.success(`Eliminaste a ${friend.display_name} de tus amigos.`);
       friends.value = friends.value.filter(f => f.id !== friend.id);
       delete nudgedFriends.value[friend.id];
-      activeSwipeFriendId.value = null;
       closeRemoveModal();
     }
   } catch (e) {
@@ -367,6 +593,7 @@ const confirmRemoveFriend = async () => {
 
 onMounted(() => {
   loadFriends();
+  loadFriendRequests();
   generateQrCode();
 });
 </script>
