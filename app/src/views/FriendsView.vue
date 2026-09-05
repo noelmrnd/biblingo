@@ -262,31 +262,38 @@
           @close="handleSwipeClose(friend.id)"
           @action="promptRemoveFriend(friend)"
         >
-          <div 
-            class="card-duo py-3.5 px-4 flex items-center justify-between bg-slate-900 border-slate-800 hover:border-slate-700 transition-colors gap-4"
-          >
-            <div class="flex items-center gap-5 min-w-0 flex-1">
-              <!-- Medallas de ranking -->
-              <div class="w-7 text-center font-black text-4xl flex-none">
-                <span v-if="index === 0">🥇</span>
-                <span v-else-if="index === 1">🥈</span>
-                <span v-else-if="index === 2">🥉</span>
-                <span v-else class="text-slate-400 font-bold">#{{ index + 1 }}</span>
-              </div>
+          <div class="card-duo flex items-center justify-between transition-colors gap-3">
+            <!-- Medallas de ranking -->
+            <div class="min-w-8 text-center">
+              <span class="text-4xl" v-if="index === 0">🥇</span>
+              <span class="text-4xl" v-else-if="index === 1">🥈</span>
+              <span class="text-4xl" v-else-if="index === 2">🥉</span>
+              <span v-else class="text-xl text-slate-400 font-semibold">#{{ index + 1 }}</span>
+            </div>
 
-              <div class="min-w-0 flex-1">
-                <h4 class="font-bold text-white text-base flex items-center gap-3 truncate">
-                  {{ friend.display_name }}
-                  <span v-if="friend.is_self" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
-                </h4>
-                <p class="text-slate-300 text-base font-medium truncate">
-                  {{ friend.last_read_label }}
-                </p>
-              </div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-bold text-white text-base flex items-center gap-3">
+                <span class="truncate">{{ friend.display_name }}</span>
+                <span v-if="friend.is_self" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
+              </h4>
+              <p class="text-slate-300 text-base font-medium truncate">
+                {{ friend.last_read_label }}
+              </p>
             </div>
 
             <!-- Acciones de Racha & Recordatorio -->
             <div class="flex items-center gap-2 flex-none">
+              <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
+              <button
+                v-if="!friend.is_self && !friend.has_read_today"
+                @click.stop="sendNudge(friend)"
+                :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
+                class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
+              >
+                <BellRing class="w-4 h-4 stroke-[2.5]" />
+                <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
+              </button>
+
               <!-- Badge de Racha Unificado -->
               <div 
                 :class="[
@@ -300,17 +307,6 @@
                 <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
                 <span>{{ friend.streak_count }}</span>
               </div>
-
-              <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
-              <button
-                v-if="!friend.is_self && !friend.has_read_today"
-                @click.stop="sendNudge(friend)"
-                :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
-                class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
-              >
-                <BellRing class="w-4 h-4 stroke-[2.5]" />
-                <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
-              </button>
             </div>
           </div>
         </SwipeItem>

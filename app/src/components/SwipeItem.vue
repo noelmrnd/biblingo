@@ -108,29 +108,25 @@ const handleContentClick = (e) => {
   }
 };
 
-// --- Manejo táctil (Touch Events) ---
-const handleTouchStart = (e) => {
-  if (props.disabled || e.touches.length > 1) return;
-  const touch = e.touches[0];
-  startX = touch.clientX;
-  startY = touch.clientY;
+// --- Núcleo compartido de arrastre (touch y mouse comparten la misma física) ---
+const dragStart = (clientX, clientY) => {
+  startX = clientX;
+  startY = clientY;
   initialTranslateX = translateX.value;
   axisLocked = null;
   hasDragged = false;
   isDragging.value = false;
 };
 
-const handleTouchMove = (e) => {
-  if (props.disabled || !startX) return;
-  const touch = e.touches[0];
-  const deltaX = touch.clientX - startX;
-  const deltaY = touch.clientY - startY;
+const dragMove = (clientX, clientY, lockThreshold) => {
+  const deltaX = clientX - startX;
+  const deltaY = clientY - startY;
 
   if (axisLocked === null) {
-    if (Math.abs(deltaY) > 7 && Math.abs(deltaY) > Math.abs(deltaX)) {
+    if (Math.abs(deltaY) > lockThreshold && Math.abs(deltaY) > Math.abs(deltaX)) {
       axisLocked = 'vertical';
       return;
-    } else if (Math.abs(deltaX) > 7 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    } else if (Math.abs(deltaX) > lockThreshold && Math.abs(deltaX) > Math.abs(deltaY)) {
       axisLocked = 'horizontal';
       isDragging.value = true;
     } else {
@@ -138,118 +134,77 @@ const handleTouchMove = (e) => {
     }
   }
 
-  if (axisLocked === 'horizontal') {
-    if (e.cancelable) e.preventDefault();
-    hasDragged = true;
+  if (axisLocked !== 'horizontal') return;
 
-    let targetX = initialTranslateX + deltaX;
+  hasDragged = true;
+  let targetX = initialTranslateX + deltaX;
 
-    // Resistencia elástica hacia la derecha
-    if (targetX > 0) {
-      targetX = targetX * 0.2;
-    } else if (targetX < -props.actionWidth) {
-      // Resistencia elástica si pasa del ancho de la acción
-      const over = Math.abs(targetX + props.actionWidth);
-      targetX = -props.actionWidth - (over * 0.35);
-    }
-
-    translateX.value = targetX;
+  // Resistencia elástica hacia la derecha y pasado el ancho de la acción
+  if (targetX > 0) {
+    targetX = targetX * 0.2;
+  } else if (targetX < -props.actionWidth) {
+    const over = Math.abs(targetX + props.actionWidth);
+    targetX = -props.actionWidth - (over * 0.2);
   }
+
+  translateX.value = targetX;
 };
 
-const handleTouchEnd = () => {
-  if (props.disabled || axisLocked !== 'horizontal') {
-    axisLocked = null;
-    startX = 0;
-    return;
-  }
-
+const dragEnd = () => {
+  const wasHorizontal = axisLocked === 'horizontal';
   isDragging.value = false;
   axisLocked = null;
   startX = 0;
 
-  // Si se desliza más de la mitad del ancho de la acción, se abre
+  if (!wasHorizontal) return;
+
+  // Si se desliza más de la mitad del ancho de la acción, se revela el botón
   if (translateX.value < -props.swipeThreshold) {
-    // Si se desliza de forma completa (> 180px), disparar acción directamente
-    if (translateX.value < -props.actionWidth * 2.2) {
-      handleAction();
-    } else {
-      open();
-    }
+    open();
   } else {
     close();
   }
 };
 
-// --- Manejo para Ratón / Escritorio (Mouse Events) ---
+// --- Touch ---
+const handleTouchStart = (e) => {
+  if (props.disabled || e.touches.length > 1) return;
+  dragStart(e.touches[0].clientX, e.touches[0].clientY);
+};
+
+const handleTouchMove = (e) => {
+  if (props.disabled || !startX) return;
+  dragMove(e.touches[0].clientX, e.touches[0].clientY, 7);
+  if (axisLocked === 'horizontal' && e.cancelable) e.preventDefault();
+};
+
+const handleTouchEnd = () => {
+  if (props.disabled) return;
+  dragEnd();
+};
+
+// --- Mouse (escritorio) ---
 let isMouseDown = false;
 
 const handleMouseDown = (e) => {
   if (props.disabled || e.button !== 0) return;
   isMouseDown = true;
-  startX = e.clientX;
-  startY = e.clientY;
-  initialTranslateX = translateX.value;
-  axisLocked = null;
-  hasDragged = false;
-  isDragging.value = false;
-
+  dragStart(e.clientX, e.clientY);
   window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('mouseup', handleMouseUp);
 };
 
 const handleMouseMove = (e) => {
   if (!isMouseDown) return;
-  const deltaX = e.clientX - startX;
-  const deltaY = e.clientY - startY;
-
-  if (axisLocked === null) {
-    if (Math.abs(deltaY) > 5 && Math.abs(deltaY) > Math.abs(deltaX)) {
-      axisLocked = 'vertical';
-      return;
-    } else if (Math.abs(deltaX) > 5 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      axisLocked = 'horizontal';
-      isDragging.value = true;
-    } else {
-      return;
-    }
-  }
-
-  if (axisLocked === 'horizontal') {
-    hasDragged = true;
-    let targetX = initialTranslateX + deltaX;
-
-    if (targetX > 0) {
-      targetX = targetX * 0.2;
-    } else if (targetX < -props.actionWidth) {
-      const over = Math.abs(targetX + props.actionWidth);
-      targetX = -props.actionWidth - (over * 0.35);
-    }
-
-    translateX.value = targetX;
-  }
+  dragMove(e.clientX, e.clientY, 5);
 };
 
 const handleMouseUp = () => {
   if (!isMouseDown) return;
   isMouseDown = false;
-  isDragging.value = false;
-
   window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('mouseup', handleMouseUp);
-
-  if (axisLocked === 'horizontal') {
-    if (translateX.value < -props.swipeThreshold) {
-      if (translateX.value < -props.actionWidth * 2.2) {
-        handleAction();
-      } else {
-        open();
-      }
-    } else {
-      close();
-    }
-  }
-  axisLocked = null;
+  dragEnd();
 };
 
 onBeforeUnmount(() => {
