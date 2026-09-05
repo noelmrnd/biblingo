@@ -6,13 +6,8 @@
 
     <div class="max-w-md w-full flex flex-col items-center z-10 space-y-8">
       <!-- Logo y Mascota -->
-      <div class="relative group cursor-pointer">
-        <div class="w-32 h-32 bg-gradient-to-tr from-brand-green to-emerald-400 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 border-4 border-slate-800 transform group-hover:scale-105 transition-transform duration-300">
-          <span class="text-6xl select-none animate-bounce-short">🦉📖</span>
-        </div>
-        <div class="absolute -bottom-2 -right-2 bg-brand-flame px-3 py-1 rounded-full text-xs font-black text-white shadow-lg flex items-center gap-1 border-2 border-slate-900">
-          <span>🔥</span> Racha
-        </div>
+      <div class="w-32 h-32 flex items-center justify-center">
+        <img src="/assets/logo-256.png" alt="Biblingo Logo" class="w-full h-full object-contain select-none animate-bounce-short drop-shadow-2xl" />
       </div>
 
       <!-- Título y Eslogan -->

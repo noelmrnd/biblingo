@@ -47,6 +47,12 @@ body {
   font-size: 28px;
 }
 
+.logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
 .logo-text {
   font-size: 24px;
   font-weight: 800;
