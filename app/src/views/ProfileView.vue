@@ -31,7 +31,7 @@
       </div>
 
       <!-- Tracker semanal de 7 días (Lun - Dom) -->
-      <WeeklyTracker :week-days="weekDays" />
+      <WeeklyTracker :user-id="user.id" />
     </div>
 
     <div class="space-y-4">
@@ -291,7 +291,6 @@ import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star } from '@lucide/vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
-import { useWeeklyTracker } from '../composables/useWeeklyTracker';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
@@ -308,8 +307,6 @@ const props = defineProps({
 const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
 
 const isLogoutModalOpen = ref(false);
-
-const { weekDays, load: loadWeeklyTracker } = useWeeklyTracker(props.user.id);
 
 const openTour = () => {
   emit('open-tour');
@@ -417,8 +414,6 @@ const logout = () => {
 onMounted(async () => {
   editDisplayName.value = props.user.display_name || '';
   currentTimezone.value = props.user.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-
-  loadWeeklyTracker();
 
   const saved = await StorageService.get('reminder_time');
   if (saved) {

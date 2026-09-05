@@ -27,9 +27,51 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue';
 import { Calendar } from '@lucide/vue';
+import { ApiService } from '../services/api';
+import { toLocalDateString } from '../utils/dateFormatter';
 
-defineProps({
-  weekDays: { type: Array, required: true }
+const props = defineProps({
+  userId: { type: String, required: true },
+  // Si se pasa, carga el historial de ese amigo (validado por friendship en el backend)
+  // en vez del historial propio.
+  friendId: { type: String, default: null }
+});
+
+const hasReadToday = ref(null);
+const historyDates = ref([]);
+
+const weekDays = computed(() => {
+  const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const today = new Date();
+  const currentDayOfWeek = (today.getDay() + 6) % 7; // 0 = Lunes, 6 = Domingo
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - currentDayOfWeek);
+
+  return labels.map((label, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateStr = toLocalDateString(d);
+    const isToday = (i === currentDayOfWeek);
+    const isRead = historyDates.value.includes(dateStr) || (isToday && hasReadToday.value);
+
+    return { label, dateNum: d.getDate(), dateStr, isToday, isRead };
+  });
+});
+
+onMounted(async () => {
+  try {
+    const res = props.friendId
+      ? await ApiService.getFriendHistory(props.userId, props.friendId)
+      : await ApiService.getReadingStatus(props.userId);
+    if (res.success) {
+      hasReadToday.value = res.has_read_today;
+      historyDates.value = res.history || [];
+    }
+  } catch (e) {
+    console.warn('No se pudo cargar el historial semanal:', e.message);
+  }
 });
 </script>

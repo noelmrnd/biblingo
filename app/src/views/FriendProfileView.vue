@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <WeeklyTracker :week-days="weekDays" />
+      <WeeklyTracker :user-id="user.id" :friend-id="id" />
 
       <button
         v-if="!friend.has_read_today"
@@ -108,7 +108,6 @@ import AppModal from '../components/AppModal.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
-import { useWeeklyTracker } from '../composables/useWeeklyTracker';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -116,8 +115,6 @@ const props = defineProps({
 });
 
 const router = useRouter();
-
-const { weekDays, load: loadWeeklyTracker } = useWeeklyTracker(props.user.id, props.id);
 
 const loading = ref(true);
 const friend = ref(null);
@@ -127,7 +124,6 @@ const isRemoveModalOpen = ref(false);
 const removeLoading = ref(false);
 
 onMounted(async () => {
-  loadWeeklyTracker();
   try {
     const res = await ApiService.getFriends(props.user.id);
     if (res.success) {
