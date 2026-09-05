@@ -1,12 +1,12 @@
 {
-  "name": "Biblingo",
+  "name": "Biblingo - Lectura entre amigos",
   "short_name": "Biblingo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1F293D",
   "lang": "es",
   "scope": "/",
-  "description": "Biblingo",
+  "description": "Biblingo - Lectura entre amigos",
   "theme_color": "#1F293D",
   "icons": [
     {

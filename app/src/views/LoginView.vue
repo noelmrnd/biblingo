@@ -20,8 +20,8 @@
         <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           Biblingo
         </h1>
-        <p class="text-slate-400 text-lg font-medium">
-          Construye un hábito diario de lectura que dure para siempre.
+        <p class="text-slate-300 text-lg font-semibold tracking-wide">
+          Lectura entre amigos
         </p>
       </div>
 

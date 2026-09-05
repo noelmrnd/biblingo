@@ -4,8 +4,8 @@ import { Capacitor } from '@capacitor/core';
 export const ShareService = {
   async shareInviteCode(inviteCode, displayName = 'Tu amigo') {
     const inviteUrl = `https://app.biblingo.me/invite/${inviteCode}`;
-    const title = '¡Únete a mi racha de lectura en Biblingo! 📖🔥';
-    const text = `¡Hola! Te invito a formar parte de mi hábito diario de lectura en Biblingo. Usa mi código de invitación: ${inviteCode}`;
+    const title = 'Biblingo • Lectura entre amigos 📖🔥';
+    const text = `¡Hola! Te invito a Biblingo, lectura entre amigos. Usa mi código de invitación: ${inviteCode}`;
 
     if (Capacitor.isNativePlatform()) {
       try {

@@ -213,6 +213,11 @@
         <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
         <span>Cerrar sesión</span>
       </button>
+
+      <!-- Branding / Eslogan -->
+      <div class="text-center pt-2 pb-1 text-xs font-semibold text-slate-500 tracking-wider uppercase select-none">
+        Biblingo • Lectura entre amigos
+      </div>
     </div>
 
     <!-- Modal Confirmación de Cerrar Sesión -->

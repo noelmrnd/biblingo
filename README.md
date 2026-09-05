@@ -1,6 +1,6 @@
-# 🦉 Biblingo — App de Hábito de Lectura (Estilo Duolingo)
+# <img src="app/assets/logo-256.png" width="36" align="center" alt="Logo" /> Biblingo — Lectura entre amigos
 
-**Biblingo** (`biblingo.me`) es una plataforma gamificada diseñada para ayudar a las personas a construir y mantener un hábito diario de lectura. Inspira la consistencia mediante rachas de días consecutivos, ranking con amigos, recordatorios inteligentes y micro-interacciones.
+**Biblingo** (`biblingo.me`) es una plataforma gamificada de lectura entre amigos diseñada para ayudar a las personas a construir y mantener un hábito diario de lectura. Inspira la consistencia mediante rachas de días consecutivos, ranking con amigos, recordatorios inteligentes y micro-interacciones.
 
 ---
 

@@ -127,8 +127,8 @@ const steps = [
     image: '/tour/tour-step-2.png'
   },
   {
-    title: 'Compite y motívate',
-    description: 'Invita a tus amigos con tu código o QR para compartir el hábito de la lectura. Podrás competir en el ranking y darles un toque si se les hace tarde.',
+    title: 'Lectura entre amigos',
+    description: 'Invita a tus amigos con tu código o QR para leer juntos. Podrás competir en el ranking amistoso y darles un toque si se les hace tarde.',
     ambientColor: 'bg-brand-blue',
     image: '/tour/tour-step-3.png'
   },
