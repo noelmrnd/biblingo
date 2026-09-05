@@ -515,38 +515,91 @@ class FriendController {
         ]);
     }
 
-    public static function getFriendHistory(string $userId, string $friendId) {
+    /**
+     * Perfil completo de un amigo (o el propio, si friendId === userId) en una sola
+     * llamada: stats + historial de 30 dias para el tracker semanal + amigos en comun.
+     * Antes FriendProfileView necesitaba 2 peticiones (getFriends completo solo para
+     * encontrar a uno + getFriendHistory); esto reemplaza ambas.
+     */
+    public static function getFriendProfile(string $userId, string $friendId) {
         $db = getDbConnection();
+        $isSelf = ($userId === $friendId);
 
-        $friendCheck = $db->prepare("SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?");
-        $friendCheck->execute([$userId, $friendId]);
-        if (!$friendCheck->fetch() && $userId !== $friendId) {
-            sendJsonResponse(['error' => 'No tienes permiso para ver el historial de este usuario.'], 403);
+        if (!$isSelf && !self::areFriends($db, $userId, $friendId)) {
+            sendJsonResponse(['error' => 'No tienes permiso para ver el perfil de este usuario.'], 403);
         }
 
-        $stmt = $db->prepare("SELECT last_read_date, timezone FROM users WHERE id = ?");
-        $stmt->execute([$friendId]);
-        $friend = $stmt->fetch();
-
+        $friend = self::fetchUserRow($db, $friendId);
         if (!$friend) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
-        $tz = $friend['timezone'] ?? 'UTC';
-        $today = DateUtils::getUserToday($tz);
+        $status = StreakUtils::computeStatus($friend['last_read_date'], (int)$friend['streak_count'], $friend['timezone']);
 
-        $logsStmt = $db->prepare("
+        sendJsonResponse([
+            'success' => true,
+            'user' => [
+                'id'               => $friendId,
+                'display_name'     => $friend['display_name'],
+                'streak_count'     => (int)$friend['streak_count'],
+                'max_streak_count' => (int)$friend['max_streak_count'],
+                'last_read_date'   => $friend['last_read_date'],
+                'last_read_label'  => $status->lastReadLabel,
+                'has_read_today'   => $status->hasReadToday,
+                'is_streak_lost'   => $status->isStreakLost,
+                'total_days_read'  => self::countTotalDaysRead($db, $friendId),
+            ],
+            'history'              => self::fetchHistory($db, $friendId, $status->today),
+            'nudged_today'         => $isSelf ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
+            'mutual_friends_count' => $isSelf ? 0 : self::countMutualFriends($db, $userId, $friendId),
+        ]);
+    }
+
+    private static function areFriends(\PDO $db, string $userId, string $friendId): bool {
+        $stmt = $db->prepare("SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?");
+        $stmt->execute([$userId, $friendId]);
+        return (bool)$stmt->fetch();
+    }
+
+    private static function fetchUserRow(\PDO $db, string $userId): array|false {
+        $stmt = $db->prepare("SELECT display_name, streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        return $stmt->fetch();
+    }
+
+    private static function countTotalDaysRead(\PDO $db, string $userId): int {
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
+    /** Historial de 30 dias de lectura, usado para el tracker semanal. */
+    private static function fetchHistory(\PDO $db, string $userId, string $today): array {
+        $stmt = $db->prepare("
             SELECT read_date FROM reading_logs
             WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY)
             ORDER BY read_date DESC
         ");
-        $logsStmt->execute([$friendId, $today]);
-        $historyDates = array_column($logsStmt->fetchAll(), 'read_date');
+        $stmt->execute([$userId, $today]);
+        return array_column($stmt->fetchAll(), 'read_date');
+    }
 
-        sendJsonResponse([
-            'success'        => true,
-            'has_read_today' => $friend['last_read_date'] === $today,
-            'history'        => $historyDates,
-        ]);
+    private static function wasNudgedToday(\PDO $db, string $userId, string $friendId, string $today): bool {
+        $stmt = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
+        $stmt->execute([$userId, $friendId, $today]);
+        return (bool)$stmt->fetch();
+    }
+
+    /** Cuenta cuantas personas tienen agregadas tanto $userId como $friendId. */
+    private static function countMutualFriends(\PDO $db, string $userId, string $friendId): int {
+        $stmt = $db->prepare("
+            SELECT COUNT(*) AS total
+            FROM friendships f1
+            JOIN friendships f2 ON f1.friend_id = f2.friend_id
+            WHERE f1.user_id = ? AND f2.user_id = ?
+              AND f1.friend_id NOT IN (?, ?)
+        ");
+        $stmt->execute([$userId, $friendId, $userId, $friendId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
     }
 }

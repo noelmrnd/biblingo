@@ -9,6 +9,7 @@
         <div>
           <h2 class="text-2xl font-extrabold text-white">{{ user.display_name }}</h2>
           <p class="text-slate-300 text-base font-medium">Código: <span class="font-mono text-amber-400 font-bold">{{ user.invite_code }}</span></p>
+          <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
       </div>
 
@@ -47,6 +48,15 @@
           </div>
           <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Protectores<br/>usados</div>
         </div>
+      </div>
+
+      <!-- Constancia total (distinto de la racha: dias leidos aunque no sean consecutivos) -->
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
+        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
+        <span class="text-slate-200 text-base font-semibold">
+          <span class="text-brand-green font-extrabold text-xl">{{ user.total_days_read || 0 }}</span>
+          días leídos en total
+        </span>
       </div>
 
       <!-- Tracker semanal de 7 días (Lun - Dom) -->
@@ -308,7 +318,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
-import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star } from '@lucide/vue';
+import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, ChevronDown, ChevronUp, Compass, Settings, Star, BookOpenCheck } from '@lucide/vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';
@@ -352,6 +362,14 @@ const isProfileExpanded = ref(false);
 
 const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
+});
+
+const memberSinceLabel = computed(() => {
+  if (!props.user.member_since) return '';
+  const [year, month] = props.user.member_since.split('-');
+  const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const monthName = monthNames[parseInt(month, 10) - 1] || '';
+  return monthName ? `${monthName} ${year}` : '';
 });
 
 watch(() => props.user, (newUser) => {

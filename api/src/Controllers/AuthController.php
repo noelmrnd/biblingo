@@ -102,6 +102,10 @@ class AuthController {
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz);
 
+        $totalDaysStmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
+        $totalDaysStmt->execute([$userId]);
+        $totalDaysRead = (int)($totalDaysStmt->fetch()['total'] ?? 0);
+
         sendJsonResponse([
             'success' => true,
             'token'   => $authToken,
@@ -114,6 +118,8 @@ class AuthController {
                 'max_streak_count' => (int)$user['max_streak_count'],
                 'streak_freezes'   => (int)$user['streak_freezes'],
                 'streak_freezes_used' => (int)$user['streak_freezes_used'],
+                'total_days_read'  => $totalDaysRead,
+                'member_since'     => substr((string)$user['created_at'], 0, 10),
                 'last_read_date'   => $lastRead,
                 'last_read_label'  => $status->lastReadLabel,
                 'has_read_today'   => $status->hasReadToday,

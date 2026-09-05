@@ -85,8 +85,11 @@ export const ApiService = {
     return request(`/friends/requests?user_id=${userId}`);
   },
 
-  async getFriendHistory(friendId) {
-    return request(`/friends/history?friend_id=${friendId}`);
+  // Perfil completo de un amigo (o el propio) en una sola llamada: stats + historial
+  // de 30 dias + amigos en comun. Reemplaza las 2 peticiones que se hacian antes
+  // (getFriends completo solo para encontrar a uno + un history aparte).
+  async getFriendProfile(friendId) {
+    return request(`/friends/profile?friend_id=${friendId}`);
   },
 
   async sendFriendRequest(userId, inviteCode) {

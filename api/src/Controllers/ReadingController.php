@@ -12,7 +12,7 @@ class ReadingController {
     public static function getStatus(string $userId) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -23,12 +23,18 @@ class ReadingController {
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone']);
 
+        $totalDaysStmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
+        $totalDaysStmt->execute([$userId]);
+        $totalDaysRead = (int)($totalDaysStmt->fetch()['total'] ?? 0);
+
         sendJsonResponse([
             'success'              => true,
             'streak_count'         => (int)$user['streak_count'],
             'max_streak_count'     => (int)$user['max_streak_count'],
             'streak_freezes'       => (int)$user['streak_freezes'],
             'streak_freezes_used'  => (int)$user['streak_freezes_used'],
+            'total_days_read'      => $totalDaysRead,
+            'member_since'         => substr((string)$user['created_at'], 0, 10),
             'last_read_date'       => $lastRead,
             'last_read_label'      => $status->lastReadLabel,
             'has_read_today'       => $status->hasReadToday,

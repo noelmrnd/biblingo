@@ -47,10 +47,10 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     FriendController::getFriends($userId);
 } elseif ($requestUri === '/api/friends/requests' && $method === 'GET') {
     FriendController::getFriendRequests($userId);
-} elseif ($requestUri === '/api/friends/history' && $method === 'GET') {
+} elseif ($requestUri === '/api/friends/profile' && $method === 'GET') {
     $friendId = $_GET['friend_id'] ?? null;
     if (!$friendId) sendJsonResponse(['error' => 'friend_id requerido'], 400);
-    FriendController::getFriendHistory($userId, $friendId);
+    FriendController::getFriendProfile($userId, $friendId);
 } elseif (($requestUri === '/api/friends/request' || $requestUri === '/api/friends/add') && $method === 'POST') {
     FriendController::sendFriendRequest($userId);
 } elseif ($requestUri === '/api/friends/accept' && $method === 'POST') {

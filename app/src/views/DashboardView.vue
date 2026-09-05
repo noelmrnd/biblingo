@@ -167,6 +167,8 @@ const loadReadingStatus = async () => {
         max_streak_count: res.max_streak_count,
         streak_freezes: res.streak_freezes,
         streak_freezes_used: res.streak_freezes_used,
+        total_days_read: res.total_days_read,
+        member_since: res.member_since,
         last_read_date: res.last_read_date,
         last_read_label: res.last_read_label,
         has_read_today: res.has_read_today,

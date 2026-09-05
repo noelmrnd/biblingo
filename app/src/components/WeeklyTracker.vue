@@ -33,13 +33,17 @@ import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
 
 const props = defineProps({
-  // Id del usuario cuyo historial se muestra: el propio, o el de un amigo. El
-  // backend valida amistad salvo cuando targetId es el propio usuario autenticado.
-  targetId: { type: String, required: true }
+  // Id del usuario cuyo historial se muestra: el propio, o el de un amigo. Solo
+  // necesario si no se pasan preloadedHistory/preloadedHasReadToday.
+  targetId: { type: String, default: null },
+  // Si el padre ya pidio esta info como parte de otra respuesta (ej. el perfil
+  // completo de un amigo), se pasa aqui para no repetir la peticion.
+  preloadedHistory: { type: Array, default: null },
+  preloadedHasReadToday: { type: Boolean, default: null }
 });
 
-const hasReadToday = ref(null);
-const historyDates = ref([]);
+const hasReadToday = ref(props.preloadedHasReadToday);
+const historyDates = ref(props.preloadedHistory || []);
 
 const weekDays = computed(() => {
   const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -61,8 +65,11 @@ const weekDays = computed(() => {
 });
 
 onMounted(async () => {
+  // Ya viene precargado desde el padre, no hay nada que pedir.
+  if (props.preloadedHistory !== null) return;
+
   try {
-    const res = await ApiService.getFriendHistory(props.targetId);
+    const res = await ApiService.getFriendProfile(props.targetId);
     if (res.success) {
       hasReadToday.value = res.has_read_today;
       historyDates.value = res.history || [];

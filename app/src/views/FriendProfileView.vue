@@ -45,7 +45,20 @@
         </div>
       </div>
 
-      <WeeklyTracker :target-id="id" />
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
+        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
+        <span class="text-slate-200 text-base font-semibold">
+          <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
+          días leídos en total
+        </span>
+      </div>
+
+      <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
+        <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
+        <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
+      </div>
+
+      <WeeklyTracker :preloaded-history="friend.history" :preloaded-has-read-today="friend.has_read_today" />
 
       <button
         v-if="!friend.has_read_today"
@@ -102,7 +115,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX } from '@lucide/vue';
+import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
@@ -125,10 +138,14 @@ const removeLoading = ref(false);
 
 onMounted(async () => {
   try {
-    const res = await ApiService.getFriends(props.user.id);
+    const res = await ApiService.getFriendProfile(props.id);
     if (res.success) {
-      friend.value = (res.friends || []).find(f => String(f.id) === String(props.id)) || null;
-      if (friend.value?.nudged_today) {
+      friend.value = {
+        ...res.user,
+        history: res.history,
+        mutual_friends_count: res.mutual_friends_count
+      };
+      if (res.nudged_today) {
         nudged.value = true;
       }
     }
