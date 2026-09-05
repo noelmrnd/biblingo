@@ -68,7 +68,20 @@ import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 
 const currentUser = ref(null);
-const currentTab = ref('dashboard');
+const TAB_SESSION_KEY = 'current_tab';
+const readStoredTab = () => {
+  try {
+    return sessionStorage.getItem(TAB_SESSION_KEY);
+  } catch (e) {
+    return null;
+  }
+};
+const currentTab = ref(readStoredTab() || 'dashboard');
+watch(currentTab, (tab) => {
+  try {
+    sessionStorage.setItem(TAB_SESSION_KEY, tab);
+  } catch (e) {}
+});
 const tourRef = ref(null);
 const isInitializing = ref(true);
 
