@@ -51,12 +51,17 @@ class UserController {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
+        $status = StreakUtils::computeStatus($updatedUser['last_read_date'], (int)$updatedUser['streak_count'], $updatedUser['timezone']);
+
         sendJsonResponse([
             'success' => true,
             'message' => 'Perfil actualizado correctamente.',
             'user'    => [
                 ...$updatedUser,
                 'id' => (string)$updatedUser['id'],
+                'has_read_today' => $status->hasReadToday,
+                'is_streak_lost' => $status->isStreakLost,
+                'last_read_label' => $status->lastReadLabel,
             ],
         ]);
     }

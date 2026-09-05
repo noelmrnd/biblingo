@@ -36,6 +36,15 @@ class DateUtils {
     }
 
     /**
+     * Numero de dias entre dos fechas 'Y-m-d' (siempre positivo, sin importar el orden).
+     */
+    public static function daysBetween(string $dateA, string $dateB): int {
+        $a = new \DateTime($dateA);
+        $b = new \DateTime($dateB);
+        return (int)$a->diff($b)->days;
+    }
+
+    /**
      * Etiqueta amigable ('Hoy', 'Ayer', 'Sin racha' o DD/MM/YYYY) para una fecha 'Y-m-d',
      * comparada contra el hoy/ayer del dueño de esa fecha (no del viewer).
      */

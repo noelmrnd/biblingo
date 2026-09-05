@@ -50,19 +50,12 @@ class FriendController {
             'success' => true,
             'friends' => array_map(function($f) use ($nudgeMap) {
                 $friendId = (string)$f['id'];
-                $tz = $f['timezone'] ?? 'UTC';
-                $friendToday = DateUtils::getUserToday($tz);
-                $friendYesterday = DateUtils::getUserYesterday($tz);
-
                 $streakCount = (int)$f['streak_count'];
                 $lastRead = $f['last_read_date'];
-                $hasReadToday = (!empty($lastRead) && $lastRead === $friendToday);
-                $isStreakLost = ($streakCount > 0 && $lastRead !== $friendToday && $lastRead !== $friendYesterday);
+                $status = StreakUtils::computeStatus($lastRead, $streakCount, $f['timezone']);
 
                 $lastNudgeDate = $nudgeMap[$friendId] ?? null;
-                $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $friendToday);
-
-                $lastReadLabel = DateUtils::formatReadDateLabel($lastRead, $friendToday, $friendYesterday);
+                $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $status->today);
 
                 return [
                     'id'               => $friendId,
@@ -70,11 +63,11 @@ class FriendController {
                     'streak_count'     => $streakCount,
                     'max_streak_count' => (int)$f['max_streak_count'],
                     'last_read_date'   => $lastRead,
-                    'last_read_label'  => $lastReadLabel,
+                    'last_read_label'  => $status->lastReadLabel,
                     'invite_code'      => $f['invite_code'],
                     'nudged_today'     => $nudgedToday,
-                    'has_read_today'   => $hasReadToday,
-                    'is_streak_lost'   => $isStreakLost,
+                    'has_read_today'   => $status->hasReadToday,
+                    'is_streak_lost'   => $status->isStreakLost,
                     'is_self'          => (bool)$f['is_self']
                 ];
             }, $friends)

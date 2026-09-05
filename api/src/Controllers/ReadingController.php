@@ -8,7 +8,7 @@ class ReadingController {
     public static function getStatus(string $userId) {
         $db = getDbConnection();
         
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -16,26 +16,29 @@ class ReadingController {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
-        $userTz = $user['timezone'] ?? 'UTC';
-        $today = DateUtils::getUserToday($userTz);
-        $yesterday = DateUtils::getUserYesterday($userTz);
         $lastRead = $user['last_read_date'];
-        $hasReadToday = $lastRead === $today;
+        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone']);
 
         sendJsonResponse([
-            'success'          => true,
-            'streak_count'     => (int)$user['streak_count'],
-            'max_streak_count' => (int)$user['max_streak_count'],
-            'last_read_date'   => $lastRead,
-            'last_read_label'  => DateUtils::formatReadDateLabel($lastRead, $today, $yesterday),
-            'has_read_today'   => $hasReadToday,
+            'success'              => true,
+            'streak_count'         => (int)$user['streak_count'],
+            'max_streak_count'     => (int)$user['max_streak_count'],
+            'streak_freezes'       => (int)$user['streak_freezes'],
+            'streak_freezes_used'  => (int)$user['streak_freezes_used'],
+            'last_read_date'       => $lastRead,
+            'last_read_label'      => $status->lastReadLabel,
+            'has_read_today'       => $status->hasReadToday,
+            'is_streak_lost'       => $status->isStreakLost,
         ]);
     }
+
+    private const MAX_STREAK_FREEZES = 2;
+    private const FREEZE_EVERY_DAYS = 7;
 
     public static function logReading(string $userId, ?string $reaction = null) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -49,13 +52,24 @@ class ReadingController {
 
         $currentStreak = (int)$user['streak_count'];
         $maxStreak = (int)$user['max_streak_count'];
+        $freezesAvailable = (int)$user['streak_freezes'];
+        $freezesUsed = (int)$user['streak_freezes_used'];
         $lastRead = $user['last_read_date'];
 
         $alreadyLoggedToday = ($lastRead === $today);
+        $usedFreeze = false;
 
         if (!$alreadyLoggedToday) {
+            $gapDays = $lastRead ? DateUtils::daysBetween($lastRead, $today) : null;
+
             if ($lastRead === $yesterday) {
                 $currentStreak += 1;
+            } elseif ($gapDays === 2 && $freezesAvailable > 0) {
+                // Se salto exactamente 1 dia: se cubre con un protector en vez de perder la racha.
+                $currentStreak += 1;
+                $freezesAvailable -= 1;
+                $freezesUsed += 1;
+                $usedFreeze = true;
             } else {
                 $currentStreak = 1;
             }
@@ -64,22 +78,27 @@ class ReadingController {
                 $maxStreak = $currentStreak;
             }
 
+            // Otorgar un protector nuevo cada FREEZE_EVERY_DAYS de racha activa, con tope.
+            if ($currentStreak > 0 && $currentStreak % self::FREEZE_EVERY_DAYS === 0 && $freezesAvailable < self::MAX_STREAK_FREEZES) {
+                $freezesAvailable += 1;
+            }
+
             try {
                 $db->beginTransaction();
 
                 // 1. Actualizar contador y fecha en la tabla de usuarios
                 $updateStmt = $db->prepare("
-                    UPDATE users 
-                    SET streak_count = ?, max_streak_count = ?, last_read_date = ? 
+                    UPDATE users
+                    SET streak_count = ?, max_streak_count = ?, streak_freezes = ?, streak_freezes_used = ?, last_read_date = ?
                     WHERE id = ?
                 ");
-                $updateStmt->execute([$currentStreak, $maxStreak, $today, $userId]);
+                $updateStmt->execute([$currentStreak, $maxStreak, $freezesAvailable, $freezesUsed, $today, $userId]);
 
                 // 2. Registrar la entrada en el historial de lecturas con Snowflake ID
                 $logId = SnowflakeId::nextId();
                 $logStmt = $db->prepare("
-                    INSERT INTO reading_logs (id, user_id, read_date, reaction) 
-                    VALUES (?, ?, ?, ?) 
+                    INSERT INTO reading_logs (id, user_id, read_date, reaction)
+                    VALUES (?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE reaction = VALUES(reaction), created_at = CURRENT_TIMESTAMP
                 ");
                 $logStmt->execute([$logId, $userId, $today, $reaction]);
@@ -96,6 +115,9 @@ class ReadingController {
             'already_read'     => $alreadyLoggedToday,
             'streak_count'     => $currentStreak,
             'max_streak_count' => $maxStreak,
+            'streak_freezes'   => $freezesAvailable,
+            'streak_freezes_used' => $freezesUsed,
+            'used_freeze'      => $usedFreeze,
             'last_read_date'   => $today,
             'last_read_label'  => 'Hoy',
             'reaction'         => $reaction

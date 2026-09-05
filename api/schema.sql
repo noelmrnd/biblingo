@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
     invite_code VARCHAR(12) NOT NULL UNIQUE,
     streak_count INT DEFAULT 0,
     max_streak_count INT DEFAULT 0,
+    streak_freezes INT NOT NULL DEFAULT 1,
+    streak_freezes_used INT NOT NULL DEFAULT 0,
     last_read_date DATE NULL,
     reminder_time VARCHAR(10) DEFAULT '20:00',
     timezone VARCHAR(50) DEFAULT 'UTC',

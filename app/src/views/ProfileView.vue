@@ -16,8 +16,9 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
           <div class="flex items-center justify-center gap-3">
-            <Flame class="w-7 h-7 text-amber-400 stroke-[2.5]" />
-            <div class="text-3xl font-extrabold text-amber-400">{{ user.streak_count }}</div>
+            <span v-if="user.is_streak_lost" class="text-2xl leading-none">🥶</span>
+            <Flame v-else class="w-7 h-7 text-amber-400 stroke-[2.5]" />
+            <div class="text-3xl font-extrabold text-amber-400">{{ user.is_streak_lost ? 0 : user.streak_count }}</div>
           </div>
           <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>actual</div>
         </div>
@@ -27,6 +28,24 @@
             <div class="text-3xl font-extrabold text-purple-400">{{ user.max_streak_count }}</div>
           </div>
           <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>máxima</div>
+        </div>
+      </div>
+
+      <!-- Protectores de racha -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
+          <div class="flex items-center justify-center gap-3">
+            <span class="text-2xl leading-none">🧊</span>
+            <div class="text-3xl font-extrabold text-sky-400">{{ user.streak_freezes || 0 }}</div>
+          </div>
+          <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Protectores<br/>disponibles</div>
+        </div>
+        <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
+          <div class="flex items-center justify-center gap-3">
+            <span class="text-2xl leading-none">📖</span>
+            <div class="text-3xl font-extrabold text-slate-400">{{ user.streak_freezes_used || 0 }}</div>
+          </div>
+          <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Protectores<br/>usados</div>
         </div>
       </div>
 

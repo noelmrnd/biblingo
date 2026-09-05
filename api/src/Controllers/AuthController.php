@@ -95,9 +95,8 @@ class AuthController {
         $authToken = Auth::issueToken($userId);
 
         $userTz = $user['timezone'] ?? 'UTC';
-        $today = DateUtils::getUserToday($userTz);
-        $yesterday = DateUtils::getUserYesterday($userTz);
         $lastRead = $user['last_read_date'];
+        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz);
 
         sendJsonResponse([
             'success' => true,
@@ -109,9 +108,12 @@ class AuthController {
                 'invite_code'      => $user['invite_code'],
                 'streak_count'     => (int)$user['streak_count'],
                 'max_streak_count' => (int)$user['max_streak_count'],
+                'streak_freezes'   => (int)$user['streak_freezes'],
+                'streak_freezes_used' => (int)$user['streak_freezes_used'],
                 'last_read_date'   => $lastRead,
-                'last_read_label'  => DateUtils::formatReadDateLabel($lastRead, $today, $yesterday),
-                'has_read_today'   => $lastRead === $today,
+                'last_read_label'  => $status->lastReadLabel,
+                'has_read_today'   => $status->hasReadToday,
+                'is_streak_lost'   => $status->isStreakLost,
                 'reminder_time'    => $user['reminder_time'] ?? '20:00',
                 'timezone'         => $userTz,
                 'platform'         => $user['platform']
