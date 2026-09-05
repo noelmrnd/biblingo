@@ -24,7 +24,20 @@
         <div>
           <h2 class="text-2xl font-extrabold text-white">{{ friend.display_name }}</h2>
           <p class="text-slate-300 text-base font-medium">{{ friend.last_read_label }}</p>
+          <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
+        <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
+          <span><strong class="text-white font-extrabold">{{ friend.followers_count || 0 }}</strong> {{ friend.followers_count === 1 ? 'seguidor' : 'seguidores' }}</span>
+          <span><strong class="text-white font-extrabold">{{ friend.following_count || 0 }}</strong> seguidos</span>
+        </div>
+      </div>
+
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
+        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
+        <span class="text-slate-200 text-base font-semibold">
+          <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
+          días leídos en total
+        </span>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -45,14 +58,6 @@
         </div>
       </div>
 
-      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
-        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
-        <span class="text-slate-200 text-base font-semibold">
-          <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
-          días leídos en total
-        </span>
-      </div>
-
       <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
         <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
         <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
@@ -61,7 +66,7 @@
       <WeeklyTracker :preloaded-history="friend.history" :preloaded-has-read-today="friend.has_read_today" />
 
       <button
-        v-if="!friend.has_read_today"
+        v-if="friend.is_mutual && !friend.has_read_today"
         @click="sendNudge"
         :disabled="nudged || nudgeLoading"
         class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
@@ -70,21 +75,26 @@
         <span>{{ nudged ? 'Toque enviado' : 'Dar un toque' }}</span>
       </button>
 
+      <p v-else-if="!friend.is_mutual" class="text-center text-slate-500 text-sm font-medium">
+        {{ friend.is_following ? 'Aún no te sigue de vuelta' : 'No te sigue' }} — solo pueden darse toques quienes se siguen mutuamente.
+      </p>
+
       <button
+        v-if="friend.is_following"
         type="button"
         @click="isRemoveModalOpen = true"
         class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
         <UserMinus class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        <span>Eliminar amigo</span>
+        <span>Dejar de seguir</span>
       </button>
     </template>
 
     <AppModal
       :is-open="isRemoveModalOpen"
       :loading="removeLoading"
-      :title="friend ? `¿Eliminar a ${friend.display_name}?` : '¿Eliminar amigo?'"
-      description="Ya no verás su progreso en el ranking ni podrán enviarse toques mutuamente."
+      :title="friend ? `¿Dejar de seguir a ${friend.display_name}?` : '¿Dejar de seguir?'"
+      description="Ya no verás su progreso en tu ranking."
       @close="isRemoveModalOpen = false"
       :show-close="false"
     >
@@ -103,7 +113,7 @@
           </div>
           <div class="flex-1">
             <AppButton color="rose" block :disabled="removeLoading" @click="confirmRemove">
-              {{ removeLoading ? 'Eliminando...' : 'Eliminar' }}
+              {{ removeLoading ? 'Procesando...' : 'Dejar de seguir' }}
             </AppButton>
           </div>
         </div>
@@ -113,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppButton from '../components/AppButton.vue';
@@ -121,6 +131,7 @@ import AppModal from '../components/AppModal.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
+import { formatMemberSince } from '../utils/dateFormatter';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -135,6 +146,8 @@ const nudged = ref(false);
 const nudgeLoading = ref(false);
 const isRemoveModalOpen = ref(false);
 const removeLoading = ref(false);
+
+const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
 onMounted(async () => {
   try {
@@ -173,13 +186,13 @@ const sendNudge = async () => {
 const confirmRemove = async () => {
   removeLoading.value = true;
   try {
-    const res = await ApiService.removeFriend(props.user.id, friend.value.id);
+    const res = await ApiService.unfollowUser(friend.value.id);
     if (res.success) {
-      ToastService.success(`Eliminaste a ${friend.value.display_name} de tus amigos.`);
+      ToastService.success(`Dejaste de seguir a ${friend.value.display_name}.`);
       router.push({ name: 'friends' });
     }
   } catch (e) {
-    ToastService.error(e.message || 'Error al eliminar amigo.');
+    ToastService.error(e.message || 'Error al dejar de seguir.');
   } finally {
     removeLoading.value = false;
     isRemoveModalOpen.value = false;

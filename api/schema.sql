@@ -31,27 +31,16 @@ CREATE TABLE IF NOT EXISTS reading_logs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Amistades (Relación bidireccional)
-CREATE TABLE IF NOT EXISTS friendships (
+-- 3. Seguimientos (asimétrico, estilo Duolingo). "Amigos mutuos" = ambos se siguen.
+CREATE TABLE IF NOT EXISTS follows (
     id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
+    follower_id BIGINT NOT NULL,
+    followed_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_friendship (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 4. Solicitudes de Amistad (Pendientes de aprobación)
-CREATE TABLE IF NOT EXISTS friend_requests (
-    id BIGINT PRIMARY KEY,
-    sender_id BIGINT NOT NULL,
-    receiver_id BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_request (sender_id, receiver_id),
-    INDEX idx_receiver (receiver_id),
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    UNIQUE KEY unique_follow (follower_id, followed_id),
+    INDEX idx_followed (followed_id),
+    FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Registro de toques/recordatorios diarios entre amigos

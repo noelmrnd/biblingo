@@ -11,6 +11,19 @@
           <p class="text-slate-300 text-base font-medium">Código: <span class="font-mono text-amber-400 font-bold">{{ user.invite_code }}</span></p>
           <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
+        <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
+          <span><strong class="text-white font-extrabold">{{ user.followers_count || 0 }}</strong> {{ user.followers_count === 1 ? 'seguidor' : 'seguidores' }}</span>
+          <span><strong class="text-white font-extrabold">{{ user.following_count || 0 }}</strong> seguidos</span>
+        </div>
+      </div>
+
+      <!-- Constancia total (distinto de la racha: dias leidos aunque no sean consecutivos) -->
+      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
+        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
+        <span class="text-slate-200 text-base font-semibold">
+          <span class="text-brand-green font-extrabold text-xl">{{ user.total_days_read || 0 }}</span>
+          días leídos en total
+        </span>
       </div>
 
       <!-- Estadísticas Globales -->
@@ -48,15 +61,6 @@
           </div>
           <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Protectores<br/>usados</div>
         </div>
-      </div>
-
-      <!-- Constancia total (distinto de la racha: dias leidos aunque no sean consecutivos) -->
-      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
-        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
-        <span class="text-slate-200 text-base font-semibold">
-          <span class="text-brand-green font-extrabold text-xl">{{ user.total_days_read || 0 }}</span>
-          días leídos en total
-        </span>
       </div>
 
       <!-- Tracker semanal de 7 días (Lun - Dom) -->
@@ -325,6 +329,7 @@ import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 import { ReviewService } from '../services/review';
+import { formatMemberSince } from '../utils/dateFormatter';
 import versionInfo from '../version.json';
 
 const appVersion = versionInfo.version;
@@ -364,13 +369,7 @@ const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
 });
 
-const memberSinceLabel = computed(() => {
-  if (!props.user.member_since) return '';
-  const [year, month] = props.user.member_since.split('-');
-  const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  const monthName = monthNames[parseInt(month, 10) - 1] || '';
-  return monthName ? `${monthName} ${year}` : '';
-});
+const memberSinceLabel = computed(() => formatMemberSince(props.user.member_since));
 
 watch(() => props.user, (newUser) => {
   if (newUser) {

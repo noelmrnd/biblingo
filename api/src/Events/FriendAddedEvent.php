@@ -51,10 +51,10 @@ class FriendAddedEvent extends DomainEvent {
             'sender_id'          => $this->userId,
             'receiver_id'        => $this->friendId,
             'sender_name'        => $this->userDisplayName,
-            'notification_title' => '¡Nuevo Amigo en Biblingo! 🎉',
-            'notification_body'  => "{$this->userDisplayName} te ha agregado a sus amigos. ¡Compite por la mejor racha!",
+            'notification_title' => '¡Nuevo seguidor en Biblingo! 🎉',
+            'notification_body'  => "{$this->userDisplayName} empezó a seguirte. ¡Compite por la mejor racha!",
             'notification_data'  => [
-                'type'    => 'friend_added',
+                'type'    => 'new_follower',
                 'user_id' => $this->userId,
             ]
         ];

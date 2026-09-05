@@ -81,46 +81,24 @@ export const ApiService = {
     return request(`/friends?user_id=${userId}`);
   },
 
-  async getFriendRequests(userId) {
-    return request(`/friends/requests?user_id=${userId}`);
-  },
-
   // Perfil completo de un amigo (o el propio) en una sola llamada: stats + historial
-  // de 30 dias + amigos en comun. Reemplaza las 2 peticiones que se hacian antes
-  // (getFriends completo solo para encontrar a uno + un history aparte).
+  // de 30 dias + contadores de seguidores/seguidos + amigos en comun.
   async getFriendProfile(friendId) {
     return request(`/friends/profile?friend_id=${friendId}`);
   },
 
-  async sendFriendRequest(userId, inviteCode) {
-    return request('/friends/request', {
+  // Seguir es instantaneo (sin aprobacion), como en Duolingo.
+  async followUser(inviteCode) {
+    return request('/friends/follow', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, invite_code: inviteCode })
+      body: JSON.stringify({ invite_code: inviteCode })
     });
   },
 
-  async addFriend(userId, inviteCode) {
-    return this.sendFriendRequest(userId, inviteCode);
-  },
-
-  async acceptFriendRequest(userId, senderId, requestId = null) {
-    return request('/friends/accept', {
+  async unfollowUser(friendId) {
+    return request('/friends/unfollow', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, sender_id: senderId, request_id: requestId })
-    });
-  },
-
-  async rejectFriendRequest(userId, senderId, requestId = null) {
-    return request('/friends/reject', {
-      method: 'POST',
-      body: JSON.stringify({ user_id: userId, sender_id: senderId, request_id: requestId })
-    });
-  },
-
-  async cancelFriendRequest(userId, receiverId, requestId = null) {
-    return request('/friends/cancel', {
-      method: 'POST',
-      body: JSON.stringify({ user_id: userId, receiver_id: receiverId, request_id: requestId })
+      body: JSON.stringify({ friend_id: friendId })
     });
   },
 
@@ -152,10 +130,4 @@ export const ApiService = {
     });
   },
 
-  async removeFriend(userId, friendId) {
-    return request('/friends/remove', {
-      method: 'POST',
-      body: JSON.stringify({ user_id: userId, friend_id: friendId })
-    });
-  }
 };

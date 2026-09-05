@@ -45,24 +45,16 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     ReadingController::logReading($userId, $reaction);
 } elseif ($requestUri === '/api/friends' && $method === 'GET') {
     FriendController::getFriends($userId);
-} elseif ($requestUri === '/api/friends/requests' && $method === 'GET') {
-    FriendController::getFriendRequests($userId);
 } elseif ($requestUri === '/api/friends/profile' && $method === 'GET') {
     $friendId = $_GET['friend_id'] ?? null;
     if (!$friendId) sendJsonResponse(['error' => 'friend_id requerido'], 400);
     FriendController::getFriendProfile($userId, $friendId);
-} elseif (($requestUri === '/api/friends/request' || $requestUri === '/api/friends/add') && $method === 'POST') {
-    FriendController::sendFriendRequest($userId);
-} elseif ($requestUri === '/api/friends/accept' && $method === 'POST') {
-    FriendController::acceptFriendRequest($userId);
-} elseif ($requestUri === '/api/friends/reject' && $method === 'POST') {
-    FriendController::rejectFriendRequest($userId);
-} elseif ($requestUri === '/api/friends/cancel' && $method === 'POST') {
-    FriendController::cancelFriendRequest($userId);
+} elseif ($requestUri === '/api/friends/follow' && $method === 'POST') {
+    FriendController::follow($userId);
+} elseif (($requestUri === '/api/friends/unfollow' && $method === 'POST') || ($requestUri === '/api/friends' && $method === 'DELETE')) {
+    FriendController::unfollow($userId);
 } elseif ($requestUri === '/api/friends/nudge' && $method === 'POST') {
     FriendController::nudgeFriend($userId);
-} elseif ((($requestUri === '/api/friends/remove' && $method === 'POST') || ($requestUri === '/api/friends' && $method === 'DELETE'))) {
-    FriendController::removeFriend($userId);
 } elseif ($requestUri === '/api/user/update' && $method === 'POST') {
     UserController::updateProfile($userId);
 } elseif ($requestUri === '/api/user/push-token' && $method === 'POST') {

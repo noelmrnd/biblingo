@@ -42,12 +42,7 @@ class DomainEventProcessor {
     private static function handleEvent(string $eventName, array $payload): void {
         switch ($eventName) {
             case 'FriendAdded':
-            case 'FriendRequestAccepted':
                 self::handleFriendAdded($payload);
-                break;
-
-            case 'FriendRequestSent':
-                self::handleFriendRequestSent($payload);
                 break;
 
             case 'FriendNudged':
@@ -65,7 +60,7 @@ class DomainEventProcessor {
         $receiverId = $payload['receiver_id'] ?? null;
         $title      = $payload['notification_title'] ?? '¡Nuevo Amigo en Biblingo! 🎉';
         $body       = $payload['notification_body'] ?? 'Alguien te ha agregado a sus amigos.';
-        $data       = $payload['notification_data'] ?? ['type' => 'friend_added'];
+        $data       = $payload['notification_data'] ?? ['type' => 'new_follower'];
 
         if ($receiverId !== null) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
@@ -83,14 +78,4 @@ class DomainEventProcessor {
         }
     }
 
-    private static function handleFriendRequestSent(array $payload): void {
-        $receiverId = $payload['receiver_id'] ?? null;
-        $title      = $payload['notification_title'] ?? '¡Solicitud de amistad! 👥';
-        $body       = $payload['notification_body'] ?? 'Alguien te ha enviado una solicitud de amistad.';
-        $data       = $payload['notification_data'] ?? ['type' => 'friend_request'];
-
-        if ($receiverId !== null) {
-            FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
-        }
-    }
 }

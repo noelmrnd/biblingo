@@ -17,3 +17,18 @@ export function toLocalDateString(dateInput = new Date()) {
   const day = String(dateObj.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+const MONTH_NAMES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+/**
+ * Formatea un 'member_since' tipo 'YYYY-MM-DD' como "mes año" en español (ej. "septiembre 2026").
+ *
+ * @param {string|null} memberSince
+ * @returns {string} Etiqueta formateada o '' si no hay fecha.
+ */
+export function formatMemberSince(memberSince) {
+  if (!memberSince) return '';
+  const [year, month] = memberSince.split('-');
+  const monthName = MONTH_NAMES[parseInt(month, 10) - 1] || '';
+  return monthName ? `${monthName} ${year}` : '';
+}

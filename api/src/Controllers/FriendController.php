@@ -4,36 +4,39 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Events\FriendAddedEvent;
 use Biblingo\Events\FriendNudgedEvent;
-use Biblingo\Events\FriendRequestAcceptedEvent;
-use Biblingo\Events\FriendRequestSentEvent;
 use Biblingo\Services\DomainEventStore;
 use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
 
 class FriendController {
+    /**
+     * Lista de personas que el usuario sigue (ranking), mas su propia fila. El
+     * seguimiento es asimetrico (estilo Duolingo): is_mutual indica si tambien
+     * lo siguen de vuelta, condicion que habilita el toque y otras funciones sociales.
+     */
     public static function getFriends(string $userId) {
         $db = getDbConnection();
 
-        // 1. Obtener lista de amigos del usuario, incluyendo al propio usuario, ya ordenados
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
-                   0 AS is_self
-            FROM friendships f
-            JOIN users u ON f.friend_id = u.id
-            WHERE f.user_id = ?
+                   0 AS is_self,
+                   EXISTS(SELECT 1 FROM follows fb WHERE fb.follower_id = u.id AND fb.followed_id = ?) AS is_mutual
+            FROM follows f
+            JOIN users u ON f.followed_id = u.id
+            WHERE f.follower_id = ?
             UNION ALL
             SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
-                   1 AS is_self
+                   1 AS is_self, 1 AS is_mutual
             FROM users u
             WHERE u.id = ?
             ORDER BY streak_count DESC, display_name ASC
         ");
-        $stmt->execute([$userId, $userId]);
-        $friends = $stmt->fetchAll();
+        $stmt->execute([$userId, $userId, $userId]);
+        $following = $stmt->fetchAll();
 
-        // 2. Obtener la última fecha de toque enviada por este usuario en una sola consulta indexada
         $nudgesStmt = $db->prepare("
             SELECT receiver_id, MAX(nudge_date) AS last_nudge_date
             FROM friend_nudges
@@ -41,17 +44,14 @@ class FriendController {
             GROUP BY receiver_id
         ");
         $nudgesStmt->execute([$userId]);
-        $nudges = $nudgesStmt->fetchAll();
-
-        // Mapear toques por id de amigo para búsqueda O(1)
         $nudgeMap = [];
-        foreach ($nudges as $n) {
+        foreach ($nudgesStmt->fetchAll() as $n) {
             $nudgeMap[(string)$n['receiver_id']] = $n['last_nudge_date'];
         }
 
         sendJsonResponse([
             'success' => true,
-            'friends' => array_map(function($f) use ($nudgeMap) {
+            'friends' => array_map(function ($f) use ($nudgeMap) {
                 $friendId = (string)$f['id'];
                 $streakCount = (int)$f['streak_count'];
                 $lastRead = $f['last_read_date'];
@@ -71,17 +71,18 @@ class FriendController {
                     'nudged_today'     => $nudgedToday,
                     'has_read_today'   => $status->hasReadToday,
                     'is_streak_lost'   => $status->isStreakLost,
-                    'is_self'          => (bool)$f['is_self']
+                    'is_self'          => (bool)$f['is_self'],
+                    'is_mutual'        => (bool)$f['is_mutual'],
                 ];
-            }, $friends)
+            }, $following)
         ]);
     }
 
-    public static function addFriend(string $userId) {
-        self::sendFriendRequest($userId);
-    }
-
-    public static function sendFriendRequest(string $userId) {
+    /**
+     * Seguir a alguien por su codigo de invitacion. Instantaneo, sin aprobacion
+     * (a diferencia del viejo flujo de solicitudes) — igual que seguir en Duolingo.
+     */
+    public static function follow(string $userId) {
         $input = getJsonInput();
         $inviteCode = strtoupper(trim($input['invite_code'] ?? ''));
 
@@ -91,284 +92,81 @@ class FriendController {
 
         $db = getDbConnection();
 
-        // Buscar al amigo por invite_code
         $targetStmt = $db->prepare("SELECT id, display_name FROM users WHERE invite_code = ?");
         $targetStmt->execute([$inviteCode]);
-        $friend = $targetStmt->fetch();
+        $target = $targetStmt->fetch();
 
-        if (!$friend) {
+        if (!$target) {
             sendJsonResponse(['error' => 'No se encontró ningún usuario con ese código de invitación.'], 404);
         }
 
-        $friendId = (string)$friend['id'];
+        $targetId = (string)$target['id'];
 
-        if ($friendId === $userId) {
-            sendJsonResponse(['error' => 'No puedes enviarte una solicitud a ti mismo.'], 400);
+        if ($targetId === $userId) {
+            sendJsonResponse(['error' => 'No puedes seguirte a ti mismo.'], 400);
         }
 
-        // 1. Verificar si ya son amigos
-        $friendCheck = $db->prepare("SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?");
-        $friendCheck->execute([$userId, $friendId]);
-        if ($friendCheck->fetch()) {
-            sendJsonResponse(['error' => 'Ya tienes a esta persona en tu lista de amigos.'], 400);
+        if (self::isFollowing($db, $userId, $targetId)) {
+            sendJsonResponse(['error' => "Ya sigues a {$target['display_name']}."], 400);
         }
 
-        // Obtener datos del usuario actual para el mensaje
-        $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
-        $meStmt->execute([$userId]);
-        $me = $meStmt->fetch();
-        if (!$me) {
-            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
-        }
-        $myDisplayName = $me['display_name'];
-
-        // 2. Si la otra persona ya me había enviado una solicitud previa (mutua), auto-aceptar
-        $inverseCheck = $db->prepare("SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ?");
-        $inverseCheck->execute([$friendId, $userId]);
-        $existingInverse = $inverseCheck->fetch();
-
-        if ($existingInverse) {
-            try {
-                $db->beginTransaction();
-
-                $insert1 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
-                $insert1->execute([SnowflakeId::nextId(), $userId, $friendId]);
-
-                $insert2 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
-                $insert2->execute([SnowflakeId::nextId(), $friendId, $userId]);
-
-                $del = $db->prepare("DELETE FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)");
-                $del->execute([$userId, $friendId, $friendId, $userId]);
-
-                $event = new FriendRequestAcceptedEvent($userId, $friendId, $myDisplayName);
-                DomainEventStore::record($event, $db);
-
-                $db->commit();
-            } catch (\Exception $e) {
-                $db->rollBack();
-                sendJsonResponse(['error' => 'Error al aceptar solicitud: ' . $e->getMessage()], 500);
-            }
-
-            sendJsonResponse([
-                'success'       => true,
-                'auto_accepted' => true,
-                'message'       => "¡{$friend['display_name']} te había enviado una solicitud! Ahora son amigos. 🎉",
-                'friend'        => [
-                    'id'           => $friendId,
-                    'display_name' => $friend['display_name']
-                ]
-            ]);
-        }
-
-        // 3. Verificar si ya le envié una solicitud pendiente
-        $pendingCheck = $db->prepare("SELECT 1 FROM friend_requests WHERE sender_id = ? AND receiver_id = ?");
-        $pendingCheck->execute([$userId, $friendId]);
-        if ($pendingCheck->fetch()) {
-            sendJsonResponse(['error' => "Ya le enviaste una solicitud de amistad a {$friend['display_name']}. ⏳"], 400);
-        }
-
-        // 4. Crear solicitud de amistad y registrar evento de dominio
-        try {
-            $db->beginTransaction();
-
-            $requestId = SnowflakeId::nextId();
-            $insertReq = $db->prepare("INSERT IGNORE INTO friend_requests (id, sender_id, receiver_id) VALUES (?, ?, ?)");
-            $insertReq->execute([$requestId, $userId, $friendId]);
-
-            if ($insertReq->rowCount() === 0) {
-                $db->rollBack();
-                sendJsonResponse(['error' => "Ya le enviaste una solicitud de amistad a {$friend['display_name']}. ⏳"], 400);
-            }
-
-            $event = new FriendRequestSentEvent($userId, $friendId, $myDisplayName);
-            DomainEventStore::record($event, $db);
-
-            $db->commit();
-        } catch (\Exception $e) {
-            $db->rollBack();
-            sendJsonResponse(['error' => 'Error al enviar solicitud de amistad: ' . $e->getMessage()], 500);
-        }
-
-        sendJsonResponse([
-            'success' => true,
-            'message' => "¡Solicitud de amistad enviada a {$friend['display_name']}! 👥",
-            'friend'  => [
-                'id'           => $friendId,
-                'display_name' => $friend['display_name']
-            ]
-        ]);
-    }
-
-    public static function getFriendRequests(string $userId) {
-        $db = getDbConnection();
-
-        // 1. Solicitudes recibidas
-        $recvStmt = $db->prepare("
-            SELECT fr.id AS request_id, fr.sender_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, u.timezone, fr.created_at
-            FROM friend_requests fr
-            JOIN users u ON fr.sender_id = u.id
-            WHERE fr.receiver_id = ?
-            ORDER BY fr.created_at DESC
-        ");
-        $recvStmt->execute([$userId]);
-        $received = $recvStmt->fetchAll();
-
-        // 2. Solicitudes enviadas pendientes
-        $sentStmt = $db->prepare("
-            SELECT fr.id AS request_id, fr.receiver_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, u.timezone, fr.created_at
-            FROM friend_requests fr
-            JOIN users u ON fr.receiver_id = u.id
-            WHERE fr.sender_id = ?
-            ORDER BY fr.created_at DESC
-        ");
-        $sentStmt->execute([$userId]);
-        $sent = $sentStmt->fetchAll();
-
-        $mapReceived = array_map(function($r) {
-            $tz = $r['timezone'] ?? 'UTC';
-            $today = DateUtils::getUserToday($tz);
-            $yesterday = DateUtils::getUserYesterday($tz);
-            return [
-                'request_id'      => (string)$r['request_id'],
-                'sender_id'       => (string)$r['sender_id'],
-                'display_name'    => $r['display_name'],
-                'streak_count'    => (int)$r['streak_count'],
-                'last_read_date'  => $r['last_read_date'],
-                'last_read_label' => DateUtils::formatReadDateLabel($r['last_read_date'], $today, $yesterday),
-                'invite_code'     => $r['invite_code'],
-                'created_at'      => $r['created_at']
-            ];
-        }, $received);
-
-        $mapSent = array_map(function($s) {
-            $tz = $s['timezone'] ?? 'UTC';
-            $today = DateUtils::getUserToday($tz);
-            $yesterday = DateUtils::getUserYesterday($tz);
-            return [
-                'request_id'      => (string)$s['request_id'],
-                'receiver_id'     => (string)$s['receiver_id'],
-                'display_name'    => $s['display_name'],
-                'streak_count'    => (int)$s['streak_count'],
-                'last_read_date'  => $s['last_read_date'],
-                'last_read_label' => DateUtils::formatReadDateLabel($s['last_read_date'], $today, $yesterday),
-                'invite_code'     => $s['invite_code'],
-                'created_at'      => $s['created_at']
-            ];
-        }, $sent);
-
-        sendJsonResponse([
-            'success'  => true,
-            'requests' => $mapReceived,
-            'received' => $mapReceived,
-            'sent'     => $mapSent
-        ]);
-    }
-
-    public static function cancelFriendRequest(string $userId) {
-        $input = getJsonInput();
-        $requestId = $input['request_id'] ?? null;
-        $receiverId = $input['receiver_id'] ?? ($input['friend_id'] ?? null);
-
-        if (!$requestId && !$receiverId) {
-            sendJsonResponse(['error' => 'request_id o receiver_id es requerido.'], 400);
-        }
-
-        $db = getDbConnection();
-
-        $del = $db->prepare("DELETE FROM friend_requests WHERE sender_id = ? AND (id = ? OR receiver_id = ?)");
-        $del->execute([$userId, $requestId, $receiverId]);
-
-        sendJsonResponse([
-            'success' => true,
-            'message' => 'Solicitud de amistad cancelada.'
-        ]);
-    }
-
-    public static function acceptFriendRequest(string $userId) {
-        $input = getJsonInput();
-        $requestId = $input['request_id'] ?? null;
-        $senderId = $input['sender_id'] ?? null;
-
-        if (!$requestId && !$senderId) {
-            sendJsonResponse(['error' => 'request_id o sender_id es requerido.'], 400);
-        }
-
-        $db = getDbConnection();
-
-        // Buscar solicitud pendiente dirigida a este usuario
-        $stmt = $db->prepare("
-            SELECT fr.id, fr.sender_id, u.display_name
-            FROM friend_requests fr
-            JOIN users u ON fr.sender_id = u.id
-            WHERE fr.receiver_id = ? AND (fr.id = ? OR fr.sender_id = ?)
-        ");
-        $stmt->execute([$userId, $requestId, $senderId]);
-        $req = $stmt->fetch();
-
-        if (!$req) {
-            sendJsonResponse(['error' => 'Solicitud de amistad no encontrada o ya procesada.'], 404);
-        }
-
-        $senderId = (string)$req['sender_id'];
-        $senderName = $req['display_name'];
-
-        // Obtener nombre del usuario que acepta
         $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
         $meStmt->execute([$userId]);
         $me = $meStmt->fetch();
         $myDisplayName = $me['display_name'] ?? 'Un usuario';
 
+        $wasFollowedByTarget = self::isFollowing($db, $targetId, $userId);
+
         try {
             $db->beginTransaction();
 
-            // 1. Insertar relación de amistad bidireccional
-            $insert1 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
-            $insert1->execute([SnowflakeId::nextId(), $userId, $senderId]);
+            $insert = $db->prepare("INSERT IGNORE INTO follows (id, follower_id, followed_id) VALUES (?, ?, ?)");
+            $insert->execute([SnowflakeId::nextId(), $userId, $targetId]);
 
-            $insert2 = $db->prepare("INSERT IGNORE INTO friendships (id, user_id, friend_id) VALUES (?, ?, ?)");
-            $insert2->execute([SnowflakeId::nextId(), $senderId, $userId]);
-
-            // 2. Eliminar cualquier solicitud pendiente entre ambos
-            $del = $db->prepare("DELETE FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)");
-            $del->execute([$userId, $senderId, $senderId, $userId]);
-
-            // 3. Registrar evento de dominio para notificar al remitente
-            $event = new FriendRequestAcceptedEvent($userId, $senderId, $myDisplayName);
+            $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
             DomainEventStore::record($event, $db);
 
             $db->commit();
         } catch (\Exception $e) {
             $db->rollBack();
-            sendJsonResponse(['error' => 'Error al aceptar solicitud: ' . $e->getMessage()], 500);
+            sendJsonResponse(['error' => 'Error al seguir usuario: ' . $e->getMessage()], 500);
         }
 
         sendJsonResponse([
-            'success' => true,
-            'message' => "¡Has aceptado la solicitud de {$senderName}! 🎉",
-            'friend'  => [
-                'id'           => $senderId,
-                'display_name' => $senderName
+            'success'   => true,
+            'is_mutual' => $wasFollowedByTarget,
+            'message'   => $wasFollowedByTarget
+                ? "¡Ahora tú y {$target['display_name']} se siguen mutuamente! 🎉"
+                : "¡Ahora sigues a {$target['display_name']}! 👥",
+            'friend'    => [
+                'id'           => $targetId,
+                'display_name' => $target['display_name']
             ]
         ]);
     }
 
-    public static function rejectFriendRequest(string $userId) {
+    public static function unfollow(string $userId) {
         $input = getJsonInput();
-        $requestId = $input['request_id'] ?? null;
-        $senderId = $input['sender_id'] ?? null;
+        $friendId = $input['friend_id'] ?? ($_GET['friend_id'] ?? null);
 
-        if (!$requestId && !$senderId) {
-            sendJsonResponse(['error' => 'request_id o sender_id es requerido.'], 400);
+        if (empty($friendId)) {
+            sendJsonResponse(['error' => 'friend_id es requerido.'], 400);
+        }
+
+        $friendId = (string)$friendId;
+
+        if ($friendId === $userId) {
+            sendJsonResponse(['error' => 'No puedes dejar de seguirte a ti mismo.'], 400);
         }
 
         $db = getDbConnection();
-
-        $del = $db->prepare("DELETE FROM friend_requests WHERE receiver_id = ? AND (id = ? OR sender_id = ?)");
-        $del->execute([$userId, $requestId, $senderId]);
+        $del = $db->prepare("DELETE FROM follows WHERE follower_id = ? AND followed_id = ?");
+        $del->execute([$userId, $friendId]);
 
         sendJsonResponse([
-            'success' => true,
-            'message' => 'Solicitud de amistad rechazada.'
+            'success'   => true,
+            'message'   => 'Dejaste de seguir a este usuario.',
+            'friend_id' => $friendId
         ]);
     }
 
@@ -383,35 +181,33 @@ class FriendController {
         $db = getDbConnection();
         $today = date('Y-m-d');
 
-        // 1. Verificar INMEDIATAMENTE si ya se envió un recordatorio hoy (búsqueda directa por índice en friend_nudges)
         $nudgeCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
         $nudgeCheck->execute([$userId, $friendId, $today]);
         if ($nudgeCheck->fetch()) {
             sendJsonResponse(['error' => 'Ya le enviaste un recordatorio a este amigo hoy. ⏳'], 400);
         }
 
-        // 2. Obtener datos del amigo y validar relación de amistad en 1 sola consulta
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.last_read_date, u.timezone, f.user_id AS is_friend
+            SELECT u.id, u.display_name, u.last_read_date, u.timezone,
+                   EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = u.id) AS i_follow,
+                   EXISTS(SELECT 1 FROM follows WHERE follower_id = u.id AND followed_id = ?) AS follows_me
             FROM users u
-            LEFT JOIN friendships f ON f.user_id = ? AND f.friend_id = u.id
             WHERE u.id = ?
         ");
-        $stmt->execute([$userId, $friendId]);
+        $stmt->execute([$userId, $userId, $friendId]);
         $friend = $stmt->fetch();
 
         if (!$friend || empty($friend['id'])) {
-            sendJsonResponse(['error' => 'Amigo no encontrado.'], 404);
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
-        if (empty($friend['is_friend'])) {
-            sendJsonResponse(['error' => 'No tienes agregada a esta persona como amiga.'], 403);
+        if (!$friend['i_follow'] || !$friend['follows_me']) {
+            sendJsonResponse(['error' => 'Solo puedes dar un toque a alguien que te sigue mutuamente.'], 403);
         }
 
         $friendTz = $friend['timezone'] ?? 'UTC';
         $friendToday = DateUtils::getUserToday($friendTz);
 
-        // Si el día local del amigo difiere de hoy en el servidor, verificar con su fecha local exacta
         if ($friendToday !== $today) {
             $preciseCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
             $preciseCheck->execute([$userId, $friendId, $friendToday]);
@@ -420,12 +216,10 @@ class FriendController {
             }
         }
 
-        // 4. Verificar si el amigo ya leyó en su día local
         if (!empty($friend['last_read_date']) && $friend['last_read_date'] === $friendToday) {
             sendJsonResponse(['error' => "{$friend['display_name']} ya completó su lectura de hoy."], 400);
         }
 
-        // 5. Obtener nombre del remitente
         $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
         $meStmt->execute([$userId]);
         $me = $meStmt->fetch();
@@ -434,7 +228,6 @@ class FriendController {
         }
         $myDisplayName = $me['display_name'];
 
-        // 6. Registrar el toque y persistir evento de dominio en MySQL
         try {
             $db->beginTransaction();
 
@@ -442,7 +235,6 @@ class FriendController {
             $insertNudge = $db->prepare("INSERT INTO friend_nudges (id, sender_id, receiver_id, nudge_date) VALUES (?, ?, ?, ?)");
             $insertNudge->execute([$nudgeId, $userId, $friendId, $friendToday]);
 
-            // Crear y persistir evento de dominio
             $event = new FriendNudgedEvent($userId, $friendId, $myDisplayName, $friendToday);
             DomainEventStore::record($event, $db);
 
@@ -459,73 +251,19 @@ class FriendController {
         ]);
     }
 
-    public static function removeFriend(string $userId) {
-        $input = getJsonInput();
-        $friendId = $input['friend_id'] ?? ($_GET['friend_id'] ?? null);
-
-        if (empty($friendId)) {
-            sendJsonResponse(['error' => 'friend_id es requerido.'], 400);
-        }
-
-        $friendId = (string)$friendId;
-
-        if ($friendId === $userId) {
-            sendJsonResponse(['error' => 'No puedes eliminarte a ti mismo.'], 400);
-        }
-
-        $db = getDbConnection();
-
-        try {
-            $db->beginTransaction();
-
-            // Eliminar la relación de amistad en ambas direcciones
-            $deleteFriendship = $db->prepare("
-                DELETE FROM friendships
-                WHERE (user_id = ? AND friend_id = ?)
-                   OR (user_id = ? AND friend_id = ?)
-            ");
-            $deleteFriendship->execute([$userId, $friendId, $friendId, $userId]);
-
-            // Eliminar los toques intercambiados entre ambos usuarios
-            $deleteNudges = $db->prepare("
-                DELETE FROM friend_nudges
-                WHERE (sender_id = ? AND receiver_id = ?)
-                   OR (sender_id = ? AND receiver_id = ?)
-            ");
-            $deleteNudges->execute([$userId, $friendId, $friendId, $userId]);
-
-            // Eliminar cualquier solicitud de amistad pendiente entre ambos
-            $deleteRequests = $db->prepare("
-                DELETE FROM friend_requests
-                WHERE (sender_id = ? AND receiver_id = ?)
-                   OR (sender_id = ? AND receiver_id = ?)
-            ");
-            $deleteRequests->execute([$userId, $friendId, $friendId, $userId]);
-
-            $db->commit();
-        } catch (\Exception $e) {
-            $db->rollBack();
-            sendJsonResponse(['error' => 'Error al eliminar amigo: ' . $e->getMessage()], 500);
-        }
-
-        sendJsonResponse([
-            'success'   => true,
-            'message'   => 'Amigo eliminado correctamente.',
-            'friend_id' => $friendId
-        ]);
-    }
-
     /**
-     * Perfil completo de un amigo (o el propio, si friendId === userId) en una sola
-     * llamada: stats + historial de 30 dias para el tracker semanal + amigos en comun.
-     * Antes FriendProfileView necesitaba 2 peticiones (getFriends completo solo para
-     * encontrar a uno + getFriendHistory); esto reemplaza ambas.
+     * Perfil completo de un usuario (o el propio, si friendId === userId) en una sola
+     * llamada: stats + historial de 30 dias para el tracker semanal + contadores de
+     * seguidores/seguidos + amigos en comun.
      */
     public static function getFriendProfile(string $userId, string $friendId) {
         $db = getDbConnection();
         $isSelf = ($userId === $friendId);
 
-        if (!$isSelf && !self::areFriends($db, $userId, $friendId)) {
+        $isFollowing = $isSelf ? true : self::isFollowing($db, $userId, $friendId);
+        $isFollowedBy = $isSelf ? true : self::isFollowing($db, $friendId, $userId);
+
+        if (!$isSelf && !$isFollowing && !$isFollowedBy) {
             sendJsonResponse(['error' => 'No tienes permiso para ver el perfil de este usuario.'], 403);
         }
 
@@ -535,6 +273,7 @@ class FriendController {
         }
 
         $status = StreakUtils::computeStatus($friend['last_read_date'], (int)$friend['streak_count'], $friend['timezone']);
+        $isMutual = $isFollowing && $isFollowedBy;
 
         sendJsonResponse([
             'success' => true,
@@ -548,21 +287,39 @@ class FriendController {
                 'has_read_today'   => $status->hasReadToday,
                 'is_streak_lost'   => $status->isStreakLost,
                 'total_days_read'  => self::countTotalDaysRead($db, $friendId),
+                'member_since'     => substr((string)$friend['created_at'], 0, 10),
+                'followers_count'  => self::countFollowers($db, $friendId),
+                'following_count'  => self::countFollowing($db, $friendId),
+                'is_following'     => $isFollowing,
+                'is_followed_by'   => $isFollowedBy,
+                'is_mutual'        => $isMutual,
             ],
             'history'              => self::fetchHistory($db, $friendId, $status->today),
-            'nudged_today'         => $isSelf ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
+            'nudged_today'         => ($isSelf || !$isMutual) ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
             'mutual_friends_count' => $isSelf ? 0 : self::countMutualFriends($db, $userId, $friendId),
         ]);
     }
 
-    private static function areFriends(\PDO $db, string $userId, string $friendId): bool {
-        $stmt = $db->prepare("SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?");
-        $stmt->execute([$userId, $friendId]);
+    public static function isFollowing(\PDO $db, string $followerId, string $followedId): bool {
+        $stmt = $db->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
+        $stmt->execute([$followerId, $followedId]);
         return (bool)$stmt->fetch();
     }
 
+    public static function countFollowers(\PDO $db, string $userId): int {
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE followed_id = ?");
+        $stmt->execute([$userId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
+    public static function countFollowing(\PDO $db, string $userId): int {
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE follower_id = ?");
+        $stmt->execute([$userId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
     private static function fetchUserRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, streak_count, max_streak_count, last_read_date, timezone FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT display_name, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }
@@ -590,14 +347,22 @@ class FriendController {
         return (bool)$stmt->fetch();
     }
 
-    /** Cuenta cuantas personas tienen agregadas tanto $userId como $friendId. */
+    /** Cuenta cuantas personas tienen seguimiento mutuo con ambos usuarios ("amigos en comun"). */
     private static function countMutualFriends(\PDO $db, string $userId, string $friendId): int {
         $stmt = $db->prepare("
-            SELECT COUNT(*) AS total
-            FROM friendships f1
-            JOIN friendships f2 ON f1.friend_id = f2.friend_id
-            WHERE f1.user_id = ? AND f2.user_id = ?
-              AND f1.friend_id NOT IN (?, ?)
+            SELECT COUNT(*) AS total FROM (
+                SELECT f1.followed_id AS uid
+                FROM follows f1
+                JOIN follows f1b ON f1b.follower_id = f1.followed_id AND f1b.followed_id = f1.follower_id
+                WHERE f1.follower_id = ?
+            ) mutual_a
+            JOIN (
+                SELECT f2.followed_id AS uid
+                FROM follows f2
+                JOIN follows f2b ON f2b.follower_id = f2.followed_id AND f2b.followed_id = f2.follower_id
+                WHERE f2.follower_id = ?
+            ) mutual_b ON mutual_a.uid = mutual_b.uid
+            WHERE mutual_a.uid NOT IN (?, ?)
         ");
         $stmt->execute([$userId, $friendId, $userId, $friendId]);
         return (int)($stmt->fetch()['total'] ?? 0);

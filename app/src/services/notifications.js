@@ -83,7 +83,7 @@ export const NotificationService = {
       await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
         console.log('[PushActionPerformed]', notificationAction);
         const type = notificationAction.notification?.data?.type;
-        const friendTypes = ['friend_request', 'friend_added', 'nudge'];
+        const friendTypes = ['new_follower', 'nudge'];
         if (friendTypes.includes(type)) {
           onFriendNotificationTapped?.();
         }
