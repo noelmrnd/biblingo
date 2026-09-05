@@ -34,7 +34,7 @@
             :user="currentUser" 
             @logout="onLogout" 
             @user-updated="onUserUpdated"
-            @open-tour="tourRef.open"
+            @open-tour="tourRef?.open"
           />
         </div>
       </main>
