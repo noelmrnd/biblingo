@@ -34,7 +34,7 @@
               v-for="(_, index) in steps" 
               :key="index"
               :class="[
-                index <= currentStep ? 'bg-brand-green shadow-sm shadow-emerald-500/50' : 'bg-slate-800'
+                index <= currentStep ? 'bg-brand-green shadow-sm shadow-emerald-500/50' : 'bg-slate-700'
               ]"
               class="h-full rounded-full transition-all duration-300"
             ></div>
@@ -44,16 +44,16 @@
         <!-- Contenido Central Dinámico del Paso -->
         <div class="py-6 flex flex-col items-center text-center space-y-4 flex-1">
           <!-- Ilustración del paso desde /tour -->
-          <div class="relative py-2 flex items-center justify-center min-h-[160px] w-full">
+          <div class="relative flex items-center justify-center w-full mt-6 mb-4">
             <img 
               :src="currentStepData.image" 
               :alt="currentStepData.title"
-              class="w-40 h-40 object-contain drop-shadow-xl select-none pointer-events-none transition-all duration-300"
+              class="h-40 object-contain drop-shadow-xl select-none pointer-events-none transition-all duration-300"
             />
           </div>
 
           <!-- Textos: Título y Descripción -->
-          <div class="space-y-2.5">
+          <div class="space-y-3">
             <h3 class="text-2xl font-extrabold text-white leading-tight">
               {{ currentStepData.title }}
             </h3>
@@ -109,6 +109,11 @@ import confetti from 'canvas-confetti';
 import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
 
+import tourStep1 from '../assets/tour/tour-step-1.png';
+import tourStep2 from '../assets/tour/tour-step-2.png';
+import tourStep3 from '../assets/tour/tour-step-3.png';
+import tourStep4 from '../assets/tour/tour-step-4.png';
+
 const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
 const isOpen = ref(false);
 const currentStep = ref(0);
@@ -116,28 +121,28 @@ const currentStep = ref(0);
 const steps = [
   {
     title: 'Tu racha diaria',
-    description: 'Cada día que lees tus libros favoritos aumentas tu racha. Si dejas pasar un día sin leer, la racha se congelará. ¡Mantén encendida tu llama!',
+    description: 'Cada día que lees tus libros favoritos aumentas tu racha. Si dejas pasar un día sin leer, la racha se congelará. ¡Mantén encedida tu llama!',
     ambientColor: 'bg-brand-flame',
-    image: '/tour/tour-step-1.png'
-  },
-  {
-    title: 'Marca tu lectura',
-    description: 'Dedica unos minutos al día a avanzar en tus libros. Al terminar, presiona el botón verde para registrar tu progreso y compartir cómo te hizo sentir lo que leíste.',
-    ambientColor: 'bg-brand-green',
-    image: '/tour/tour-step-2.png'
+    image: tourStep1
   },
   {
     title: 'Lectura entre amigos',
     description: 'Invita a tus amigos con tu código o QR para leer juntos. Podrás competir en el ranking amistoso y darles un toque si se les hace tarde.',
     ambientColor: 'bg-brand-blue',
-    image: '/tour/tour-step-3.png'
+    image: tourStep2
   },
   {
     title: 'Protege tu hábito',
-    description: 'Configura en tu perfil la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu momento de lectura.',
+    description: 'Configura la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu lectura diaria.',
     ambientColor: 'bg-brand-purple',
-    image: '/tour/tour-step-4.png'
-  }
+    image: tourStep3
+  },
+  {
+    title: 'Un momento para ti',
+    description: 'Dedica unos minutos al día a avanzar en tus libros. Al terminar, comparte cómo te hizo sentir lo que leíste.',
+    ambientColor: 'bg-brand-green',
+    image: tourStep4
+  },
 ];
 
 const currentStepData = computed(() => steps[currentStep.value]);

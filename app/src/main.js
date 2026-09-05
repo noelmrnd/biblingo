@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import App from './App.vue';
-import './style.css';
+import './assets/style.css';
 import { setupKeyboardDismiss } from './utils/keyboard';
 
 setupKeyboardDismiss();
