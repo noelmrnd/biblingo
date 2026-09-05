@@ -13,15 +13,21 @@ class FriendController {
     public static function getFriends(string $userId) {
         $db = getDbConnection();
 
-        // 1. Obtener lista de amigos del usuario
+        // 1. Obtener lista de amigos del usuario, incluyendo al propio usuario, ya ordenados
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
+                   0 AS is_self
             FROM friendships f
             JOIN users u ON f.friend_id = u.id
             WHERE f.user_id = ?
-            ORDER BY u.streak_count DESC, u.display_name ASC
+            UNION ALL
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
+                   1 AS is_self
+            FROM users u
+            WHERE u.id = ?
+            ORDER BY streak_count DESC, display_name ASC
         ");
-        $stmt->execute([$userId]);
+        $stmt->execute([$userId, $userId]);
         $friends = $stmt->fetchAll();
 
         // 2. Obtener la última fecha de toque enviada por este usuario en una sola consulta indexada
@@ -56,16 +62,20 @@ class FriendController {
                 $lastNudgeDate = $nudgeMap[$friendId] ?? null;
                 $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $friendToday);
 
+                $lastReadLabel = DateUtils::formatReadDateLabel($lastRead, $friendToday, $friendYesterday);
+
                 return [
                     'id'               => $friendId,
                     'display_name'     => $f['display_name'],
                     'streak_count'     => $streakCount,
                     'max_streak_count' => (int)$f['max_streak_count'],
                     'last_read_date'   => $lastRead,
+                    'last_read_label'  => $lastReadLabel,
                     'invite_code'      => $f['invite_code'],
                     'nudged_today'     => $nudgedToday,
                     'has_read_today'   => $hasReadToday,
-                    'is_streak_lost'   => $isStreakLost
+                    'is_streak_lost'   => $isStreakLost,
+                    'is_self'          => (bool)$f['is_self']
                 ];
             }, $friends)
         ]);
@@ -192,7 +202,7 @@ class FriendController {
 
         // 1. Solicitudes recibidas
         $recvStmt = $db->prepare("
-            SELECT fr.id AS request_id, fr.sender_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, fr.created_at
+            SELECT fr.id AS request_id, fr.sender_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, u.timezone, fr.created_at
             FROM friend_requests fr
             JOIN users u ON fr.sender_id = u.id
             WHERE fr.receiver_id = ?
@@ -203,7 +213,7 @@ class FriendController {
 
         // 2. Solicitudes enviadas pendientes
         $sentStmt = $db->prepare("
-            SELECT fr.id AS request_id, fr.receiver_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, fr.created_at
+            SELECT fr.id AS request_id, fr.receiver_id, u.display_name, u.streak_count, u.last_read_date, u.invite_code, u.timezone, fr.created_at
             FROM friend_requests fr
             JOIN users u ON fr.receiver_id = u.id
             WHERE fr.sender_id = ?
@@ -213,26 +223,34 @@ class FriendController {
         $sent = $sentStmt->fetchAll();
 
         $mapReceived = array_map(function($r) {
+            $tz = $r['timezone'] ?? 'UTC';
+            $today = DateUtils::getUserToday($tz);
+            $yesterday = DateUtils::getUserYesterday($tz);
             return [
-                'request_id'     => (string)$r['request_id'],
-                'sender_id'      => (string)$r['sender_id'],
-                'display_name'   => $r['display_name'],
-                'streak_count'   => (int)$r['streak_count'],
-                'last_read_date' => $r['last_read_date'],
-                'invite_code'    => $r['invite_code'],
-                'created_at'     => $r['created_at']
+                'request_id'      => (string)$r['request_id'],
+                'sender_id'       => (string)$r['sender_id'],
+                'display_name'    => $r['display_name'],
+                'streak_count'    => (int)$r['streak_count'],
+                'last_read_date'  => $r['last_read_date'],
+                'last_read_label' => DateUtils::formatReadDateLabel($r['last_read_date'], $today, $yesterday),
+                'invite_code'     => $r['invite_code'],
+                'created_at'      => $r['created_at']
             ];
         }, $received);
 
         $mapSent = array_map(function($s) {
+            $tz = $s['timezone'] ?? 'UTC';
+            $today = DateUtils::getUserToday($tz);
+            $yesterday = DateUtils::getUserYesterday($tz);
             return [
-                'request_id'     => (string)$s['request_id'],
-                'receiver_id'    => (string)$s['receiver_id'],
-                'display_name'   => $s['display_name'],
-                'streak_count'   => (int)$s['streak_count'],
-                'last_read_date' => $s['last_read_date'],
-                'invite_code'    => $s['invite_code'],
-                'created_at'     => $s['created_at']
+                'request_id'      => (string)$s['request_id'],
+                'receiver_id'     => (string)$s['receiver_id'],
+                'display_name'    => $s['display_name'],
+                'streak_count'    => (int)$s['streak_count'],
+                'last_read_date'  => $s['last_read_date'],
+                'last_read_label' => DateUtils::formatReadDateLabel($s['last_read_date'], $today, $yesterday),
+                'invite_code'     => $s['invite_code'],
+                'created_at'      => $s['created_at']
             ];
         }, $sent);
 

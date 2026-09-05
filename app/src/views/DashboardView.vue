@@ -178,7 +178,8 @@ const onReadingLogged = ({ res, reaction }) => {
     ...props.user,
     streak_count: res.streak_count,
     max_streak_count: res.max_streak_count,
-    last_read_date: res.last_read_date
+    last_read_date: res.last_read_date,
+    last_read_label: res.last_read_label
   });
 };
 
@@ -199,7 +200,8 @@ const loadReadingStatus = async () => {
         ...props.user,
         streak_count: res.streak_count,
         max_streak_count: res.max_streak_count,
-        last_read_date: res.last_read_date
+        last_read_date: res.last_read_date,
+        last_read_label: res.last_read_label
       });
     }
   } catch (e) {

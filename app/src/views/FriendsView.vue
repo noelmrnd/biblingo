@@ -245,7 +245,7 @@
         <span>Ranking de rachas</span>
       </h3>
 
-      <div v-if="friends.length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
+      <div v-if="friends.filter(f => !f.is_self).length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
         <p class="text-lg font-extrabold text-white">Aún no tienes amigos agregados.</p>
         <p class="text-base text-slate-300 font-medium">Muestra tu código QR o comparte tu enlace para empezar.</p>
@@ -253,9 +253,9 @@
 
       <div v-else class="space-y-3">
         <SwipeItem 
-          v-for="(friend, index) in sortedFriends" 
+          v-for="(friend, index) in friends"
           :key="friend.id"
-          :disabled="friend.id === user.id"
+          :disabled="friend.is_self"
           :is-open="activeSwipeFriendId === friend.id"
           :action-width="88"
           @open="activeSwipeFriendId = friend.id"
@@ -277,10 +277,10 @@
               <div class="min-w-0 flex-1">
                 <h4 class="font-bold text-white text-base flex items-center gap-3 truncate">
                   {{ friend.display_name }}
-                  <span v-if="friend.id === user.id" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
+                  <span v-if="friend.is_self" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
                 </h4>
                 <p class="text-slate-300 text-base font-medium truncate">
-                  {{ formatFriendlyDate(friend.last_read_date) }}
+                  {{ friend.last_read_label }}
                 </p>
               </div>
             </div>
@@ -303,7 +303,7 @@
 
               <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
               <button
-                v-if="friend.id !== user.id && !friend.has_read_today"
+                v-if="!friend.is_self && !friend.has_read_today"
                 @click.stop="sendNudge(friend)"
                 :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
                 class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
@@ -370,7 +370,6 @@ import QRCode from 'qrcode';
 import { ApiService } from '../services/api';
 import { ShareService } from '../services/shareService';
 import { ToastService } from '../services/toast';
-import { formatFriendlyDate } from '../utils/dateFormatter';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -409,22 +408,6 @@ const sendNudge = async (friend) => {
     nudgeLoading.value[friend.id] = false;
   }
 };
-
-const sortedFriends = computed(() => {
-  const all = [...friends.value];
-  if (!all.some(f => f.id === props.user.id)) {
-    all.push({
-      id: props.user.id,
-      display_name: props.user.display_name,
-      streak_count: props.user.streak_count,
-      last_read_date: props.user.last_read_date,
-      invite_code: props.user.invite_code,
-      has_read_today: props.user.has_read_today,
-      is_streak_lost: props.user.is_streak_lost
-    });
-  }
-  return all.sort((a, b) => b.streak_count - a.streak_count);
-});
 
 const generateQrCode = async () => {
   if (!props.user.invite_code) return;

@@ -34,4 +34,21 @@ class DateUtils {
         $dt->modify('-1 day');
         return $dt->format('Y-m-d');
     }
+
+    /**
+     * Etiqueta amigable ('Hoy', 'Ayer', 'Sin racha' o DD/MM/YYYY) para una fecha 'Y-m-d',
+     * comparada contra el hoy/ayer del dueño de esa fecha (no del viewer).
+     */
+    public static function formatReadDateLabel(?string $readDate, string $today, string $yesterday): string {
+        if (empty($readDate)) {
+            return 'Sin racha';
+        }
+        if ($readDate === $today) {
+            return 'Hoy';
+        }
+        if ($readDate === $yesterday) {
+            return 'Ayer';
+        }
+        return implode('/', array_reverse(explode('-', $readDate)));
+    }
 }

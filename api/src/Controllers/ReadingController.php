@@ -47,6 +47,7 @@ class ReadingController {
             'streak_count'     => $streakCount,
             'max_streak_count' => (int)$user['max_streak_count'],
             'last_read_date'   => $lastRead,
+            'last_read_label'  => DateUtils::formatReadDateLabel($lastRead, $today, $yesterday),
             'has_read_today'   => $hasReadToday,
             'today_reaction'   => $todayReaction,
             'is_streak_lost'   => $isStreakLost,
@@ -119,6 +120,7 @@ class ReadingController {
             'streak_count'     => $currentStreak,
             'max_streak_count' => $maxStreak,
             'last_read_date'   => $today,
+            'last_read_label'  => 'Hoy',
             'reaction'         => $reaction
         ]);
     }
