@@ -6,7 +6,7 @@ import { NotificationService } from '../services/notifications';
  * Registra los listeners globales de ciclo de vida de la app: notificaciones push,
  * retorno a primer plano y deep links de invitación.
  */
-export function useAppLifecycle({ getCurrentUser, onDeepLinkInvite }) {
+export function useAppLifecycle({ onDeepLinkInvite }) {
   const init = () => {
     // Caso 1: Quitar notificaciones Push entregadas al abrir la app
     NotificationService.clearPushNotifications();
@@ -20,11 +20,6 @@ export function useAppLifecycle({ getCurrentUser, onDeepLinkInvite }) {
 
     // Inicializar listeners de notificaciones locales
     NotificationService.attachLocalListeners();
-
-    const user = getCurrentUser();
-    if (user && user.id) {
-      NotificationService.initPushNotifications(user.id);
-    }
 
     // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
     DeepLinkService.initListener(async (inviteCode) => {

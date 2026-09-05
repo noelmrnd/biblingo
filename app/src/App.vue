@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
@@ -78,7 +78,6 @@ const { processInvite, resolvePendingInvite } = useInviteFlow({
 });
 
 const { init: initAppLifecycle } = useAppLifecycle({
-  getCurrentUser: () => currentUser.value,
   onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
 });
 
@@ -87,14 +86,18 @@ const onLoginSuccess = async (user) => {
   await UserService.saveSession(user);
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
 
-  // Inicializar Notificaciones Push para el usuario autenticado
-  if (user && user.id) {
-    NotificationService.initPushNotifications(user.id);
-  }
-
   // Procesar invitación pendiente si existía
   await resolvePendingInvite(user);
 };
+
+// Punto único de inicialización de push: se dispara solo cuando cambia el id de sesión
+// (login, restauración de sesión) — no en cada actualización de perfil/recordatorio.
+const currentUserId = computed(() => currentUser.value?.id);
+watch(currentUserId, (id) => {
+  if (id) {
+    NotificationService.initPushNotifications(id);
+  }
+});
 
 const onUserUpdated = async (updatedUser) => {
   currentUser.value = { ...currentUser.value, ...updatedUser };
