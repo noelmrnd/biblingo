@@ -3,8 +3,13 @@
     <!-- Componente Toast Flotante Global -->
     <ToastNotification />
 
+    <!-- Splash mientras se resuelve la sesión guardada, evita el parpadeo hacia Login -->
+    <div v-if="isInitializing" class="flex-1 flex items-center justify-center">
+      <div class="w-10 h-10 border-4 border-slate-700 border-t-brand-green rounded-full animate-spin"></div>
+    </div>
+
     <!-- Si no está autenticado, mostrar Login -->
-    <LoginView v-if="!currentUser" @login-success="onLoginSuccess" />
+    <LoginView v-else-if="!currentUser" @login-success="onLoginSuccess" />
 
     <!-- Aplicación Principal -->
     <template v-else>
@@ -56,51 +61,26 @@ import DashboardView from './views/DashboardView.vue';
 import FriendsView from './views/FriendsView.vue';
 import ProfileView from './views/ProfileView.vue';
 import ToastNotification from './components/ToastNotification.vue';
-import { DeepLinkService } from './services/deepLinks';
-import { ApiService } from './services/api';
-import { App as CapApp } from '@capacitor/app';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
-import { StorageService } from './services/storage';
+import { useInviteFlow } from './composables/useInviteFlow';
+import { useAppLifecycle } from './composables/useAppLifecycle';
 
 const currentUser = ref(null);
 const currentTab = ref('dashboard');
 const tourRef = ref(null);
-const PENDING_INVITE_KEY = 'pending_invite_code';
-let lastProcessedCode = null;
-let lastProcessedTime = 0;
+const isInitializing = ref(true);
 
-const processInvite = async (inviteCode, user = currentUser.value) => {
-  if (!inviteCode) return;
+const { processInvite, resolvePendingInvite } = useInviteFlow({
+  getCurrentUser: () => currentUser.value,
+  onFriendAdded: () => { currentTab.value = 'friends'; }
+});
 
-  // Prevenir reprocesamiento duplicado inmediato (ej: cold-start + listener)
-  const now = Date.now();
-  if (inviteCode === lastProcessedCode && now - lastProcessedTime < 3000) {
-    return;
-  }
-  lastProcessedCode = inviteCode;
-  lastProcessedTime = now;
-
-  // Si no hay sesión iniciada, almacenar para procesar después del login/registro
-  if (!user || !user.id) {
-    await StorageService.set(PENDING_INVITE_KEY, inviteCode);
-    ToastService.info(`Invitación (${inviteCode}) guardada. Inicia sesión para conectar con tu amigo.`);
-    return;
-  }
-
-  try {
-    const res = await ApiService.addFriend(user.id, inviteCode);
-    if (res.success) {
-      ToastService.success(res.message || `¡Solicitud de amistad enviada a ${res.friend?.display_name}! 👥🎉`);
-      currentTab.value = 'friends';
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'Error al procesar la invitación.');
-  } finally {
-    await StorageService.remove(PENDING_INVITE_KEY);
-  }
-};
+const { init: initAppLifecycle } = useAppLifecycle({
+  getCurrentUser: () => currentUser.value,
+  onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
+});
 
 const onLoginSuccess = async (user) => {
   currentUser.value = user;
@@ -113,10 +93,7 @@ const onLoginSuccess = async (user) => {
   }
 
   // Procesar invitación pendiente si existía
-  const pendingInvite = await StorageService.get(PENDING_INVITE_KEY);
-  if (pendingInvite) {
-    await processInvite(pendingInvite, user);
-  }
+  await resolvePendingInvite(user);
 };
 
 const onUserUpdated = async (updatedUser) => {
@@ -132,36 +109,22 @@ const onLogout = async () => {
 };
 
 onMounted(async () => {
-  // Caso 1: Quitar notificaciones Push entregadas al abrir la app
-  NotificationService.clearPushNotifications();
-
-  // Escuchar cuando la app regresa a primer plano desde segundo plano
-  CapApp.addListener('appStateChange', ({ isActive }) => {
-    if (isActive) {
-      // Caso 1: Quitar notificaciones Push al volver a la app
-      NotificationService.clearPushNotifications();
-    }
-  });
-
   // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
-  currentUser.value = await UserService.initSession();
-
-  // Inicializar listeners de notificaciones locales
-  NotificationService.attachLocalListeners();
-
-  if (currentUser.value && currentUser.value.id) {
-    NotificationService.initPushNotifications(currentUser.value.id);
-
-    // Procesar invitación pendiente guardada si existe sesión activa
-    const pendingInvite = await StorageService.get(PENDING_INVITE_KEY);
-    if (pendingInvite) {
-      await processInvite(pendingInvite, currentUser.value);
-    }
+  try {
+    currentUser.value = await UserService.initSession();
+  } catch (e) {
+    console.warn('No se pudo restaurar la sesión guardada:', e.message);
+    currentUser.value = null;
+  } finally {
+    isInitializing.value = false;
   }
 
-  // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
-  DeepLinkService.initListener(async (inviteCode) => {
-    await processInvite(inviteCode, currentUser.value);
-  });
+  // Registrar listeners globales: push, retorno a primer plano, deep links
+  initAppLifecycle();
+
+  if (currentUser.value && currentUser.value.id) {
+    // Procesar invitación pendiente guardada si existe sesión activa
+    await resolvePendingInvite(currentUser.value);
+  }
 });
 </script>
