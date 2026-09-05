@@ -226,14 +226,20 @@
         <span>Cerrar sesión</span>
       </button>
 
-      <a
-        href="https://www.biblingo.me/privacidad"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="block text-center text-sm font-semibold text-slate-500 hover:text-slate-300 py-2"
-      >
-        Política de privacidad
-      </a>
+      <div>
+        <a
+          href="https://www.biblingo.me/privacidad"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block text-center text-sm font-semibold text-slate-500 hover:text-slate-300 py-2"
+        >
+          Política de privacidad
+        </a>
+
+        <p class="text-center text-sm font-medium text-slate-600">
+          Versión {{ appVersion }}
+        </p>
+      </div>
     </div>
 
     <!-- Modal Confirmación de Cerrar Sesión -->
@@ -286,6 +292,9 @@ import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 import { ReviewService } from '../services/review';
+import versionInfo from '../version.json';
+
+const appVersion = versionInfo.version;
 
 const props = defineProps({
   user: { type: Object, required: true }
