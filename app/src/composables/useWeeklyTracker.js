@@ -3,9 +3,10 @@ import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
 
 /**
- * Carga el historial de lectura de un usuario y arma el tracker semanal (L-D).
+ * Carga el historial de lectura de un usuario (propio o de un amigo, validado por el
+ * backend vía friendship) y arma el tracker semanal (L-D).
  */
-export function useWeeklyTracker(userId) {
+export function useWeeklyTracker(userId, friendId = null) {
   const loading = ref(true);
   const hasReadToday = ref(null);
   const historyDates = ref([]);
@@ -32,7 +33,9 @@ export function useWeeklyTracker(userId) {
   const load = async () => {
     loading.value = true;
     try {
-      const res = await ApiService.getReadingStatus(userId);
+      const res = friendId
+        ? await ApiService.getFriendHistory(userId, friendId)
+        : await ApiService.getReadingStatus(userId);
       if (res.success) {
         hasReadToday.value = res.has_read_today;
         historyDates.value = res.history || [];

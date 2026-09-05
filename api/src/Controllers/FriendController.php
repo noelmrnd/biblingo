@@ -518,5 +518,40 @@ class FriendController {
             'friend_id' => $friendId
         ]);
     }
+
+    public static function getFriendHistory(string $userId, string $friendId) {
+        $db = getDbConnection();
+
+        $friendCheck = $db->prepare("SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?");
+        $friendCheck->execute([$userId, $friendId]);
+        if (!$friendCheck->fetch() && $userId !== $friendId) {
+            sendJsonResponse(['error' => 'No tienes permiso para ver el historial de este usuario.'], 403);
+        }
+
+        $stmt = $db->prepare("SELECT last_read_date, timezone FROM users WHERE id = ?");
+        $stmt->execute([$friendId]);
+        $friend = $stmt->fetch();
+
+        if (!$friend) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        $tz = $friend['timezone'] ?? 'UTC';
+        $today = DateUtils::getUserToday($tz);
+
+        $logsStmt = $db->prepare("
+            SELECT read_date FROM reading_logs
+            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY)
+            ORDER BY read_date DESC
+        ");
+        $logsStmt->execute([$friendId, $today]);
+        $historyDates = array_column($logsStmt->fetchAll(), 'read_date');
+
+        sendJsonResponse([
+            'success'        => true,
+            'has_read_today' => $friend['last_read_date'] === $today,
+            'history'        => $historyDates,
+        ]);
+    }
 }
 

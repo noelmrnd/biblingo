@@ -53,6 +53,10 @@ export const ApiService = {
     return request(`/friends/requests?user_id=${userId}`);
   },
 
+  async getFriendHistory(userId, friendId) {
+    return request(`/friends/history?user_id=${userId}&friend_id=${friendId}`);
+  },
+
   async sendFriendRequest(userId, inviteCode) {
     return request('/friends/request', {
       method: 'POST',
