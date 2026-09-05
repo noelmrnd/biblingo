@@ -268,7 +268,7 @@
               <span class="text-4xl" v-if="index === 0">🥇</span>
               <span class="text-4xl" v-else-if="index === 1">🥈</span>
               <span class="text-4xl" v-else-if="index === 2">🥉</span>
-              <span v-else class="text-xl text-slate-400 font-semibold">#{{ index + 1 }}</span>
+              <span v-else class="text-xl text-slate-400 font-semibold">{{ index + 1 }}</span>
             </div>
 
             <div class="min-w-0 flex-1">
