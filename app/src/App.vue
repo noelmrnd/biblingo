@@ -95,7 +95,9 @@ const onLoginSuccess = async (user) => {
 const currentUserId = computed(() => currentUser.value?.id);
 watch(currentUserId, (id) => {
   if (id) {
-    NotificationService.initPushNotifications(id);
+    NotificationService.initPushNotifications(id).catch((e) => {
+      console.warn('No se pudo inicializar notificaciones push:', e.message);
+    });
   }
 });
 
