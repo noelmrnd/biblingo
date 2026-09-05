@@ -8,7 +8,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/Services/DomainEventProcessor.php';
 
 $isDaemon = in_array('--daemon', $argv, true) || in_array('-d', $argv, true) || in_array('--watch', $argv, true);
-$sleepSeconds = 3;
+$sleepSeconds = 10;
 
 echo "[" . date('Y-m-d H:i:s') . "] 📬 Iniciando worker de eventos de dominio...\n";
 
