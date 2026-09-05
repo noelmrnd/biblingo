@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+
 export const IS_DEV = import.meta.env.DEV === true;
 
 export const API_BASE_URL = IS_DEV
@@ -22,6 +24,7 @@ export const APP_CONFIG = {
   prodWebUrl: 'https://biblingo.me',
   prodAppUrl: 'https://app.biblingo.me',
   isDev: IS_DEV,
+  isNativeIOS: Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios',
   apiBaseUrl: API_BASE_URL,
 };
 

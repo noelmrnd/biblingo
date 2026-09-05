@@ -22,8 +22,9 @@
 
       <!-- Botones de Autenticación -->
       <div class="w-full space-y-3.5 pt-4">
-        <!-- Apple Sign In (iOS / Recomendado en Apple) -->
+        <!-- Apple Sign In (Exclusivo iOS Nativo) -->
         <button 
+          v-if="APP_CONFIG.isNativeIOS"
           @click="loginApple"
           :disabled="loading"
           class="w-full bg-white text-black font-extrabold py-4 px-6 rounded-2xl border-b-4 border-slate-300 active:border-b-0 active:translate-y-1 transition-all shadow-lg flex items-center justify-center gap-3 text-base cursor-pointer disabled:opacity-50"
@@ -85,7 +86,7 @@
 import { ref } from 'vue';
 import AppButton from '../components/AppButton.vue';
 import { AuthService } from '../services/authService';
-import { IS_DEV } from '../constants';
+import { IS_DEV, APP_CONFIG } from '../constants';
 
 const emit = defineEmits(['login-success']);
 const loading = ref(false);
