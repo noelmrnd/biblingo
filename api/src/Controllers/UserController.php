@@ -47,6 +47,9 @@ class UserController {
         $userStmt = $db->prepare("SELECT id, display_name, email, invite_code, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
         $userStmt->execute([$userId]);
         $updatedUser = $userStmt->fetch();
+        if (!$updatedUser) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
 
         sendJsonResponse([
             'success' => true,
@@ -88,7 +91,13 @@ class UserController {
                 'success' => true,
                 'message' => 'Token Push registrado con éxito.'
             ]);
-        } catch (Exception $e) {
+        } catch (\PDOException $e) {
+            // Manejar error de integridad de clave foránea si el usuario fue removido
+            if ($e->getCode() === '23000' || str_contains($e->getMessage(), '1452')) {
+                sendJsonResponse(['error' => 'Usuario no encontrado en el sistema.'], 404);
+            }
+            sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
+        } catch (\Throwable $e) {
             sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
         }
     }

@@ -98,7 +98,10 @@ class FriendController {
         $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
         $meStmt->execute([$userId]);
         $me = $meStmt->fetch();
-        $myDisplayName = $me ? $me['display_name'] : 'Un usuario';
+        if (!$me) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+        $myDisplayName = $me['display_name'];
 
         // Insertar relaciones bidireccionales y registrar evento de dominio en MySQL
         try {
@@ -187,7 +190,10 @@ class FriendController {
         $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
         $meStmt->execute([$userId]);
         $me = $meStmt->fetch();
-        $myDisplayName = $me ? $me['display_name'] : 'Un amigo';
+        if (!$me) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+        $myDisplayName = $me['display_name'];
 
         // 6. Registrar el toque y persistir evento de dominio en MySQL
         try {
