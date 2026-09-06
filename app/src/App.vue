@@ -21,6 +21,7 @@
         :user="currentUser"
         @user-updated="onUserUpdated"
         @logout="onLogout"
+        @delete-account="onDeleteAccount"
         @open-tour="tourRef?.open"
       />
 
@@ -40,7 +41,7 @@ import ToastNotification from './components/ToastNotification.vue';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
-import { setUnauthorizedHandler } from './services/api';
+import { ApiService, setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
@@ -91,10 +92,36 @@ const onUserUpdated = async (updatedUser) => {
 
 const onLogout = async () => {
   await NotificationService.unregisterPushToken();
+  // Revoca el token en el servidor (best-effort): si falla igual se limpia la
+  // sesion local, no tiene sentido dejar al usuario atrapado sin poder salir.
+  try {
+    await ApiService.logout();
+  } catch (e) {
+    console.warn('No se pudo revocar la sesión en el servidor:', e.message);
+  }
   clearUser();
   await UserService.clearSession();
   router.push({ name: 'dashboard' });
   // ToastService.info('Sesión cerrada correctamente.');
+};
+
+const onDeleteAccount = async () => {
+  // Antes de borrar la cuenta: el token todavia es valido aca. Una vez que el
+  // servidor marca status='deleted' el token se invalida de inmediato, asi que
+  // desregistrar el push despues dispararia un 401 y el logout forzado por error.
+  await NotificationService.unregisterPushToken();
+
+  try {
+    await ApiService.deleteAccount();
+  } catch (e) {
+    ToastService.error(e.message || 'No se pudo eliminar la cuenta.');
+    return;
+  }
+
+  clearUser();
+  await UserService.clearSession();
+  router.push({ name: 'dashboard' });
+  ToastService.info('Tu cuenta fue eliminada.');
 };
 
 // Token invalido/expirado/revocado: no tiene caso llamar endpoints autenticados

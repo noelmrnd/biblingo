@@ -154,4 +154,18 @@ export const ApiService = {
     });
   },
 
+  // Revoca el token de esta sesion (o todos con everywhere=true) en el servidor.
+  async logout(everywhere = false) {
+    return request('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({ all: everywhere })
+    });
+  },
+
+  // Soft delete: el servidor marca la cuenta como 'deleted' y su token deja de
+  // servir de inmediato. No es reversible desde la app.
+  async deleteAccount() {
+    return request('/user/account', { method: 'DELETE' });
+  },
+
 };

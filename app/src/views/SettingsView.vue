@@ -186,6 +186,14 @@
         <span>Cerrar sesión</span>
       </button>
 
+      <button
+        @click="isDeleteAccountModalOpen = true"
+        class="w-full bg-transparent hover:bg-rose-950/20 text-rose-500/70 hover:text-rose-400 font-bold py-3 px-4 rounded-2xl border-2 border-transparent transition-colors text-sm flex items-center justify-center gap-2.5 cursor-pointer"
+      >
+        <Trash2 class="w-4 h-4 stroke-[2.5]" />
+        <span>Eliminar cuenta</span>
+      </button>
+
       <div>
         <a
           href="https://www.biblingo.me/privacidad"
@@ -240,6 +248,44 @@
       </template>
     </AppModal>
 
+    <!-- Modal Confirmación de Eliminar Cuenta -->
+    <AppModal
+      :is-open="isDeleteAccountModalOpen"
+      title="¿Eliminar tu cuenta?"
+      description="Se borra tu racha, amigos e historial de lectura. Esta acción no se puede deshacer."
+      @close="isDeleteAccountModalOpen = false"
+      :show-close="false"
+    >
+      <template #icon>
+        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
+          <Trash2 class="w-5 h-5 text-rose-400 stroke-[2.5]" />
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center gap-3 w-full">
+          <div class="flex-1">
+            <AppButton
+              color="dark"
+              block
+              @click="isDeleteAccountModalOpen = false"
+            >
+              Cancelar
+            </AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton
+              color="rose"
+              block
+              @click="confirmDeleteAccount"
+            >
+              Eliminar
+            </AppButton>
+          </div>
+        </div>
+      </template>
+    </AppModal>
+
     <FeedbackModal
       :is-open="isFeedbackModalOpen"
       @close="isFeedbackModalOpen = false"
@@ -249,7 +295,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { UserRound, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import { UserRound, Bell, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
@@ -268,10 +314,11 @@ const props = defineProps({
   user: { type: Object, required: true }
 });
 
-const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
+const emit = defineEmits(['logout', 'delete-account', 'user-updated', 'open-tour']);
 
 const isLogoutModalOpen = ref(false);
 const isFeedbackModalOpen = ref(false);
+const isDeleteAccountModalOpen = ref(false);
 
 const openTour = () => {
   emit('open-tour');
@@ -280,6 +327,11 @@ const openTour = () => {
 const confirmLogout = () => {
   isLogoutModalOpen.value = false;
   emit('logout');
+};
+
+const confirmDeleteAccount = () => {
+  isDeleteAccountModalOpen.value = false;
+  emit('delete-account');
 };
 
 const rateApp = async () => {
