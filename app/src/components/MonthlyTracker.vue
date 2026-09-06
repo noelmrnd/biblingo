@@ -58,6 +58,11 @@ import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
 
+// Cache a nivel de modulo (no del componente): sobrevive a que el componente se
+// desmonte al cambiar de tab, ya que el router no usa <keep-alive>. Se pierde
+// solo si se cierra la app. Clave 'YYYY-M', valor: array de fechas leidas.
+const monthCache = new Map();
+
 const today = new Date();
 // 0 = mes actual, negativo = meses hacia atras. No se permite ir a futuro.
 const monthOffset = ref(0);
@@ -101,10 +106,19 @@ const loadMonth = async () => {
   const seq = ++requestSeq;
   const year = displayedMonth.value.getFullYear();
   const month = displayedMonth.value.getMonth() + 1;
+  const cacheKey = `${year}-${month}`;
+
+  if (monthCache.has(cacheKey)) {
+    readDates.value = monthCache.get(cacheKey);
+    return;
+  }
+
   try {
     const res = await ApiService.getReadingCalendar(year, month);
     if (seq !== requestSeq) return;
-    readDates.value = res.success ? (res.dates || []) : [];
+    const dates = res.success ? (res.dates || []) : [];
+    readDates.value = dates;
+    monthCache.set(cacheKey, dates);
   } catch (e) {
     if (seq !== requestSeq) return;
     console.warn('No se pudo cargar el calendario mensual:', e.message);
@@ -123,6 +137,9 @@ const markTodayRead = () => {
   const todayStr = toLocalDateString(today);
   if (monthOffset.value === 0 && !readDates.value.includes(todayStr)) {
     readDates.value = [...readDates.value, todayStr];
+
+    const cacheKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
+    monthCache.set(cacheKey, readDates.value);
   }
 };
 
