@@ -16,7 +16,7 @@
       <!-- Tour de Bienvenida Inicial Autónomo (Onboarding) -->
       <OnboardingTour ref="tourRef" />
 
-      <!-- Cada vista trae su propio AppPage con el header (AppHeader o SubHeader) que le corresponde -->
+      <!-- Cada vista trae su propio AppPage, que ya incluye el header que le corresponde -->
       <router-view
         :user="currentUser"
         @user-updated="onUserUpdated"

@@ -1,10 +1,5 @@
 <template>
-  <AppPage>
-    <template #header>
-      <SubHeader title="Ajustes" :back-to="{ name: 'profile' }" />
-    </template>
-
-    <div class="space-y-6">
+  <AppPage title="Ajustes" :back-to="{ name: 'profile' }">
     <div class="space-y-4">
       <!-- Título de Sección: Configuración -->
       <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
@@ -249,7 +244,6 @@
       :is-open="isFeedbackModalOpen"
       @close="isFeedbackModalOpen = false"
     />
-    </div>
   </AppPage>
 </template>
 
@@ -257,7 +251,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { UserRound, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
-import SubHeader from '../components/SubHeader.vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';

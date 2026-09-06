@@ -1,10 +1,5 @@
 <template>
-  <AppPage>
-    <template #header>
-      <SubHeader :title="friend?.display_name || 'Perfil'" :back-to="{ name: 'friends' }" />
-    </template>
-
-    <div class="space-y-4">
+  <AppPage :title="friend?.display_name || 'Perfil'" :back-to="{ name: 'friends' }">
     <div v-if="loading" class="py-16 text-center text-slate-400">Cargando perfil...</div>
 
     <div v-else-if="!friend" class="card-duo text-center py-8 text-slate-400 space-y-2">
@@ -144,7 +139,6 @@
       @change-tab="switchFollowListTab"
       @select-user="goToFriendProfile"
     />
-    </div>
   </AppPage>
 </template>
 
@@ -153,7 +147,6 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
-import SubHeader from '../components/SubHeader.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';

@@ -1,9 +1,5 @@
 <template>
-  <AppPage>
-    <template #header>
-      <AppHeader />
-    </template>
-
+  <AppPage app-header>
     <!-- Loading Indicator Centrado -->
     <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
       <div class="relative w-16 h-16 flex items-center justify-center">
@@ -40,7 +36,6 @@ let lastLoadedUserId = null;
 import { ref, onMounted } from 'vue';
 import { BookOpen } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
-import AppHeader from '../components/AppHeader.vue';
 import ReadingButton from '../components/ReadingButton.vue';
 import ReadingTimer from '../components/ReadingTimer.vue';
 import StreakHero from '../components/StreakHero.vue';
