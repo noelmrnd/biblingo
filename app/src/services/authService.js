@@ -51,7 +51,10 @@ export const AuthService = {
 
         return await ApiService.socialLogin({
           provider: 'apple',
-          id_token: response.profile?.user || response.idToken,
+          // idToken es el JWT real que el backend verifica (JwtVerifier exige 3 partes
+          // separadas por "."); profile.user es solo el identificador opaco de Apple
+          // (unico en la primera autorizacion) y nunca deberia mandarse como id_token.
+          id_token: response.idToken || response.profile?.user,
           email: response.profile?.email,
           display_name: displayName,
           platform: 'ios'
