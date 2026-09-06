@@ -394,7 +394,7 @@ const saveNotificationPrefs = async () => {
   if (notificationPrefs.daily_reminder) {
     await NotificationService.requestPermissions();
     await NotificationService.initPushNotifications(props.user.id);
-    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false, props.user.streak_freezes || 0);
   } else {
     await NotificationService.cancelReminders();
   }

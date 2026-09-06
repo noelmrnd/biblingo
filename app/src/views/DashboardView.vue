@@ -9,8 +9,8 @@
       <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
     </div>
 
-    <div v-else class="space-y-4">
-      <StreakHero :user="user" />
+    <template v-else>
+      <StreakHero :user="user" :has-read-today="hasReadToday" />
 
       <!-- Botón de Lectura de Hoy: readonly una vez que ya se registró -->
       <ReadingButton
@@ -20,10 +20,8 @@
         @reading-logged="onReadingLogged"
       />
 
-      <ReadingTimer />
-
       <MonthlyTracker ref="monthlyTrackerRef" />
-    </div>
+    </template>
   </AppPage>
 </template>
 
@@ -38,7 +36,6 @@ import { ref, onMounted } from 'vue';
 import { BookOpen } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import ReadingButton from '../components/ReadingButton.vue';
-import ReadingTimer from '../components/ReadingTimer.vue';
 import StreakHero from '../components/StreakHero.vue';
 import MonthlyTracker from '../components/MonthlyTracker.vue';
 import { NotificationService } from '../services/notifications';

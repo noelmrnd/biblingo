@@ -43,7 +43,7 @@ export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id
 export const STREAK_MILESTONES = [
   { days: 7, emoji: '🥉', label: '¡Una semana completa!' },
   { days: 30, emoji: '🥈', label: '¡Un mes de racha!' },
-  { days: 100, emoji: '🥇', label: '¡100 días! Sos imparable' },
+  { days: 100, emoji: '🥇', label: '¡100 días! Eres imparable' },
   { days: 365, emoji: '👑', label: '¡Un año leyendo! Leyenda total' },
 ];
 

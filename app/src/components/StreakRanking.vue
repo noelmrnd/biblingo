@@ -106,6 +106,8 @@ const props = defineProps({
   user: { type: Object, required: true }
 });
 
+const emit = defineEmits(['friends-loaded']);
+
 const router = useRouter();
 
 const friends = ref([]);
@@ -126,6 +128,7 @@ const loadFriends = async () => {
           nudge.markNudged(f.id);
         }
       });
+      emit('friends-loaded', friends.value.filter(f => !f.is_self).length);
     }
   } catch (e) {
     console.warn('Error al cargar amigos:', e.message);

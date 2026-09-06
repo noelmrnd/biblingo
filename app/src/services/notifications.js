@@ -97,8 +97,11 @@ export const NotificationService = {
   /**
    * Programar ráfaga de 7 días de notificaciones locales.
    * Si ya se leyó hoy o la hora de hoy ya pasó, comienza a notificar a partir de mañana.
+   * El recordatorio de HOY (si corresponde) usa un mensaje de urgencia real segun si
+   * queda o no un protector de racha, en vez del mismo mensaje generico de siempre —
+   * es el unico dia en que perder la racha es una amenaza inminente, no hipotetica.
    */
-  async schedule7DayBurst(reminderTimeStr = '20:00', currentStreak = 1, hasReadToday = false) {
+  async schedule7DayBurst(reminderTimeStr = '20:00', currentStreak = 1, hasReadToday = false, freezesAvailable = 0) {
     if (!Capacitor.isNativePlatform()) {
       console.log(`[Web Demo] Recordatorio de 7 días programado a las ${reminderTimeStr} (Ya leyó hoy: ${hasReadToday})`);
       return;
@@ -136,12 +139,24 @@ export const NotificationService = {
 
       for (let dayOffset = startOffset; dayOffset <= endOffset; dayOffset++) {
         const scheduleDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0);
-        const msgIndex = Math.abs(dayOffset) % messages.length;
+        const isTodayReminder = includeToday && dayOffset === 0;
+
+        let title = '📖 Biblingo: Recordatorio diario';
+        let body;
+        if (isTodayReminder) {
+          title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
+          body = freezesAvailable === 0
+            ? `Hoy o pierdes tus ${currentStreak} días de racha. No tienes protectores. ¡Lee ahora!`
+            : `Todavía tienes un protector, pero no lo gastes por descuido: lee hoy y sigue en ${currentStreak + 1}.`;
+        } else {
+          const msgIndex = Math.abs(dayOffset) % messages.length;
+          body = messages[msgIndex];
+        }
 
         notifications.push({
           id: 1000 + dayOffset,
-          title: '📖 Biblingo: Recordatorio diario',
-          body: messages[msgIndex],
+          title,
+          body,
           schedule: { at: scheduleDate },
           sound: 'beep.wav',
           badge: 1,
