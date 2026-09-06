@@ -94,3 +94,6 @@ html {
   top: calc(4rem + env(safe-area-inset-top, 0px));
 }
 
+.pb-safe-cond {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -60,6 +60,8 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     FriendController::unfollow($userId);
 } elseif ($requestUri === '/api/friends/nudge' && $method === 'POST') {
     FriendController::nudgeFriend($userId);
+} elseif ($requestUri === '/api/user/settings' && $method === 'GET') {
+    UserController::getSettings($userId);
 } elseif ($requestUri === '/api/user/update' && $method === 'POST') {
     UserController::updateProfile($userId);
 } elseif ($requestUri === '/api/user/push-token' && $method === 'POST') {

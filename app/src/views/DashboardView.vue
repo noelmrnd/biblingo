@@ -108,16 +108,14 @@ let lastLoadedUserId = null;
 import { ref, onMounted } from 'vue';
 import { BookOpen, CheckCircle2 } from '@lucide/vue';
 import ReadingButton from '../components/ReadingButton.vue';
-import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
+import { useCurrentUser } from '../composables/useCurrentUser';
 
 const props = defineProps({
   user: { type: Object, required: true }
 });
-
-const emit = defineEmits(['user-updated']);
 
 // Reiniciar flag si cambió de usuario
 if (lastLoadedUserId !== props.user?.id) {
@@ -126,12 +124,12 @@ if (lastLoadedUserId !== props.user?.id) {
 }
 
 const initialLoading = ref(isFirstAppLoad);
-const hasReadToday = ref(null);
+const hasReadToday = ref(props.user?.has_read_today ?? null);
+const { refreshProfile, mergeUser } = useCurrentUser();
 
 const onReadingLogged = ({ res }) => {
   hasReadToday.value = true;
-  emit('user-updated', {
-    ...props.user,
+  mergeUser({
     streak_count: res.streak_count,
     max_streak_count: res.max_streak_count,
     streak_freezes: res.streak_freezes,
@@ -150,38 +148,18 @@ const onReadingLogged = ({ res }) => {
   }
 };
 
+// Usa el mismo singleton/TTL que Profile: si App o Profile ya pidieron el estado
+// hace poco, esto no repite la peticion, solo lee el usuario ya actualizado.
 const loadReadingStatus = async () => {
   try {
-    const res = await ApiService.getReadingStatus();
-    if (res.success) {
-      hasReadToday.value = res.has_read_today;
-
-      // Si ya completó la lectura de hoy, asegurar limpieza de alertas locales y badge
-      if (res.has_read_today) {
+    const updated = await refreshProfile();
+    if (updated) {
+      hasReadToday.value = updated.has_read_today;
+      if (updated.has_read_today) {
         NotificationService.clearLocalNotifications();
       }
-
-      emit('user-updated', {
-        ...props.user,
-        streak_count: res.streak_count,
-        max_streak_count: res.max_streak_count,
-        streak_freezes: res.streak_freezes,
-        streak_freezes_used: res.streak_freezes_used,
-        total_days_read: res.total_days_read,
-        reaction_counts: res.reaction_counts,
-        member_since: res.member_since,
-        followers_count: res.followers_count,
-        following_count: res.following_count,
-        last_read_date: res.last_read_date,
-        last_read_label: res.last_read_label,
-        has_read_today: res.has_read_today,
-        is_streak_lost: res.is_streak_lost
-      });
-
-      return res;
     }
-  } catch (e) {
-    console.warn('No se pudo actualizar estado:', e.message);
+    return updated;
   } finally {
     isFirstAppLoad = false;
     initialLoading.value = false;
@@ -189,9 +167,9 @@ const loadReadingStatus = async () => {
 };
 
 onMounted(async () => {
-  const res = await loadReadingStatus();
+  const updated = await loadReadingStatus();
   const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-  const streakCount = res?.success ? res.streak_count : props.user.streak_count;
+  const streakCount = updated ? updated.streak_count : props.user.streak_count;
   NotificationService.schedule7DayBurst(savedTime, streakCount, hasReadToday.value);
 });
 

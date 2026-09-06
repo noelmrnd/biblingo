@@ -2,38 +2,38 @@ import { StorageService } from '../services/storage';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 
-const PENDING_INVITE_KEY = 'pending_invite_code';
+const PENDING_INVITE_KEY = 'pending_invite_username';
 
 /**
- * Maneja el flujo de invitaciones por código: procesa inmediatamente si hay sesión,
- * o guarda el código pendiente para procesarlo después del login/registro.
+ * Maneja el flujo de invitaciones por username: procesa inmediatamente si hay sesión,
+ * o guarda el username pendiente para procesarlo después del login/registro.
  */
 export function useInviteFlow({ getCurrentUser, onFriendAdded }) {
-  let lastProcessedCode = null;
+  let lastProcessedUsername = null;
   let lastProcessedTime = 0;
 
-  const processInvite = async (inviteCode, user = getCurrentUser()) => {
-    if (!inviteCode) return;
+  const processInvite = async (username, user = getCurrentUser()) => {
+    if (!username) return;
 
     // Prevenir reprocesamiento duplicado inmediato (ej: cold-start + listener)
     const now = Date.now();
-    if (inviteCode === lastProcessedCode && now - lastProcessedTime < 3000) {
+    if (username === lastProcessedUsername && now - lastProcessedTime < 3000) {
       return;
     }
-    lastProcessedCode = inviteCode;
+    lastProcessedUsername = username;
     lastProcessedTime = now;
 
     // Si no hay sesión iniciada, almacenar para procesar después del login/registro
     if (!user || !user.id) {
-      await StorageService.set(PENDING_INVITE_KEY, inviteCode);
-      ToastService.info(`Invitación (${inviteCode}) guardada. Inicia sesión para conectar con tu amigo.`);
+      await StorageService.set(PENDING_INVITE_KEY, username);
+      ToastService.info(`Invitación (@${username}) guardada. Inicia sesión para conectar con tu amigo.`);
       return;
     }
 
     try {
-      const res = await ApiService.addFriend(user.id, inviteCode);
+      const res = await ApiService.followUser(username);
       if (res.success) {
-        ToastService.success(res.message || `¡Solicitud de amistad enviada a ${res.friend?.display_name}! 👥🎉`);
+        ToastService.success(res.message || `¡Ahora sigues a ${res.friend?.display_name}! 👥🎉`);
         onFriendAdded?.();
       }
     } catch (e) {

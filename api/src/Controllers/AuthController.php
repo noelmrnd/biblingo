@@ -68,11 +68,16 @@ class AuthController {
         $user = $stmt->fetch();
 
         if (!$user) {
-            do {
-                $inviteCode = generateInviteCode(8);
-                $checkStmt = $db->prepare("SELECT id FROM users WHERE invite_code = ?");
-                $checkStmt->execute([$inviteCode]);
-            } while ($checkStmt->fetch());
+            $baseUsername = slugifyUsername($displayName);
+            $username = $baseUsername;
+            $suffix = 1;
+            $checkStmt = $db->prepare("SELECT id FROM users WHERE username = ?");
+            $checkStmt->execute([$username]);
+            while ($checkStmt->fetch()) {
+                $suffix++;
+                $username = $baseUsername . $suffix;
+                $checkStmt->execute([$username]);
+            }
 
             $appleId = ($provider === 'apple') ? $providerId : null;
             $googleId = ($provider === 'google') ? $providerId : null;
@@ -80,10 +85,10 @@ class AuthController {
             $userId = (string)SnowflakeId::nextId();
 
             $insertStmt = $db->prepare("
-                INSERT INTO users (id, apple_id, google_id, email, display_name, invite_code, platform, timezone)
+                INSERT INTO users (id, apple_id, google_id, email, display_name, username, platform, timezone)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $insertStmt->execute([$userId, $appleId, $googleId, $verifiedEmail, $displayName, $inviteCode, $platform, $timezone]);
+            $insertStmt->execute([$userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone]);
 
             $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$userId]);
@@ -113,7 +118,7 @@ class AuthController {
                 'id'               => (string)$userId,
                 'display_name'     => $user['display_name'],
                 'email'            => $user['email'],
-                'invite_code'      => $user['invite_code'],
+                'username'         => $user['username'],
                 'streak_count'     => (int)$user['streak_count'],
                 'max_streak_count' => (int)$user['max_streak_count'],
                 'streak_freezes'   => (int)$user['streak_freezes'],

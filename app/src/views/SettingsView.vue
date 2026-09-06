@@ -89,6 +89,25 @@
             </div>
           </div>
 
+          <!-- Usuario (Editable) -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3.5 text-slate-400 font-mono pointer-events-none">@</span>
+              <input
+                v-model="editUsername"
+                type="text"
+                placeholder="usuario"
+                maxlength="20"
+                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-mono font-bold rounded-2xl pl-8 pr-4 py-3 text-base focus:outline-none transition-colors lowercase"
+                @keyup.enter="saveProfile"
+              />
+            </div>
+            <p v-if="editUsername && !isUsernameValid" class="text-rose-400 text-xs font-semibold">
+              3-20 caracteres: minúsculas, números o guion bajo.
+            </p>
+          </div>
+
           <!-- Correo Electrónico (Solo Lectura con Badge) -->
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Correo electrónico</label>
@@ -124,7 +143,7 @@
         <AppButton
           color="green"
           block
-          :disabled="savingProfile || !isNameChanged"
+          :disabled="savingProfile || !hasProfileChanges || !isUsernameValid"
           @click="saveProfile"
         >
           <span v-if="savingProfile">Guardando...</span>
@@ -284,6 +303,7 @@ const rateApp = async () => {
 const reminderTime = ref('20:00');
 const isReminderExpanded = ref(false);
 const editDisplayName = ref('');
+const editUsername = ref('');
 const savingProfile = ref(false);
 const currentTimezone = ref('UTC');
 const isProfileExpanded = ref(false);
@@ -292,9 +312,18 @@ const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
 });
 
+const isUsernameChanged = computed(() => {
+  return editUsername.value.trim() !== '' && editUsername.value.trim().toLowerCase() !== (props.user.username || '');
+});
+
+const isUsernameValid = computed(() => /^[a-z0-9_]{3,20}$/.test(editUsername.value.trim().toLowerCase()));
+
+const hasProfileChanges = computed(() => isNameChanged.value || isUsernameChanged.value);
+
 watch(() => props.user, (newUser) => {
   if (newUser) {
     editDisplayName.value = newUser.display_name || '';
+    editUsername.value = newUser.username || '';
     if (newUser.timezone) {
       currentTimezone.value = newUser.timezone;
     }
@@ -312,18 +341,23 @@ const saveProfile = async () => {
     ToastService.error('El nombre debe tener entre 2 y 50 caracteres.');
     return;
   }
+  if (!isUsernameValid.value) {
+    ToastService.error('El usuario debe tener 3-20 caracteres: minúsculas, números o guion bajo.');
+    return;
+  }
 
   savingProfile.value = true;
   try {
     const res = await ApiService.updateProfile(props.user.id, {
       display_name: newName,
+      username: editUsername.value.trim().toLowerCase(),
       timezone: currentTimezone.value
     });
 
     if (res && res.user) {
       emit('user-updated', res.user);
     } else {
-      emit('user-updated', { display_name: newName });
+      emit('user-updated', { display_name: newName, username: editUsername.value.trim().toLowerCase() });
     }
     ToastService.success('¡Perfil actualizado con éxito! ✨');
     isProfileExpanded.value = false;
@@ -373,6 +407,19 @@ onMounted(async () => {
     reminderTime.value = saved;
   } else if (props.user.reminder_time) {
     reminderTime.value = props.user.reminder_time;
+  }
+
+  // Trae los datos propios del servidor en vez de confiar en el objeto user cacheado
+  // localmente (pudo quedar desactualizado, ej. username agregado despues del login).
+  // Usa un endpoint propio y liviano (solo lo que esta pantalla necesita), no el de
+  // perfil completo con racha/seguidores/historial.
+  try {
+    const res = await ApiService.getSettings();
+    if (res.success) {
+      emit('user-updated', res.user);
+    }
+  } catch (e) {
+    console.warn('No se pudo refrescar los datos de perfil:', e.message);
   }
 });
 </script>

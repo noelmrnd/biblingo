@@ -12,7 +12,7 @@ class ReadingController {
     public static function getStatus(string $userId) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT username, streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -29,6 +29,7 @@ class ReadingController {
 
         sendJsonResponse([
             'success'              => true,
+            'username'             => $user['username'],
             'streak_count'         => (int)$user['streak_count'],
             'max_streak_count'     => (int)$user['max_streak_count'],
             'streak_freezes'       => (int)$user['streak_freezes'],

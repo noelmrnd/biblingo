@@ -4,7 +4,7 @@
     <ExpandableCard
       v-model="isInviteExpanded"
       title="Invitar amigos"
-      description="Comparte tu código QR o agrega a tus amigos"
+      description="Comparte tu usuario o agrega a tus amigos"
       icon-bg-class="bg-brand-green/10 border-brand-green/30"
       card-class="bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30"
     >
@@ -12,62 +12,30 @@
         <UserRoundPlus class="w-5 h-5 text-brand-green stroke-[2.5]" />
       </template>
 
-      <div class="space-y-4 text-center">
-        <!-- Contenedor del QR Code -->
-        <div class="bg-white p-3.5 rounded-3xl inline-block shadow-2xl border-4 border-brand-green">
-          <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR de invitación" class="w-44 h-44 mx-auto block" />
-          <div v-else class="w-44 h-44 flex items-center justify-center text-slate-400 text-base font-semibold">
-            Generando QR...
-          </div>
-        </div>
+      <div class="space-y-3">
+        <AppButton color="green" block @click="isShareModalOpen = true">
+          <Share2 class="w-5 h-5 stroke-[2.5]" />
+          <span>Compartir mi perfil</span>
+        </AppButton>
 
-        <!-- Código de texto y Botón de Compartir -->
-        <div class="bg-slate-900/90 border border-slate-700 p-3 rounded-2xl flex items-center justify-between">
-          <div class="text-left pl-2">
-            <span class="text-xs text-slate-300 uppercase tracking-wider block">Código:</span>
-            <span class="text-xl font-black tracking-widest text-emerald-400 font-mono">
-              {{ user.invite_code || 'BIBLINGO1' }}
-            </span>
-          </div>
-          <AppButton
-            color="green"
-            @click="shareInvite"
-          >
-            <Share2 class="w-5 h-5 stroke-[2.5]" />
-            <span>Compartir</span>
-          </AppButton>
-        </div>
-
-        <p v-if="copyMsg" class="text-emerald-400 text-base font-extrabold text-center pt-1">
-          {{ copyMsg }}
-        </p>
-
-        <!-- Agregar amigo por código -->
-        <div class="space-y-2.5 pt-3 border-t border-slate-800/80 text-left">
-          <label class="text-xs text-slate-300 uppercase tracking-wider block font-bold">¿Tienes el código de un amigo?</label>
-          <div class="flex gap-2.5">
-            <input
-              v-model="inputCode"
-              type="text"
-              placeholder="Código"
-              class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-base uppercase text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-brand-green min-w-0"
-              maxlength="12"
-              @keyup.enter="addFriend"
-            />
-            <AppButton
-              color="blue"
-              :disabled="loading || !inputCode"
-              @click="addFriend"
-            >
-              Agregar
-            </AppButton>
-          </div>
-          <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold">
-            {{ statusMsg }}
-          </p>
-        </div>
+        <AppButton color="blue" block @click="isAddFriendModalOpen = true">
+          <UserRoundPlus class="w-5 h-5 stroke-[2.5]" />
+          <span>Agregar amigos</span>
+        </AppButton>
       </div>
     </ExpandableCard>
+
+    <ShareProfileModal
+      :is-open="isShareModalOpen"
+      :username="user.username"
+      @close="isShareModalOpen = false"
+    />
+
+    <AddFriendModal
+      :is-open="isAddFriendModalOpen"
+      @close="isAddFriendModalOpen = false"
+      @added="loadFriends"
+    />
 
     <!-- Tabla de Clasificación de Personas que sigues -->
     <div class="space-y-3">
@@ -79,7 +47,7 @@
       <div v-if="friends.filter(f => !f.is_self).length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
         <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
         <p class="text-lg font-extrabold text-white">Aún no sigues a nadie.</p>
-        <p class="text-base text-slate-300 font-medium">Muestra tu código QR o agrega el código de un amigo para empezar.</p>
+        <p class="text-base text-slate-300 font-medium">Comparte tu perfil o agrega a un amigo por su usuario para empezar.</p>
       </div>
 
       <div v-else class="space-y-3">
@@ -200,9 +168,9 @@ import AppModal from '../components/AppModal.vue';
 import SwipeItem from '../components/SwipeItem.vue';
 import { Share2, UserRoundPlus, Trophy, UsersRound, Flame, BellRing, UserMinus } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
-import QRCode from 'qrcode';
+import ShareProfileModal from '../components/ShareProfileModal.vue';
+import AddFriendModal from '../components/AddFriendModal.vue';
 import { ApiService } from '../services/api';
-import { ShareService } from '../services/shareService';
 import { ToastService } from '../services/toast';
 
 const props = defineProps({
@@ -212,13 +180,9 @@ const props = defineProps({
 const router = useRouter();
 
 const friends = ref([]);
-const inputCode = ref('');
-const loading = ref(false);
 const isInviteExpanded = ref(false);
-const statusMsg = ref('');
-const statusError = ref(false);
-const qrDataUrl = ref('');
-const copyMsg = ref('');
+const isShareModalOpen = ref(false);
+const isAddFriendModalOpen = ref(false);
 const nudgedFriends = ref({});
 const nudgeLoading = ref({});
 const isRemoveModalOpen = ref(false);
@@ -241,23 +205,6 @@ const sendNudge = async (friend) => {
   }
 };
 
-const generateQrCode = async () => {
-  if (!props.user.invite_code) return;
-  const inviteUrl = `https://app.biblingo.me/invite/${props.user.invite_code}`;
-  try {
-    qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#0F172A',
-        light: '#FFFFFF'
-      }
-    });
-  } catch (err) {
-    console.warn('Error al generar el código QR:', err);
-  }
-};
-
 const loadFriends = async () => {
   try {
     const res = await ApiService.getFriends(props.user.id);
@@ -272,33 +219,6 @@ const loadFriends = async () => {
     }
   } catch (e) {
     console.warn('Error al cargar amigos:', e.message);
-  }
-};
-
-const addFriend = async () => {
-  if (!inputCode.value || loading.value) return;
-  document.activeElement?.blur();
-  loading.value = true;
-
-  try {
-    const res = await ApiService.followUser(inputCode.value);
-    if (res.success) {
-      ToastService.success(res.message || `¡Ahora sigues a este usuario! 👥`);
-      inputCode.value = '';
-      isInviteExpanded.value = false;
-      loadFriends();
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'Error al seguir usuario.');
-  } finally {
-    loading.value = false;
-  }
-};
-
-const shareInvite = async () => {
-  const res = await ShareService.shareInviteCode(props.user.invite_code, props.user.display_name);
-  if (res.success && res.method === 'clipboard') {
-    ToastService.success('¡Enlace y código copiado! 📋');
   }
 };
 
@@ -340,6 +260,5 @@ const confirmRemoveFriend = async () => {
 
 onMounted(() => {
   loadFriends();
-  generateQrCode();
 });
 </script>

@@ -17,7 +17,7 @@
         </div>
         <div>
           <h2 class="text-2xl font-extrabold text-white">{{ user.display_name }}</h2>
-          <p class="text-slate-300 text-base font-medium">Código: <span class="font-mono text-amber-400 font-bold">{{ user.invite_code }}</span></p>
+          <p class="text-slate-300 text-base font-medium font-mono">@{{ user.username }}</p>
           <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
         <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import FollowListModal from '../components/FollowListModal.vue';
 import { UserRound, Flame, Zap, Settings, BookOpenCheck, Heart } from '@lucide/vue';
@@ -129,6 +129,7 @@ import ExpandableCard from '../components/ExpandableCard.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { READING_REACTIONS } from '../constants';
+import { useCurrentUser } from '../composables/useCurrentUser';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -136,6 +137,13 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
+
+// Refresca el usuario propio al entrar a esta vista, en vez de depender de que otro
+// componente (ej. Dashboard) lo haya hecho antes. Comparte el mismo singleton y el
+// mismo guard anti-duplicados que Dashboard, asi que si Dashboard ya pidio el estado
+// hace poco, esto no vuelve a golpear la API.
+const { refreshProfile } = useCurrentUser();
+onMounted(() => refreshProfile());
 
 const reactionBreakdown = computed(() => {
   const counts = props.user.reaction_counts || {};

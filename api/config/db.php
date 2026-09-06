@@ -47,11 +47,27 @@ function getJsonInput() {
     return json_decode($raw, true) ?: [];
 }
 
-function generateInviteCode($length = 8) {
-    $chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // No confusing chars like 0, O, 1, I
-    $code = '';
-    for ($i = 0; $i < $length; $i++) {
-        $code .= $chars[random_int(0, strlen($chars) - 1)];
+/**
+ * Genera un slug de username (minusculas, alfanumerico + guion bajo, 3-20 chars) a
+ * partir del nombre para mostrar. Si queda muy corto o vacio, usa un prefijo generico.
+ */
+function slugifyUsername(string $displayName): string {
+    // Mapeo explicito en vez de iconv//TRANSLIT: musl (Alpine, donde corre esta imagen)
+    // no soporta TRANSLIT de forma confiable, a diferencia de glibc.
+    $accents = [
+        'á' => 'a', 'à' => 'a', 'ä' => 'a', 'â' => 'a', 'ã' => 'a',
+        'é' => 'e', 'è' => 'e', 'ë' => 'e', 'ê' => 'e',
+        'í' => 'i', 'ì' => 'i', 'ï' => 'i', 'î' => 'i',
+        'ó' => 'o', 'ò' => 'o', 'ö' => 'o', 'ô' => 'o', 'õ' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'ü' => 'u', 'û' => 'u',
+        'ñ' => 'n', 'ç' => 'c',
+    ];
+    $slug = strtr(mb_strtolower($displayName, 'UTF-8'), $accents);
+    $slug = preg_replace('/[^a-z0-9_]+/', '_', $slug);
+    $slug = trim($slug, '_');
+    $slug = substr($slug, 0, 20);
+    if (strlen($slug) < 3) {
+        $slug = 'lector_' . $slug;
     }
-    return $code;
+    return $slug;
 }

@@ -25,8 +25,8 @@ export function useAppLifecycle({ onDeepLinkInvite }) {
     NotificationService.attachLocalListeners();
 
     // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
-    const deepLinkHandle = await DeepLinkService.initListener(async (inviteCode) => {
-      await onDeepLinkInvite(inviteCode);
+    const deepLinkHandle = await DeepLinkService.initListener(async (username) => {
+      await onDeepLinkInvite(username);
     });
     if (deepLinkHandle) {
       listenerHandles.push(deepLinkHandle);

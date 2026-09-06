@@ -55,9 +55,10 @@ import { NotificationService } from './services/notifications';
 import { setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
+import { useCurrentUser } from './composables/useCurrentUser';
 
 const router = useRouter();
-const currentUser = ref(null);
+const { user: currentUser, clearUser } = useCurrentUser();
 const tourRef = ref(null);
 const isInitializing = ref(true);
 
@@ -102,7 +103,7 @@ const onUserUpdated = async (updatedUser) => {
 
 const onLogout = async () => {
   await NotificationService.unregisterPushToken();
-  currentUser.value = null;
+  clearUser();
   await UserService.clearSession();
   router.push({ name: 'dashboard' });
   // ToastService.info('Sesión cerrada correctamente.');
@@ -115,7 +116,7 @@ const forceLogout = async () => {
   if (forcingLogout || !currentUser.value) return;
   forcingLogout = true;
   try {
-    currentUser.value = null;
+    clearUser();
     await UserService.clearSession();
     router.push({ name: 'dashboard' });
     ToastService.error('Tu sesión expiró. Inicia sesión de nuevo.');
@@ -132,7 +133,7 @@ onMounted(async () => {
     currentUser.value = await UserService.initSession();
   } catch (e) {
     console.warn('No se pudo restaurar la sesión guardada:', e.message);
-    currentUser.value = null;
+    clearUser();
   } finally {
     isInitializing.value = false;
   }

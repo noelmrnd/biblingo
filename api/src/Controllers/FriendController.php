@@ -21,14 +21,14 @@ class FriendController {
         $db = getDbConnection();
 
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
                    0 AS is_self,
                    EXISTS(SELECT 1 FROM follows fb WHERE fb.follower_id = u.id AND fb.followed_id = ?) AS is_mutual
             FROM follows f
             JOIN users u ON f.followed_id = u.id
             WHERE f.follower_id = ?
             UNION ALL
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.invite_code, u.timezone,
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
                    1 AS is_self, 1 AS is_mutual
             FROM users u
             WHERE u.id = ?
@@ -67,7 +67,7 @@ class FriendController {
                     'max_streak_count' => (int)$f['max_streak_count'],
                     'last_read_date'   => $lastRead,
                     'last_read_label'  => $status->lastReadLabel,
-                    'invite_code'      => $f['invite_code'],
+                    'username'         => $f['username'],
                     'nudged_today'     => $nudgedToday,
                     'has_read_today'   => $status->hasReadToday,
                     'is_streak_lost'   => $status->isStreakLost,
@@ -79,25 +79,25 @@ class FriendController {
     }
 
     /**
-     * Seguir a alguien por su codigo de invitacion. Instantaneo, sin aprobacion
-     * (a diferencia del viejo flujo de solicitudes) — igual que seguir en Duolingo.
+     * Seguir a alguien por su username. Instantaneo, sin aprobacion (a diferencia
+     * del viejo flujo de solicitudes) — igual que seguir en Duolingo.
      */
     public static function follow(string $userId) {
         $input = getJsonInput();
-        $inviteCode = strtoupper(trim($input['invite_code'] ?? ''));
+        $username = strtolower(trim($input['username'] ?? ''));
 
-        if (empty($inviteCode)) {
-            sendJsonResponse(['error' => 'Código de invitación requerido.'], 400);
+        if (empty($username)) {
+            sendJsonResponse(['error' => 'Nombre de usuario requerido.'], 400);
         }
 
         $db = getDbConnection();
 
-        $targetStmt = $db->prepare("SELECT id, display_name FROM users WHERE invite_code = ?");
-        $targetStmt->execute([$inviteCode]);
+        $targetStmt = $db->prepare("SELECT id, display_name FROM users WHERE username = ?");
+        $targetStmt->execute([$username]);
         $target = $targetStmt->fetch();
 
         if (!$target) {
-            sendJsonResponse(['error' => 'No se encontró ningún usuario con ese código de invitación.'], 404);
+            sendJsonResponse(['error' => 'El usuario no fue encontrado.'], 404);
         }
 
         $targetId = (string)$target['id'];
@@ -278,22 +278,23 @@ class FriendController {
         sendJsonResponse([
             'success' => true,
             'user' => [
-                'id'               => $friendId,
-                'display_name'     => $friend['display_name'],
-                'streak_count'     => (int)$friend['streak_count'],
-                'max_streak_count' => (int)$friend['max_streak_count'],
-                'last_read_date'   => $friend['last_read_date'],
-                'last_read_label'  => $status->lastReadLabel,
-                'has_read_today'   => $status->hasReadToday,
-                'is_streak_lost'   => $status->isStreakLost,
-                'total_days_read'  => self::countTotalDaysRead($db, $friendId),
-                'reaction_counts'  => self::countReactions($db, $friendId),
-                'member_since'     => substr((string)$friend['created_at'], 0, 10),
-                'followers_count'  => self::countFollowers($db, $friendId),
-                'following_count'  => self::countFollowing($db, $friendId),
-                'is_following'     => $isFollowing,
-                'is_followed_by'   => $isFollowedBy,
-                'is_mutual'        => $isMutual,
+                'id'                  => $friendId,
+                'display_name'        => $friend['display_name'],
+                'username'            => $friend['username'],
+                'streak_count'        => (int)$friend['streak_count'],
+                'max_streak_count'    => (int)$friend['max_streak_count'],
+                'last_read_date'      => $friend['last_read_date'],
+                'last_read_label'     => $status->lastReadLabel,
+                'has_read_today'      => $status->hasReadToday,
+                'is_streak_lost'      => $status->isStreakLost,
+                'total_days_read'     => self::countTotalDaysRead($db, $friendId),
+                'reaction_counts'     => self::countReactions($db, $friendId),
+                'member_since'        => substr((string)$friend['created_at'], 0, 10),
+                'followers_count'     => self::countFollowers($db, $friendId),
+                'following_count'     => self::countFollowing($db, $friendId),
+                'is_following'        => $isFollowing,
+                'is_followed_by'      => $isFollowedBy,
+                'is_mutual'           => $isMutual,
             ],
             'history'              => self::fetchHistory($db, $friendId, $status->today),
             'nudged_today'         => ($isSelf || !$isMutual) ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
@@ -367,7 +368,7 @@ class FriendController {
     }
 
     private static function fetchUserRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }

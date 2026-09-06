@@ -88,10 +88,10 @@ export const ApiService = {
   },
 
   // Seguir es instantaneo (sin aprobacion), como en Duolingo.
-  async followUser(inviteCode) {
+  async followUser(username) {
     return request('/friends/follow', {
       method: 'POST',
-      body: JSON.stringify({ invite_code: inviteCode })
+      body: JSON.stringify({ username })
     });
   },
 
@@ -112,6 +112,12 @@ export const ApiService = {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, ...data })
     });
+  },
+
+  // Datos minimos para la pantalla de Ajustes: nombre, usuario, correo, timezone,
+  // recordatorio. Nada de racha/seguidores/historial (eso es getFriendProfile).
+  async getSettings() {
+    return request('/user/settings');
   },
 
   async registerPushToken(userId, pushToken, platform = 'ios') {

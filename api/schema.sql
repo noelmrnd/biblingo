@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_id VARCHAR(255) NULL UNIQUE,
     email VARCHAR(255) NULL,
     display_name VARCHAR(100) NOT NULL,
-    invite_code VARCHAR(12) NOT NULL UNIQUE,
+    username VARCHAR(30) NOT NULL UNIQUE,
     streak_count INT DEFAULT 0,
     max_streak_count INT DEFAULT 0,
     streak_freezes INT NOT NULL DEFAULT 1,

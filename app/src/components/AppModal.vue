@@ -9,44 +9,46 @@
         <!-- Sheet / Modal Card -->
         <div
           :class="[maxWidth]"
-          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full p-5 pb-safe flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
+          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full pb-safe-cond flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
         >
-          <!-- Header (Fijo arriba si hay título, icono o slot header) -->
-          <div v-if="$slots.header || title || $slots.icon" class="flex-shrink-0 pb-3">
-            <slot name="header">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex items-start gap-3 min-w-0">
-                  <slot name="icon" />
-                  <div class="space-y-1 min-w-0">
-                    <h3 v-if="title" class="text-xl text-white font-black leading-tight">
-                      {{ title }}
-                    </h3>
-                    <p v-if="description" class="text-base text-slate-300 font-medium">
-                      {{ description }}
-                    </p>
+          <div class="p-5">
+            <!-- Header (Fijo arriba si hay título, icono o slot header) -->
+            <div v-if="$slots.header || title || $slots.icon" class="flex-shrink-0 pb-3">
+              <slot name="header">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <slot name="icon" />
+                    <div class="space-y-1 min-w-0">
+                      <h3 v-if="title" class="text-xl text-white font-black leading-tight">
+                        {{ title }}
+                      </h3>
+                      <p v-if="description" class="text-base text-slate-300 font-medium">
+                        {{ description }}
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    v-if="showClose"
+                    @click="onClose"
+                    :disabled="loading"
+                    class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
+                    aria-label="Cerrar"
+                  >
+                    <X class="w-5 h-5 stroke-[2.5]" />
+                  </button>
                 </div>
-                <button
-                  v-if="showClose"
-                  @click="onClose"
-                  :disabled="loading"
-                  class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
-                  aria-label="Cerrar"
-                >
-                  <X class="w-5 h-5 stroke-[2.5]" />
-                </button>
-              </div>
-            </slot>
-          </div>
+              </slot>
+            </div>
 
-          <!-- Body / Contenido Principal -->
-          <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 py-1 no-scrollbar overscroll-contain">
-            <slot />
-          </div>
+            <!-- Body / Contenido Principal -->
+            <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 no-scrollbar overscroll-contain">
+              <slot />
+            </div>
 
-          <!-- Footer (Acciones) -->
-          <div v-if="$slots.footer" class="flex-shrink-0 pt-3 border-t border-slate-800/80">
-            <slot name="footer" />
+            <!-- Footer (Acciones) -->
+            <div v-if="$slots.footer" class="flex-shrink-0 pt-3 border-t border-slate-800/80">
+              <slot name="footer" />
+            </div>
           </div>
         </div>
       </div>

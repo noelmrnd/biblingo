@@ -9,13 +9,40 @@ use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
 
 class UserController {
+    /**
+     * Datos minimos que necesita la pantalla de Ajustes (Datos de perfil): nada de
+     * racha, seguidores ni historial, a diferencia de getFriendProfile.
+     */
+    public static function getSettings(string $userId) {
+        $db = getDbConnection();
+        $stmt = $db->prepare("SELECT display_name, username, email, timezone, reminder_time FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        sendJsonResponse([
+            'success' => true,
+            'user' => [
+                'display_name'  => $user['display_name'],
+                'username'      => $user['username'],
+                'email'         => $user['email'],
+                'timezone'      => $user['timezone'],
+                'reminder_time' => $user['reminder_time'],
+            ]
+        ]);
+    }
+
     public static function updateProfile(string $userId) {
         $input = getJsonInput();
         $displayName = isset($input['display_name']) ? trim($input['display_name']) : null;
+        $username     = isset($input['username']) ? strtolower(trim($input['username'])) : null;
         $reminderTime = isset($input['reminder_time']) ? trim($input['reminder_time']) : null;
         $timezone     = isset($input['timezone']) ? DateUtils::getSafeDateTimeZone($input['timezone'])->getName() : null;
 
-        if (!$displayName && !$reminderTime && !$timezone) {
+        if (!$displayName && !$username && !$reminderTime && !$timezone) {
             sendJsonResponse(['error' => 'Sin datos para actualizar.'], 400);
         }
 
@@ -29,6 +56,19 @@ class UserController {
             }
             $fields[] = 'display_name = ?';
             $params[] = $displayName;
+        }
+
+        if ($username !== null) {
+            if (!preg_match('/^[a-z0-9_]{3,20}$/', $username)) {
+                sendJsonResponse(['error' => 'El usuario debe tener 3-20 caracteres: minusculas, numeros o guion bajo.'], 400);
+            }
+            $checkStmt = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+            $checkStmt->execute([$username, $userId]);
+            if ($checkStmt->fetch()) {
+                sendJsonResponse(['error' => 'Ese nombre de usuario ya está en uso.'], 400);
+            }
+            $fields[] = 'username = ?';
+            $params[] = $username;
         }
 
         if ($reminderTime !== null) {
@@ -48,7 +88,7 @@ class UserController {
             $stmt->execute($params);
         }
 
-        $userStmt = $db->prepare("SELECT id, display_name, email, invite_code, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
+        $userStmt = $db->prepare("SELECT id, display_name, email, username, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
         $userStmt->execute([$userId]);
         $updatedUser = $userStmt->fetch();
         if (!$updatedUser) {

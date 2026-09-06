@@ -6,47 +6,46 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm sm:p-6"
         @click.self="onClose"
       >
-        <div
-          class="modal-card bg-slate-900 sm:border border-slate-700/80 sm:rounded-3xl shadow-2xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[85vh] p-5 pb-safe flex flex-col overflow-hidden"
-        >
-          <div class="flex-shrink-0 pb-2 space-y-3">
-            <div class="flex items-start justify-between gap-3">
-              <h3 class="text-xl text-white font-black">{{ displayName }}</h3>
-              <button
-                @click="onClose"
-                class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
-                aria-label="Cerrar"
-              >
-                <X class="w-5 h-5 stroke-[2.5]" />
-              </button>
+        <div class="modal-card bg-slate-900 sm:border border-slate-700/80 sm:rounded-3xl shadow-2xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[85vh] pb-safe-cond flex flex-col overflow-hidden">
+          <div class="p-5">
+            <div class="flex-shrink-0 pb-2 space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-xl text-white font-black">{{ displayName }}</h3>
+                <button
+                  @click="onClose"
+                  class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+                  aria-label="Cerrar"
+                >
+                  <X class="w-5 h-5 stroke-[2.5]" />
+                </button>
+              </div>
+
+              <!-- Segmented Control Seguidores / Seguidos -->
+              <div class="grid grid-cols-2 gap-2 bg-slate-950/80 p-1.5 rounded-2xl border-2 border-slate-800">
+                <button
+                  type="button"
+                  @click="emit('change-tab', 'followers')"
+                  :class="activeTab === 'followers'
+                    ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
+                  class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
+                >
+                  Seguidores
+                </button>
+                <button
+                  type="button"
+                  @click="emit('change-tab', 'following')"
+                  :class="activeTab === 'following'
+                    ? 'bg-brand-card text-brand-blue border-sky-500/50 shadow-md font-black'
+                    : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
+                  class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
+                >
+                  Seguidos
+                </button>
+              </div>
             </div>
 
-            <!-- Segmented Control Seguidores / Seguidos -->
-            <div class="grid grid-cols-2 gap-2 bg-slate-950/80 p-1.5 rounded-2xl border-2 border-slate-800">
-              <button
-                type="button"
-                @click="emit('change-tab', 'followers')"
-                :class="activeTab === 'followers'
-                  ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black'
-                  : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
-                class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
-              >
-                Seguidores
-              </button>
-              <button
-                type="button"
-                @click="emit('change-tab', 'following')"
-                :class="activeTab === 'following'
-                  ? 'bg-brand-card text-brand-blue border-sky-500/50 shadow-md font-black'
-                  : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
-                class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
-              >
-                Seguidos
-              </button>
-            </div>
-          </div>
-
-          <div class="flex-1 overflow-y-auto min-h-0 space-y-2 py-2 no-scrollbar overscroll-contain">
+            <div class="flex-1 overflow-y-auto min-h-0 space-y-2 pt-2 no-scrollbar overscroll-contain">
             <div v-if="isLoadingActiveTab" class="py-10 text-center text-slate-400 font-medium">Cargando...</div>
 
             <div v-else-if="activeUsers.length === 0" class="py-10 text-center text-slate-400 space-y-2">
@@ -77,6 +76,7 @@
               </div>
               <span v-if="!u.is_self && u.is_following" class="text-xs text-slate-500 font-bold flex-none">Sigues</span>
             </button>
+          </div>
           </div>
         </div>
       </div>
