@@ -77,28 +77,7 @@
         </StatCard>
       </div>
 
-      <ExpandableCard
-        :collapsible="false"
-        title="Reacciones"
-        icon-bg-class="bg-rose-500/10 border-rose-500/30"
-      >
-        <template #icon>
-          <Heart class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        </template>
-
-        <div v-if="reactionBreakdown.length > 0" class="flex flex-wrap gap-2">
-          <div
-            v-for="r in reactionBreakdown"
-            :key="r.id"
-            class="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-1.5"
-          >
-            <span class="text-lg leading-none">{{ r.emoji }}</span>
-            <span class="text-slate-200 text-sm font-bold">{{ r.count }}</span>
-            <span class="text-slate-400 text-sm font-medium">{{ r.label }}</span>
-          </div>
-        </div>
-        <p v-else class="text-slate-400 text-base font-medium">Aún no ha registrado reacciones.</p>
-      </ExpandableCard>
+      <ReactionBreakdown :reaction-counts="friend.reaction_counts" />
 
       <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
         <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
@@ -129,15 +108,14 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
+import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
-import ExpandableCard from '../components/ExpandableCard.vue';
+import ReactionBreakdown from '../components/ReactionBreakdown.vue';
 import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';
 import UnfollowConfirmModal from '../components/UnfollowConfirmModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
-import { READING_REACTIONS } from '../constants';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
@@ -159,14 +137,6 @@ const removeLoading = ref(false);
 const followLoading = ref(false);
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
-
-const reactionBreakdown = computed(() => {
-  const counts = friend.value?.reaction_counts || {};
-  return READING_REACTIONS
-    .map((r) => ({ ...r, count: counts[r.id] || 0 }))
-    .filter((r) => r.count > 0)
-    .sort((a, b) => b.count - a.count);
-});
 
 // El modal se sincroniza con ?panel= en la URL: abrirlo empuja una entrada al
 // historial, asi el boton atras del navegador lo cierra solo, y al volver desde el
