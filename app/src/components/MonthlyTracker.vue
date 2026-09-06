@@ -57,11 +57,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
-
-// Cache a nivel de modulo (no del componente): sobrevive a que el componente se
-// desmonte al cambiar de tab, ya que el router no usa <keep-alive>. Se pierde
-// solo si se cierra la app. Clave 'YYYY-M', valor: array de fechas leidas.
-const monthCache = new Map();
+import { monthCache } from '../utils/monthlyCalendarCache';
 
 const today = new Date();
 // 0 = mes actual, negativo = meses hacia atras. No se permite ir a futuro.
