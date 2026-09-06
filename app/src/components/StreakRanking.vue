@@ -76,6 +76,10 @@
       </SwipeItem>
     </div>
 
+    <p v-if="friends.filter(f => !f.is_self).length > 0" class="text-center text-sm text-slate-500 font-medium">
+      Solo puedes enviar toques a quienes te siguen.
+    </p>
+
     <!-- Modal Confirmación de Dejar de Seguir -->
     <UnfollowConfirmModal
       :is-open="isRemoveModalOpen"
