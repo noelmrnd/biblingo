@@ -25,8 +25,18 @@ class PushTokenEntity {
         $stmt->execute([$userId]);
     }
 
+    /**
+     * Solo trae tokens de cuentas activas: un usuario banned/deleted no debe seguir
+     * recibiendo push (ban se aplica manualmente en la DB, sin pasar por la app, asi
+     * que este filtro es el unico lugar que lo hace efectivo para notificaciones).
+     */
     public static function fetchTokensForUser(\PDO $db, string $userId): array {
-        $stmt = $db->prepare("SELECT token FROM user_push_tokens WHERE user_id = ?");
+        $stmt = $db->prepare("
+            SELECT t.token
+            FROM user_push_tokens t
+            JOIN users u ON u.id = t.user_id
+            WHERE t.user_id = ? AND u.status = 'active'
+        ");
         $stmt->execute([$userId]);
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }

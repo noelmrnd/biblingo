@@ -217,6 +217,9 @@ class UserController {
 
         try {
             UserEntity::updateStatus($db, $userId, UserEntity::STATUS_DELETED);
+            // Limpieza inmediata: aunque fetchTokensForUser ya filtra por status,
+            // no tiene sentido conservar tokens push de una cuenta eliminada.
+            PushTokenEntity::deleteAllForUser($db, $userId);
 
             sendJsonResponse([
                 'success' => true,
