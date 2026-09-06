@@ -9,8 +9,15 @@ const user = ref(null);
 let lastFullRefresh = 0;
 const FULL_REFRESH_TTL_MS = 10000;
 
+// Se incrementa en cada login/logout. refreshProfile() lo captura antes de su
+// await: si cambio mientras la request estaba en vuelo (logout, o login con
+// otro usuario, sin recargar el proceso) descarta la respuesta en vez de
+// pisar el usuario actual con datos de la sesion anterior.
+let sessionEpoch = 0;
+
 export function useCurrentUser() {
   const setUser = (newUser) => {
+    sessionEpoch++;
     user.value = newUser;
   };
 
@@ -21,6 +28,7 @@ export function useCurrentUser() {
   };
 
   const clearUser = () => {
+    sessionEpoch++;
     user.value = null;
     lastFullRefresh = 0;
   };
@@ -38,10 +46,11 @@ export function useCurrentUser() {
       return user.value;
     }
     lastFullRefresh = now;
+    const epochAtStart = sessionEpoch;
 
     try {
       const res = await ApiService.getReadingStatus();
-      if (res.success) {
+      if (res.success && sessionEpoch === epochAtStart) {
         mergeUser(res);
       }
       return user.value;

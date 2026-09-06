@@ -63,7 +63,7 @@ const handleReactionConfirmed = async (reaction) => {
   if (loading.value) return;
   loading.value = true;
   try {
-    const res = await ApiService.logReading(props.user.id, reaction);
+    const res = await ApiService.logReading(reaction);
     if (res.success) {
       showReactionModal.value = false;
 

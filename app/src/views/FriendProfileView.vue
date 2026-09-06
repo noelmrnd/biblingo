@@ -228,7 +228,7 @@ const sendNudge = async () => {
   if (nudged.value || nudgeLoading.value) return;
   nudgeLoading.value = true;
   try {
-    const res = await ApiService.nudgeFriend(props.user.id, friend.value.id);
+    const res = await ApiService.nudgeFriend(friend.value.id);
     nudged.value = true;
     ToastService.success(res.message || `¡Le enviaste un recordatorio a ${friend.value.display_name}! 🔔`);
   } catch (e) {

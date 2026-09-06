@@ -75,15 +75,15 @@ export const ApiService = {
     return request(`/reading/calendar?year=${year}&month=${month}`);
   },
 
-  async logReading(userId, reaction = null) {
+  async logReading(reaction = null) {
     return request('/reading/log', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, reaction })
+      body: JSON.stringify({ reaction })
     });
   },
 
-  async getFriends(userId) {
-    return request(`/friends?user_id=${userId}`);
+  async getFriends() {
+    return request('/friends');
   },
 
   // Perfil completo de un amigo (o el propio) en una sola llamada: stats + historial
@@ -112,10 +112,10 @@ export const ApiService = {
     return request(`/friends/list?user_id=${userId}&type=${type}`);
   },
 
-  async updateProfile(userId, data) {
+  async updateProfile(data) {
     return request('/user/update', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, ...data })
+      body: JSON.stringify(data)
     });
   },
 
@@ -125,15 +125,15 @@ export const ApiService = {
     return request('/user/settings');
   },
 
-  async registerPushToken(userId, pushToken, platform = 'ios') {
+  async registerPushToken(pushToken, platform = 'ios') {
     return request('/user/push-token', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, push_token: pushToken, platform })
+      body: JSON.stringify({ push_token: pushToken, platform })
     });
   },
 
-  async unregisterPushToken(userId, pushToken) {
-    return request(`/user/push-token?user_id=${userId}`, {
+  async unregisterPushToken(pushToken) {
+    return request('/user/push-token', {
       method: 'DELETE',
       body: JSON.stringify({ push_token: pushToken })
     });
@@ -147,10 +147,10 @@ export const ApiService = {
     });
   },
 
-  async nudgeFriend(userId, friendId) {
+  async nudgeFriend(friendId) {
     return request('/friends/nudge', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, friend_id: friendId })
+      body: JSON.stringify({ friend_id: friendId })
     });
   },
 

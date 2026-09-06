@@ -15,7 +15,7 @@ export const UserService = {
     const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     if (user.timezone !== deviceTz) {
       try {
-        await ApiService.updateProfile(user.id, { timezone: deviceTz });
+        await ApiService.updateProfile({ timezone: deviceTz });
         user.timezone = deviceTz;
         await StorageService.set(USER_STORAGE_KEY, user);
       } catch (e) {

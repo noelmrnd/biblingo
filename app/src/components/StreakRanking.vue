@@ -115,7 +115,7 @@ const sendNudge = async (friend) => {
 
   nudgeLoading.value[friend.id] = true;
   try {
-    const res = await ApiService.nudgeFriend(props.user.id, friend.id);
+    const res = await ApiService.nudgeFriend(friend.id);
     nudgedFriends.value[friend.id] = true;
     ToastService.success(res.message || `¡Le enviaste un recordatorio a ${friend.display_name}! 🔔`);
   } catch (e) {
@@ -127,7 +127,7 @@ const sendNudge = async (friend) => {
 
 const loadFriends = async () => {
   try {
-    const res = await ApiService.getFriends(props.user.id);
+    const res = await ApiService.getFriends();
     if (res.success) {
       friends.value = res.friends || [];
       // Sincronizar estado de toques enviados hoy desde la API

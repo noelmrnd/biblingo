@@ -56,7 +56,7 @@ export const NotificationService = {
               return;
             }
 
-            await ApiService.registerPushToken(userId, pushToken, platform);
+            await ApiService.registerPushToken(pushToken, platform);
             await StorageService.set('push_token', pushToken);
             await StorageService.set('push_user_id', userId);
             console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
@@ -166,7 +166,7 @@ export const NotificationService = {
       const savedUserId = await StorageService.get('push_user_id');
 
       if (savedUserId) {
-        await ApiService.unregisterPushToken(savedUserId, savedToken || '');
+        await ApiService.unregisterPushToken(savedToken || '');
       }
 
       await StorageService.remove('push_token');

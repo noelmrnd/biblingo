@@ -389,7 +389,7 @@ const saveProfile = async () => {
 
   savingProfile.value = true;
   try {
-    const res = await ApiService.updateProfile(props.user.id, {
+    const res = await ApiService.updateProfile({
       display_name: newName,
       username: editUsername.value.trim().toLowerCase(),
       timezone: currentTimezone.value
@@ -412,7 +412,7 @@ const saveProfile = async () => {
 const saveReminder = async () => {
   try {
     await StorageService.set('reminder_time', reminderTime.value);
-    await ApiService.updateProfile(props.user.id, { reminder_time: reminderTime.value });
+    await ApiService.updateProfile({ reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
     await NotificationService.initPushNotifications(props.user.id);
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
