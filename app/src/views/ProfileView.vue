@@ -1,33 +1,26 @@
 <template>
   <AppPage app-header>
     <!-- Header Perfil con Resplandor Azul -->
-    <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(28,176,246,0.22),_transparent_65%)] border-sky-500/30 text-center py-6 space-y-3 overflow-hidden">
-      <button
-        type="button"
-        @click="router.push({ name: 'profile-settings' })"
-        class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
-        aria-label="Configuración"
-      >
-        <Settings class="w-6 h-6 stroke-[2.5]" />
-      </button>
-
-      <div class="w-20 h-20 bg-gradient-to-tr from-brand-blue to-sky-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800">
-        <UserRound class="w-10 h-10 text-white stroke-[2.5]" />
-      </div>
-      <div>
-        <h2 class="text-2xl font-extrabold text-white">{{ user.display_name }}</h2>
-        <p class="text-slate-300 text-base font-medium font-mono">@{{ user.username }}</p>
-        <p v-if="memberSinceLabel" class="text-slate-400 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
-      </div>
-      <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
-        <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">
-          <strong class="text-white font-extrabold">{{ user.followers_count || 0 }}</strong> {{ user.followers_count === 1 ? 'seguidor' : 'seguidores' }}
+    <ProfileHeader
+      :display-name="user.display_name"
+      :username="user.username"
+      :member-since-label="memberSinceLabel"
+      :followers-count="user.followers_count"
+      :following-count="user.following_count"
+      @open-followers="openFollowList('followers')"
+      @open-following="openFollowList('following')"
+    >
+      <template #corner>
+        <button
+          type="button"
+          @click="router.push({ name: 'profile-settings' })"
+          class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+          aria-label="Configuración"
+        >
+          <Settings class="w-6 h-6 stroke-[2.5]" />
         </button>
-        <button type="button" @click="openFollowList('following')" class="cursor-pointer hover:text-white transition-colors">
-          <strong class="text-white font-extrabold">{{ user.following_count || 0 }}</strong> seguidos
-        </button>
-      </div>
-    </div>
+      </template>
+    </ProfileHeader>
 
     <!-- Resumen: racha actual, maxima, constancia total y protectores usados (mismo peso visual) -->
     <div class="grid grid-cols-2 gap-3">
@@ -103,7 +96,8 @@ import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AppPage from '../components/AppPage.vue';
 import FollowListModal from '../components/FollowListModal.vue';
-import { UserRound, Flame, Zap, Settings, BookOpenCheck, Heart, Shield } from '@lucide/vue';
+import ProfileHeader from '../components/ProfileHeader.vue';
+import { Flame, Zap, Settings, BookOpenCheck, Heart, Shield } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import StatCard from '../components/StatCard.vue';
 import { formatMemberSince } from '../utils/dateFormatter';

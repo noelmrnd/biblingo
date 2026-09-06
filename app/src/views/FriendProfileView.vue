@@ -8,29 +8,22 @@
     </div>
 
     <template v-else>
-      <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(28,176,246,0.22),_transparent_65%)] border-sky-500/30 text-center py-6 space-y-3 overflow-hidden">
-        <div class="w-20 h-20 bg-gradient-to-tr from-brand-blue to-sky-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800 text-white font-black text-3xl">
-          {{ (friend.display_name || '?').charAt(0).toUpperCase() }}
-        </div>
-        <div class="space-y-1">
-          <h2 class="text-2xl font-extrabold text-white">{{ friend.display_name }}</h2>
-          <p class="text-slate-300 text-base font-medium font-mono flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-            <span>@{{ friend.username }}</span>
-            <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black font-sans">AMIGOS</span>
-            <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
-            <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
-          </p>
-          <p v-if="memberSinceLabel" class="text-slate-400 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
-        </div>
-        <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
-          <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">
-            <strong class="text-white font-extrabold">{{ friend.followers_count || 0 }}</strong> {{ friend.followers_count === 1 ? 'seguidor' : 'seguidores' }}
-          </button>
-          <button type="button" @click="openFollowList('following')" class="cursor-pointer hover:text-white transition-colors">
-            <strong class="text-white font-extrabold">{{ friend.following_count || 0 }}</strong> seguidos
-          </button>
-        </div>
-      </div>
+      <ProfileHeader
+        :display-name="friend.display_name"
+        :username="friend.username"
+        :avatar-initial="(friend.display_name || '?').charAt(0).toUpperCase()"
+        :member-since-label="memberSinceLabel"
+        :followers-count="friend.followers_count"
+        :following-count="friend.following_count"
+        @open-followers="openFollowList('followers')"
+        @open-following="openFollowList('following')"
+      >
+        <template #badge>
+          <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black font-sans">AMIGOS</span>
+          <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
+          <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
+        </template>
+      </ProfileHeader>
 
       <div class="flex gap-3">
         <AppButton
@@ -138,6 +131,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
+import ProfileHeader from '../components/ProfileHeader.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';
