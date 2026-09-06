@@ -12,7 +12,7 @@ class DomainEventProcessor {
      * Despacha las notificaciones push correspondientes de manera asíncrona.
      */
     public static function processPending(int $limit = 50): array {
-        $events = DomainEventStore::getPendingEvents($limit);
+        $events = DomainEventStore::claimPendingEvents($limit);
         $processed = 0;
         $failed = 0;
 

@@ -113,10 +113,12 @@ class FriendController {
         try {
             $db->beginTransaction();
 
-            FollowEntity::insertFollow($db, (string)SnowflakeId::nextId(), $userId, $targetId);
+            $inserted = FollowEntity::insertFollow($db, (string)SnowflakeId::nextId(), $userId, $targetId);
 
-            $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
-            DomainEventStore::record($event, $db);
+            if ($inserted) {
+                $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
+                DomainEventStore::record($event, $db);
+            }
 
             $db->commit();
         } catch (\Exception $e) {
@@ -223,7 +225,8 @@ class FriendController {
             $db->commit();
         } catch (\Exception $e) {
             $db->rollBack();
-            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
+            error_log('[FriendController::nudgeFriend] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al enviar el recordatorio.'], 500);
         }
 
         sendJsonResponse([
@@ -304,6 +307,10 @@ class FriendController {
         }
 
         $db = getDbConnection();
+
+        if ($userId !== $targetId && !UserEntity::getProfileRow($db, $targetId)) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
 
         $rows = $type === 'followers'
             ? FollowEntity::fetchFollowers($db, $targetId)

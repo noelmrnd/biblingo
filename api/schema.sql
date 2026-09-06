@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS domain_events (
     aggregate_type VARCHAR(50) NOT NULL,
     aggregate_id VARCHAR(50) NOT NULL,
     payload JSON NOT NULL,
-    status ENUM('pending', 'processed', 'failed') DEFAULT 'pending',
+    status ENUM('pending', 'processing', 'processed', 'failed') DEFAULT 'pending',
     occurred_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     processed_at TIMESTAMP NULL,
     error_message TEXT NULL,

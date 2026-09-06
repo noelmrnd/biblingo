@@ -30,24 +30,54 @@ class DomainEventStore {
     }
 
     /**
-     * Obtiene una lista de eventos pendientes ordenados cronológicamente. Incluye
-     * eventos que fallaron pero todavia tienen reintentos disponibles (ver
-     * markAsFailed) — status='failed' definitivo solo se alcanza tras agotarlos.
+     * Reclama de forma atomica una tanda de eventos pendientes marcandolos como
+     * 'processing' antes de devolverlos, para que dos workers concurrentes (dos
+     * replicas, o un daemon con una pasada lenta solapada con la siguiente) no
+     * puedan tomar el mismo evento y despachar la misma notificacion dos veces.
+     * Incluye eventos que fallaron pero todavia tienen reintentos disponibles
+     * (ver markAsFailed) — status='failed' definitivo solo se alcanza tras agotarlos.
      */
-    public static function getPendingEvents(int $limit = 50, ?\PDO $pdo = null): array {
+    public static function claimPendingEvents(int $limit = 50, ?\PDO $pdo = null): array {
         $db = $pdo ?? getDbConnection();
 
-        $stmt = $db->prepare("
-            SELECT id, event_name, aggregate_type, aggregate_id, payload, status, occurred_on
-            FROM domain_events
-            WHERE status = 'pending'
-            ORDER BY occurred_on ASC
-            LIMIT ?
-        ");
-        $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
-        $stmt->execute();
+        $ownConnection = $pdo === null;
+        if ($ownConnection) {
+            $db->beginTransaction();
+        }
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        try {
+            $selectStmt = $db->prepare("
+                SELECT id, event_name, aggregate_type, aggregate_id, payload, status, occurred_on
+                FROM domain_events
+                WHERE status = 'pending'
+                ORDER BY occurred_on ASC
+                LIMIT ?
+                FOR UPDATE SKIP LOCKED
+            ");
+            $selectStmt->bindValue(1, $limit, \PDO::PARAM_INT);
+            $selectStmt->execute();
+            $events = $selectStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!empty($events)) {
+                $ids = array_column($events, 'id');
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                $updateStmt = $db->prepare("
+                    UPDATE domain_events SET status = 'processing' WHERE id IN ({$placeholders})
+                ");
+                $updateStmt->execute($ids);
+            }
+
+            if ($ownConnection) {
+                $db->commit();
+            }
+
+            return $events;
+        } catch (\Throwable $e) {
+            if ($ownConnection) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
     }
 
     /**

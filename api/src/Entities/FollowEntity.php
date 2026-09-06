@@ -89,9 +89,11 @@ class FollowEntity {
         return array_map('strval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
     }
 
-    public static function insertFollow(\PDO $db, string $id, string $followerId, string $followedId): void {
+    /** Devuelve false si el follow ya existia (INSERT IGNORE no inserto fila nueva). */
+    public static function insertFollow(\PDO $db, string $id, string $followerId, string $followedId): bool {
         $stmt = $db->prepare("INSERT IGNORE INTO follows (id, follower_id, followed_id) VALUES (?, ?, ?)");
         $stmt->execute([$id, $followerId, $followedId]);
+        return $stmt->rowCount() > 0;
     }
 
     public static function deleteFollow(\PDO $db, string $followerId, string $followedId): void {
