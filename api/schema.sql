@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     reminder_time VARCHAR(10) DEFAULT '20:00',
     timezone VARCHAR(50) DEFAULT 'UTC',
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
+    status ENUM('active', 'banned', 'deleted') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

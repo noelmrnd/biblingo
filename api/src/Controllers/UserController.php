@@ -199,8 +199,10 @@ class UserController {
     }
 
     /**
-     * Elimina permanentemente la cuenta del usuario y todos sus datos asociados
-     * (rachas, amistades, solicitudes, toques, tokens push) vía ON DELETE CASCADE.
+     * Marca la cuenta como eliminada (soft delete) en vez de borrarla fisicamente:
+     * status pasa a 'deleted', lo que corta el login y cualquier token de sesion
+     * activo (ver AuthController y Auth::authenticate). El borrado fisico, si se
+     * decide hacerlo, se realiza manualmente para evitar eliminar datos por error.
      * Requerido por Apple App Store Review Guideline 5.1.1(v).
      */
     public static function deleteAccount(string $userId) {
@@ -211,11 +213,11 @@ class UserController {
         }
 
         try {
-            UserEntity::delete($db, $userId);
+            UserEntity::updateStatus($db, $userId, UserEntity::STATUS_DELETED);
 
             sendJsonResponse([
                 'success' => true,
-                'message' => 'Tu cuenta y todos tus datos fueron eliminados permanentemente.'
+                'message' => 'Tu cuenta fue eliminada.'
             ]);
         } catch (\Exception $e) {
             sendJsonResponse(['error' => 'Error al eliminar la cuenta: ' . $e->getMessage()], 500);

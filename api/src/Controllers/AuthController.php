@@ -84,6 +84,14 @@ class AuthController {
             $user = UserEntity::findById($db, $userId);
         } else {
             $userId = (string)$user['id'];
+
+            if ($user['status'] === UserEntity::STATUS_BANNED) {
+                sendJsonResponse(['error' => 'Esta cuenta ha sido bloqueada.'], 403);
+            }
+            if ($user['status'] === UserEntity::STATUS_DELETED) {
+                sendJsonResponse(['error' => 'Esta cuenta fue eliminada.'], 403);
+            }
+
             UserEntity::updateLoginInfo($db, $userId, $platform, $timezone);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;

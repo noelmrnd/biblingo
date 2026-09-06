@@ -6,6 +6,10 @@ namespace Biblingo\Entities;
 
 /** Acceso a datos de la tabla `users`. Toda query SQL sobre usuarios vive aqui. */
 class UserEntity {
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_BANNED = 'banned';
+    public const STATUS_DELETED = 'deleted';
+
     public static function findByAppleId(\PDO $db, string $appleId): array|false {
         $stmt = $db->prepare("SELECT * FROM users WHERE apple_id = ?");
         $stmt->execute([$appleId]);
@@ -137,8 +141,8 @@ class UserEntity {
         return $stmt->fetch();
     }
 
-    public static function delete(\PDO $db, string $userId): void {
-        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
+    public static function updateStatus(\PDO $db, string $userId, string $status): void {
+        $stmt = $db->prepare("UPDATE users SET status = ? WHERE id = ?");
+        $stmt->execute([$status, $userId]);
     }
 }
