@@ -89,39 +89,62 @@ class AuthController {
 
         $authToken = Auth::issueToken($userId);
 
+        sendJsonResponse([
+            'success' => true,
+            'token'   => $authToken,
+            'user'    => self::buildUserPayload($db, $userId),
+        ]);
+    }
+
+    /**
+     * Perfil completo del usuario autenticado, con la misma forma que devuelve el
+     * login. Pensado para reconstruir el usuario en memoria al abrir la app a
+     * partir de solo el token guardado — la app ya no cachea el objeto user en
+     * disco, solo el token.
+     */
+    public static function me(string $userId) {
+        $db = getDbConnection();
+
+        if (!UserEntity::existsId($db, $userId)) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        sendJsonResponse([
+            'success' => true,
+            'user'    => self::buildUserPayload($db, $userId),
+        ]);
+    }
+
+    private static function buildUserPayload(\PDO $db, string $userId): array {
+        $user = UserEntity::findById($db, $userId);
+
         $userTz = $user['timezone'] ?? 'UTC';
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz, (int)$user['streak_freezes']);
 
-        $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
-
-        sendJsonResponse([
-            'success' => true,
-            'token'   => $authToken,
-            'user'    => [
-                'id'               => (string)$userId,
-                'display_name'     => $user['display_name'],
-                'email'            => $user['email'],
-                'username'         => $user['username'],
-                'streak_count'     => (int)$user['streak_count'],
-                'max_streak_count' => (int)$user['max_streak_count'],
-                'streak_freezes'   => (int)$user['streak_freezes'],
-                'streak_freezes_used' => (int)$user['streak_freezes_used'],
-                'total_days_read'  => $totalDaysRead,
-                'reaction_counts'  => FriendController::countReactions($db, $userId),
-                'member_since'     => substr((string)$user['created_at'], 0, 10),
-                'followers_count'  => FriendController::countFollowers($db, $userId),
-                'following_count'  => FriendController::countFollowing($db, $userId),
-                'last_read_date'   => $lastRead,
-                'last_read_label'  => $status->lastReadLabel,
-                'has_read_today'   => $status->hasReadToday,
-                'is_streak_lost'   => $status->isStreakLost,
-                'reminder_time'    => $user['reminder_time'] ?? '20:00',
-                'timezone'         => $userTz,
-                'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
-                'platform'         => $user['platform']
-            ]
-        ]);
+        return [
+            'id'               => (string)$userId,
+            'display_name'     => $user['display_name'],
+            'email'            => $user['email'],
+            'username'         => $user['username'],
+            'streak_count'     => (int)$user['streak_count'],
+            'max_streak_count' => (int)$user['max_streak_count'],
+            'streak_freezes'   => (int)$user['streak_freezes'],
+            'streak_freezes_used' => (int)$user['streak_freezes_used'],
+            'total_days_read'  => ReadingLogEntity::countTotalDaysRead($db, $userId),
+            'reaction_counts'  => FriendController::countReactions($db, $userId),
+            'member_since'     => substr((string)$user['created_at'], 0, 10),
+            'followers_count'  => FriendController::countFollowers($db, $userId),
+            'following_count'  => FriendController::countFollowing($db, $userId),
+            'last_read_date'   => $lastRead,
+            'last_read_label'  => $status->lastReadLabel,
+            'has_read_today'   => $status->hasReadToday,
+            'is_streak_lost'   => $status->isStreakLost,
+            'reminder_time'    => $user['reminder_time'] ?? '20:00',
+            'timezone'         => $userTz,
+            'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
+            'platform'         => $user['platform'],
+        ];
     }
 
     /**

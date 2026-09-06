@@ -13,6 +13,10 @@ export async function clearAuthToken() {
   await StorageService.remove(AUTH_TOKEN_KEY);
 }
 
+export async function getAuthToken() {
+  return StorageService.get(AUTH_TOKEN_KEY);
+}
+
 let unauthorizedHandler = null;
 
 /**
@@ -63,6 +67,13 @@ export const ApiService = {
       method: 'POST',
       body: JSON.stringify({ timezone: deviceTimezone, ...payload })
     });
+  },
+
+  // Perfil completo del usuario autenticado (misma forma que devuelve el login).
+  // Se usa al abrir la app para reconstruir el usuario en memoria a partir de
+  // solo el token guardado — no hay copia del user cacheada en disco.
+  async getCurrentUser() {
+    return request('/auth/me');
   },
 
   // El backend deriva el usuario del token Bearer, no de un user_id en la URL.

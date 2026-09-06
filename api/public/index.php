@@ -55,6 +55,7 @@ $userId = in_array($requestUri, $publicRoutes, true) ? null : Auth::requireUser(
 // que le corresponden de $_GET/$input y llama al controller.
 $routes = [
     'POST /api/auth/social' => fn() => AuthController::handleSocialAuth(),
+    'GET /api/auth/me' => fn() => AuthController::me($userId),
     'POST /api/auth/logout' => fn() => AuthController::logout($userId),
 
     'GET /api/reading/status' => fn() => ReadingController::getStatus($userId),

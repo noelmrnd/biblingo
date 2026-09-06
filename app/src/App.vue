@@ -64,7 +64,7 @@ const onLoginSuccess = async (user, token) => {
   // Guardar el token antes de exponer currentUser: al asignarlo se monta
   // DashboardView de inmediato y dispara llamadas a la API que ya necesitan
   // el token guardado, o fallan con 401 por la condición de carrera.
-  await UserService.saveSession(user, token);
+  await UserService.saveToken(token);
   currentUser.value = user;
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
 
@@ -85,9 +85,8 @@ watch(currentUserId, (id) => {
   }
 });
 
-const onUserUpdated = async (updatedUser) => {
+const onUserUpdated = (updatedUser) => {
   currentUser.value = { ...currentUser.value, ...updatedUser };
-  await UserService.saveSession(currentUser.value);
 };
 
 const onLogout = async () => {
@@ -143,11 +142,12 @@ const forceLogout = async () => {
 onMounted(async () => {
   setUnauthorizedHandler(forceLogout);
 
-  // Inicializar sesión de usuario y sincronizar timezone en segundo plano si cambió
+  // Si hay token guardado, reconstruye el usuario completo pidiendolo al servidor
+  // (no se cachea el objeto user en disco) y sincroniza timezone si cambió.
   try {
     currentUser.value = await UserService.initSession();
   } catch (e) {
-    console.warn('No se pudo restaurar la sesión guardada:', e.message);
+    console.warn('No se pudo restaurar la sesión:', e.message);
     clearUser();
   } finally {
     isInitializing.value = false;
