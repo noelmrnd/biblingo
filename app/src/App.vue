@@ -17,7 +17,10 @@
       <OnboardingTour ref="tourRef" />
 
       <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
-      <AppHeader :streak-count="currentUser.is_streak_lost ? 0 : (currentUser.streak_count || 0)" />
+      <AppHeader
+        :streak-count="currentUser.is_streak_lost ? 0 : (currentUser.streak_count || 0)"
+        :streak-freezes="currentUser.streak_freezes || 0"
+      />
 
       <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
       <main

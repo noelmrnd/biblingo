@@ -1,4 +1,5 @@
 <template>
+  <Teleport to="body">
   <Transition
     enter-active-class="transition transform duration-300 ease-out"
     enter-from-class="-translate-y-12 opacity-0 scale-95"
@@ -9,7 +10,7 @@
   >
     <div 
       v-if="toastState.visible"
-      class="fixed top-safe left-0 right-0 z-50 px-4 pointer-events-none flex justify-center"
+      class="fixed top-safe left-0 right-0 z-[60] px-4 pointer-events-none flex justify-center"
     >
       <div 
         :class="[
@@ -39,6 +40,7 @@
       </div>
     </div>
   </Transition>
+  </Teleport>
 </template>
 
 <script setup>
