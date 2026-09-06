@@ -164,12 +164,19 @@
               <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
             </div>
             <AppToggle
-              :model-value="notificationPrefs[cat.key]"
-              :disabled="prefsLoading[cat.key]"
-              @update:model-value="(val) => togglePref(cat.key, val)"
+              v-model="notificationPrefs[cat.key]"
             />
           </div>
         </div>
+
+        <AppButton
+          color="green"
+          block
+          :disabled="savePrefsAction.loading.value || !prefsDirty"
+          @click="saveNotificationPrefs"
+        >
+          {{ savePrefsAction.loading.value ? 'Guardando...' : 'Guardar notificaciones' }}
+        </AppButton>
       </ExpandableCard>
 
       <!-- Guía y Tutorial / Tour de Bienvenida -->
@@ -346,7 +353,10 @@ const isNotificationsExpanded = ref(false);
 
 const DEFAULT_PREFS = Object.fromEntries(NOTIFICATION_CATEGORIES.map((c) => [c.key, true]));
 const notificationPrefs = reactive({ ...DEFAULT_PREFS });
-const prefsLoading = reactive({});
+const savedPrefs = ref({ ...DEFAULT_PREFS });
+const savePrefsAction = useAsyncAction();
+
+const prefsDirty = computed(() => NOTIFICATION_CATEGORIES.some((c) => notificationPrefs[c.key] !== savedPrefs.value[c.key]));
 
 const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
@@ -369,34 +379,41 @@ watch(() => props.user, (newUser) => {
     }
     if (newUser.notification_prefs) {
       Object.assign(notificationPrefs, newUser.notification_prefs);
+      savedPrefs.value = { ...newUser.notification_prefs };
     }
   }
 }, { immediate: true });
 
-const togglePref = async (key, value) => {
-  const previous = notificationPrefs[key];
-  notificationPrefs[key] = value;
-  prefsLoading[key] = true;
+const saveNotificationPrefs = async () => {
+  // Solo manda las categorias que realmente cambiaron desde el ultimo guardado.
+  const changed = Object.fromEntries(
+    NOTIFICATION_CATEGORIES
+      .map((c) => c.key)
+      .filter((key) => notificationPrefs[key] !== savedPrefs.value[key])
+      .map((key) => [key, notificationPrefs[key]])
+  );
+  if (Object.keys(changed).length === 0) return;
 
-  try {
-    const res = await ApiService.updateNotificationPrefs({ [key]: value });
-    if (res?.notification_prefs) {
-      Object.assign(notificationPrefs, res.notification_prefs);
-    }
-    emit('user-updated', { ...props.user, notification_prefs: { ...notificationPrefs } });
+  const dailyReminderChanged = Object.prototype.hasOwnProperty.call(changed, 'daily_reminder');
 
-    if (key === 'daily_reminder') {
-      if (value) {
-        await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
-      } else {
-        await NotificationService.cancelReminders();
-      }
+  const res = await savePrefsAction.run(() => ApiService.updateNotificationPrefs(changed), {
+    successMsg: 'Preferencias de notificacion guardadas.',
+    errorMsg: 'No se pudo actualizar las notificaciones.'
+  });
+
+  if (res === undefined) return;
+
+  const finalPrefs = res?.notification_prefs || { ...notificationPrefs };
+  Object.assign(notificationPrefs, finalPrefs);
+  savedPrefs.value = { ...finalPrefs };
+  emit('user-updated', { ...props.user, notification_prefs: { ...finalPrefs } });
+
+  if (dailyReminderChanged) {
+    if (finalPrefs.daily_reminder) {
+      await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+    } else {
+      await NotificationService.cancelReminders();
     }
-  } catch (e) {
-    notificationPrefs[key] = previous;
-    ToastService.error(e.message || 'No se pudo actualizar la preferencia.');
-  } finally {
-    prefsLoading[key] = false;
   }
 };
 
@@ -495,6 +512,7 @@ onMounted(async () => {
       }
       if (res.notification_prefs) {
         Object.assign(notificationPrefs, res.notification_prefs);
+        savedPrefs.value = { ...res.notification_prefs };
       }
     }
   } catch (e) {
