@@ -8,17 +8,18 @@ export default {
     extend: {
       colors: {
         brand: {
-          green: '#58CC02',
-          'green-dark': '#46A302',
-          flame: '#FF9600',
-          'flame-dark': '#CE7800',
-          blue: '#1CB0F6',
-          purple: '#CE82FF',
+          green: '#4EC313',
+          'green-dark': '#337F0C',
+          blue: '#1D6CED',
+          flame: '#FF640A',
+          'flame-dark': '#B34607',
+          purple: '#B086F9',
           dark: '#131927',
           card: '#1F293D',
           border: '#2B384E'
         }
       },
+
       fontFamily: {
         sans: ['Outfit', 'Inter', 'sans-serif']
       },

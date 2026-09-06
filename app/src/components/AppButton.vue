@@ -3,8 +3,8 @@
     :type="type"
     :disabled="disabled || readonly || loading"
     :class="[
-      'font-extrabold rounded-2xl border-b-4 active:translate-y-1 transition-all duration-75 shadow-lg inline-flex items-center justify-center gap-2 cursor-pointer select-none box-border',
-      'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:translate-y-0',
+      'font-extrabold rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 inline-flex items-center justify-center gap-2 cursor-pointer select-none box-border',
+      'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
       'whitespace-nowrap',
       block ? 'w-full' : '',
       readonly ? '!opacity-100 !cursor-default': '',
@@ -67,16 +67,16 @@ const sizeClasses = computed(() => {
 const colorClass = computed(() => {
   switch (props.color) {
     case 'blue':
-      return 'bg-brand-blue hover:bg-sky-500 text-white border-sky-700';
+      return 'bg-brand-blue hover:bg-sky-500 text-white';
     case 'dark':
-      return 'bg-brand-card hover:bg-slate-800 text-slate-200 border-slate-900';
+      return 'bg-brand-card hover:bg-slate-800 text-slate-200';
     case 'orange':
-      return 'bg-brand-flame hover:bg-brand-flame-dark text-white border-amber-700';
+      return 'bg-brand-flame hover:bg-brand-flame-dark text-white';
     case 'rose':
-      return 'bg-rose-600 hover:bg-rose-500 text-white border-rose-800';
+      return 'bg-rose-600 hover:bg-rose-500 text-white';
     case 'green':
     default:
-      return 'bg-brand-green hover:bg-brand-green-dark text-white border-emerald-700';
+      return 'bg-brand-green hover:bg-brand-green-dark text-white';
   }
 });
 </script>
