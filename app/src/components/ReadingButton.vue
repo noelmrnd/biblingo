@@ -82,6 +82,10 @@ const handleReactionConfirmed = async (reaction) => {
       const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
       NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
 
+      if (res.used_freeze) {
+        ToastService.info('¡Un protector de racha te salvó! 🧊🔥');
+      }
+
       emit('reading-logged', {
         res,
         reaction: res.reaction || reaction
