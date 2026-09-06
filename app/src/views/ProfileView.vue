@@ -35,7 +35,7 @@
         <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
         <span class="text-slate-200 text-base font-semibold">
           <span class="text-brand-green font-extrabold text-xl">{{ user.total_days_read || 0 }}</span>
-          días leídos en total
+          {{ (user.total_days_read || 0) === 1 ? 'día leído' : 'días leídos' }} en total
         </span>
       </div>
 

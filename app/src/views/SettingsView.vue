@@ -417,6 +417,11 @@ onMounted(async () => {
     const res = await ApiService.getSettings();
     if (res.success) {
       emit('user-updated', res.user);
+      editDisplayName.value = res.user.display_name || '';
+      editUsername.value = res.user.username || '';
+      if (res.user.timezone) {
+        currentTimezone.value = res.user.timezone;
+      }
     }
   } catch (e) {
     console.warn('No se pudo refrescar los datos de perfil:', e.message);

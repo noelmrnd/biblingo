@@ -78,10 +78,9 @@
               <h4 class="font-bold text-white text-base flex items-center gap-3">
                 <span class="truncate">{{ friend.display_name }}</span>
                 <span v-if="friend.is_self" class="text-sm bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black flex-none">TÚ</span>
-                <span v-else-if="!friend.is_mutual" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold flex-none">No te sigue</span>
               </h4>
               <p class="text-slate-300 text-base font-medium truncate">
-                {{ friend.last_read_label }}
+                Leyó: {{ friend.last_read_label }}
               </p>
             </div>
 

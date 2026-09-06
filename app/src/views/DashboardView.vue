@@ -39,10 +39,7 @@
         <span>¡Perfecto, ya leíste hoy!</span>
       </div>
       <p v-else-if="user.is_streak_lost" class="text-slate-200 text-base mt-3">
-        Se rompió tu racha. Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
-      </p>
-      <p v-else-if="hasReadToday === false" class="text-slate-200 text-base mt-3">
-        Racha máxima histórica: <span class="text-amber-400 font-bold">{{ user.max_streak_count }} días</span>
+        Se rompió tu racha.
       </p>
 
       <!-- Protectores de racha disponibles -->

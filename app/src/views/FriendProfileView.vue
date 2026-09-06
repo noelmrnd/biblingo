@@ -21,9 +21,15 @@
         <div class="w-20 h-20 bg-gradient-to-tr from-brand-blue to-sky-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800 text-white font-black text-3xl">
           {{ (friend.display_name || '?').charAt(0).toUpperCase() }}
         </div>
-        <div>
+        <div class="space-y-1">
           <h2 class="text-2xl font-extrabold text-white">{{ friend.display_name }}</h2>
-          <p class="text-slate-300 text-base font-medium">{{ friend.last_read_label }}</p>
+          <p class="text-slate-300 text-base font-medium font-mono flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span>@{{ friend.username }}</span>
+            <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black font-sans">AMIGOS</span>
+            <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
+            <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
+          </p>
+          <p class="text-slate-300 text-base font-medium">Leyó: {{ friend.last_read_label }}</p>
           <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
         <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
@@ -40,7 +46,7 @@
         <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
         <span class="text-slate-200 text-base font-semibold">
           <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
-          días leídos en total
+          {{ (friend.total_days_read || 0) === 1 ? 'día leído' : 'días leídos' }} en total
         </span>
       </div>
 
@@ -101,10 +107,6 @@
         <BellRing class="w-5 h-5 stroke-[2.5]" />
         <span>{{ nudged ? 'Toque enviado' : 'Dar un toque' }}</span>
       </button>
-
-      <p v-else-if="!friend.is_mutual" class="text-center text-slate-500 text-sm font-medium">
-        {{ friend.is_following ? 'Aún no te sigue de vuelta' : 'No te sigue' }} — solo pueden darse toques quienes se siguen mutuamente.
-      </p>
 
       <button
         v-if="friend.is_following"
