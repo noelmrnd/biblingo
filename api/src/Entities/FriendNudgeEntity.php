@@ -28,4 +28,18 @@ class FriendNudgeEntity {
         $stmt = $db->prepare("INSERT INTO friend_nudges (id, sender_id, receiver_id, nudge_date) VALUES (?, ?, ?, ?)");
         $stmt->execute([$id, $senderId, $receiverId, $date]);
     }
+
+    /** Total de toques que el usuario envio en su vida (no por dia, acumulado). */
+    public static function countSentByUser(\PDO $db, string $senderId): int {
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM friend_nudges WHERE sender_id = ?");
+        $stmt->execute([$senderId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
+    /** Total de toques que el usuario recibio en su vida (no por dia, acumulado). */
+    public static function countReceivedByUser(\PDO $db, string $receiverId): int {
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM friend_nudges WHERE receiver_id = ?");
+        $stmt->execute([$receiverId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
 }

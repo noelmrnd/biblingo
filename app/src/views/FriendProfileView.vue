@@ -79,6 +79,8 @@
 
       <ReactionBreakdown :reaction-counts="friend.reaction_counts" />
 
+      <BadgesCircles :earned-badges="friend.badges || []" />
+
       <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
         <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
         <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
@@ -110,6 +112,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
+import BadgesCircles from '../components/BadgesCircles.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
 import StatCard from '../components/StatCard.vue';

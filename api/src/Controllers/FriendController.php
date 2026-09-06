@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\BadgeEntity;
 use Biblingo\Entities\FollowEntity;
 use Biblingo\Entities\FriendNudgeEntity;
 use Biblingo\Entities\ReadingLogEntity;
@@ -118,6 +119,20 @@ class FriendController {
             if ($inserted) {
                 $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
                 DomainEventStore::record($event, $db);
+
+                $followingCount = FollowEntity::countFollowing($db, $userId);
+                BadgeEntity::checkAndAward($db, $userId, [
+                    'following' => $followingCount,
+                    'mutual'    => FollowEntity::countTotalMutualFriends($db, $userId),
+                ]);
+
+                // El seguido tambien puede cruzar un umbral de "cuantos me siguen" o
+                // de mutuos con este follow ajeno, no solo el que sigue.
+                $followersCount = FollowEntity::countFollowers($db, $targetId);
+                BadgeEntity::checkAndAward($db, $targetId, [
+                    'followers' => $followersCount,
+                    'mutual'    => FollowEntity::countTotalMutualFriends($db, $targetId),
+                ]);
             }
 
             $db->commit();
@@ -228,6 +243,12 @@ class FriendController {
             $event = new FriendNudgedEvent($userId, $friendId, $myDisplayName, $friendToday);
             DomainEventStore::record($event, $db);
 
+            $nudgesSent = FriendNudgeEntity::countSentByUser($db, $userId);
+            BadgeEntity::checkAndAward($db, $userId, ['nudge_sent' => $nudgesSent]);
+
+            $nudgesReceived = FriendNudgeEntity::countReceivedByUser($db, $friendId);
+            BadgeEntity::checkAndAward($db, $friendId, ['nudge_received' => $nudgesReceived]);
+
             $db->commit();
 
             DomainEventStore::notifyWorker();
@@ -300,6 +321,7 @@ class FriendController {
                 'is_following'        => $isFollowing,
                 'is_followed_by'      => $isFollowedBy,
                 'is_mutual'           => $isMutual,
+                'badges'              => BadgeEntity::listForUser($db, $friendId),
             ],
             'history'              => $isSelf ? ReadingLogEntity::fetchHistoryDates($db, $friendId, $status->today, 30) : null,
             'nudged_today'         => ($isSelf || !$isMutual) ? false : FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $status->today),

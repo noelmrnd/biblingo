@@ -101,6 +101,19 @@ class FollowEntity {
         $stmt->execute([$followerId, $followedId]);
     }
 
+    /** Cuenta el total de amigos mutuos del propio usuario (se siguen entre si), no en comun con otro. */
+    public static function countTotalMutualFriends(\PDO $db, string $userId): int {
+        $stmt = $db->prepare("
+            SELECT COUNT(*) AS total
+            FROM follows f1
+            JOIN follows f2 ON f2.follower_id = f1.followed_id AND f2.followed_id = f1.follower_id
+            JOIN users u ON u.id = f1.followed_id AND u.status = 'active'
+            WHERE f1.follower_id = ?
+        ");
+        $stmt->execute([$userId]);
+        return (int)($stmt->fetch()['total'] ?? 0);
+    }
+
     /** Cuenta cuantas personas activas tienen seguimiento mutuo con ambos usuarios ("amigos en comun"). */
     public static function countMutualFriends(\PDO $db, string $userId, string $friendId): int {
         $stmt = $db->prepare("

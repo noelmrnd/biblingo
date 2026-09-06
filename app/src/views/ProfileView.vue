@@ -58,6 +58,9 @@
       empty-label="Elige una reacción al registrar tu lectura y aquí verás cuáles se repiten más."
     />
 
+    <!-- Medallas ganadas por racha, amigos, reacciones, etc -->
+    <BadgesCircles :earned-badges="user.badges || []" />
+
     <!-- Lista de Seguidores / Seguidos -->
     <FollowListModal
       :is-open="followList.isOpen.value"
@@ -76,6 +79,7 @@
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AppPage from '../components/AppPage.vue';
+import BadgesCircles from '../components/BadgesCircles.vue';
 import FollowListModal from '../components/FollowListModal.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';

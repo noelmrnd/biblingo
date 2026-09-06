@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\BadgeEntity;
 use Biblingo\Entities\ReadingLogEntity;
 use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\Auth;
@@ -144,6 +145,7 @@ class AuthController {
             'timezone'         => $userTz,
             'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
             'platform'         => $user['platform'],
+            'badges'           => BadgeEntity::listForUser($db, $userId),
         ];
     }
 

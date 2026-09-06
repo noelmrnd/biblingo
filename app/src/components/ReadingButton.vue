@@ -43,7 +43,6 @@ import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
-import { getMilestoneForStreak } from '../constants';
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -71,10 +70,9 @@ const handleReactionConfirmed = async (reaction) => {
       // Caso 2: Limpiar las notificaciones locales entregadas y el badge solo tras haber leído
       await NotificationService.clearLocalNotifications();
 
-      // Efecto Confeti 🎉 (mas grande y en varias rafagas si es un hito de racha,
+      // Efecto Confeti 🎉 (mas grande y en varias rafagas si gano alguna medalla,
       // para que se sienta distinto a un dia cualquiera)
-      const milestone = getMilestoneForStreak(res.streak_count);
-      if (milestone) {
+      if (res.new_badges?.length > 0) {
         const burst = (particleCount, angle, originX) => confetti({
           particleCount,
           spread: 100,

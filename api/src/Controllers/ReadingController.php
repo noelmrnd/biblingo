@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\BadgeEntity;
 use Biblingo\Entities\ReadingLogEntity;
 use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\DateUtils;
@@ -42,6 +43,7 @@ class ReadingController {
             'has_read_today'       => $status->hasReadToday,
             'is_streak_lost'       => $status->isStreakLost,
             'notification_prefs'   => UserEntity::getNotificationPrefs($db, $userId),
+            'badges'               => BadgeEntity::listForUser($db, $userId),
         ]);
     }
 
@@ -104,6 +106,7 @@ class ReadingController {
 
             $alreadyLoggedToday = ($lastRead === $today);
             $usedFreeze = false;
+            $newBadges = [];
 
             if (!$alreadyLoggedToday) {
                 // Dias saltados entre la ultima lectura y hoy (sin contar ninguno de los dos
@@ -136,6 +139,19 @@ class ReadingController {
 
                 $logId = (string)SnowflakeId::nextId();
                 ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
+
+                $badgeValues = [
+                    'streak'    => $currentStreak,
+                    'days_read' => ReadingLogEntity::countTotalDaysRead($db, $userId),
+                ];
+                if ($reaction !== null) {
+                    $reactionCounts = ReadingLogEntity::countReactionsGrouped($db, $userId);
+                    foreach ($reactionCounts as $row) {
+                        $badgeValues["reaction:{$row['reaction']}"] = (int)$row['total'];
+                    }
+                    $badgeValues['reactions_all'] = count($reactionCounts);
+                }
+                $newBadges = BadgeEntity::checkAndAward($db, $userId, $badgeValues);
             }
 
             $db->commit();
@@ -157,7 +173,8 @@ class ReadingController {
             'used_freeze'      => $usedFreeze,
             'last_read_date'   => $today,
             'last_read_label'  => 'Hoy',
-            'reaction'         => $reaction
+            'reaction'         => $reaction,
+            'new_badges'       => $newBadges
         ]);
     }
 }
