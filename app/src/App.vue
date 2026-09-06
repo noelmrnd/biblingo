@@ -16,28 +16,13 @@
       <!-- Tour de Bienvenida Inicial Autónomo (Onboarding) -->
       <OnboardingTour ref="tourRef" />
 
-      <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
-      <SubHeader
-        v-if="route.meta.backTo"
-        :title="pageTitle"
-        :back-to="route.meta.backTo"
+      <!-- Cada vista trae su propio AppPage con el header (AppHeader o SubHeader) que le corresponde -->
+      <router-view
+        :user="currentUser"
+        @user-updated="onUserUpdated"
+        @logout="onLogout"
+        @open-tour="tourRef?.open"
       />
-      <AppHeader v-else />
-
-      <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
-      <main
-        class="flex-1 overflow-y-auto w-full no-scrollbar transition-[padding] duration-200"
-        :style="keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined"
-      >
-        <div class="max-w-md mx-auto p-4 space-y-4">
-          <router-view
-            :user="currentUser"
-            @user-updated="onUserUpdated"
-            @logout="onLogout"
-            @open-tour="tourRef?.open"
-          />
-        </div>
-      </main>
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
       <BottomNav />
@@ -47,12 +32,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import AppHeader from './components/AppHeader.vue';
-import SubHeader from './components/SubHeader.vue';
+import { useRouter } from 'vue-router';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
-import { keyboardHeight } from './utils/keyboard';
 import LoginView from './views/LoginView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import { ToastService } from './services/toast';
@@ -62,13 +44,9 @@ import { setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
-import { usePageTitle } from './composables/usePageTitle';
 
 const router = useRouter();
-const route = useRoute();
 const { user: currentUser, clearUser } = useCurrentUser();
-const { title: dynamicPageTitle } = usePageTitle();
-const pageTitle = computed(() => route.meta.staticTitle || dynamicPageTitle.value);
 const tourRef = ref(null);
 const isInitializing = ref(true);
 

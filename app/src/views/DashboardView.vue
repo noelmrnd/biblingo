@@ -1,27 +1,33 @@
 <template>
-  <!-- Loading Indicator Centrado -->
-  <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
-    <div class="relative w-16 h-16 flex items-center justify-center">
-      <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-green animate-spin"></div>
-      <BookOpen class="w-6 h-6 text-brand-green stroke-[2.5]" />
+  <AppPage>
+    <template #header>
+      <AppHeader />
+    </template>
+
+    <!-- Loading Indicator Centrado -->
+    <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
+      <div class="relative w-16 h-16 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-green animate-spin"></div>
+        <BookOpen class="w-6 h-6 text-brand-green stroke-[2.5]" />
+      </div>
+      <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
     </div>
-    <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
-  </div>
 
-  <div v-else class="space-y-4">
-    <StreakHero :user="user" :has-read-today="hasReadToday" />
+    <div v-else class="space-y-4">
+      <StreakHero :user="user" :has-read-today="hasReadToday" />
 
-    <!-- Botón de Lectura de Hoy (Solo visible cuando se haya confirmado que falta por leer) -->
-    <ReadingButton
-      v-if="hasReadToday === false"
-      :user="user"
-      @reading-logged="onReadingLogged"
-    />
+      <!-- Botón de Lectura de Hoy (Solo visible cuando se haya confirmado que falta por leer) -->
+      <ReadingButton
+        v-if="hasReadToday === false"
+        :user="user"
+        @reading-logged="onReadingLogged"
+      />
 
-    <ReadingTimer />
+      <ReadingTimer />
 
-    <MonthlyTracker />
-  </div>
+      <MonthlyTracker />
+    </div>
+  </AppPage>
 </template>
 
 <script>
@@ -33,6 +39,8 @@ let lastLoadedUserId = null;
 <script setup>
 import { ref, onMounted } from 'vue';
 import { BookOpen } from '@lucide/vue';
+import AppPage from '../components/AppPage.vue';
+import AppHeader from '../components/AppHeader.vue';
 import ReadingButton from '../components/ReadingButton.vue';
 import ReadingTimer from '../components/ReadingTimer.vue';
 import StreakHero from '../components/StreakHero.vue';

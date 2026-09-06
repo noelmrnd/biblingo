@@ -1,5 +1,10 @@
 <template>
-  <div class="space-y-4">
+  <AppPage>
+    <template #header>
+      <AppHeader />
+    </template>
+
+    <div class="space-y-4">
     <!-- Header Perfil con Resplandor Azul -->
     <div class="relative card-duo bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(28,176,246,0.22),_transparent_65%)] border-sky-500/30 text-center py-6 space-y-3 overflow-hidden">
       <button
@@ -95,12 +100,15 @@
       @change-tab="switchFollowListTab"
       @select-user="goToFriendProfile"
     />
-  </div>
+    </div>
+  </AppPage>
 </template>
 
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AppPage from '../components/AppPage.vue';
+import AppHeader from '../components/AppHeader.vue';
 import FollowListModal from '../components/FollowListModal.vue';
 import { UserRound, Flame, Zap, Settings, BookOpenCheck, Heart, Shield } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
