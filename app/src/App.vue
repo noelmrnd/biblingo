@@ -17,10 +17,12 @@
       <OnboardingTour ref="tourRef" />
 
       <!-- Top Navbar (Flex Fixed Top con Safe Area iOS) -->
-      <AppHeader
-        :streak-count="currentUser.is_streak_lost ? 0 : (currentUser.streak_count || 0)"
-        :streak-freezes="currentUser.streak_freezes || 0"
+      <SubHeader
+        v-if="route.meta.backTo"
+        :title="pageTitle"
+        :back-to="route.meta.backTo"
       />
+      <AppHeader v-else />
 
       <!-- Contenido de la vista activa (Área central a pantalla completa sin barras de scroll antiestéticas) -->
       <main
@@ -45,8 +47,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import AppHeader from './components/AppHeader.vue';
+import SubHeader from './components/SubHeader.vue';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
 import { keyboardHeight } from './utils/keyboard';
@@ -59,9 +62,13 @@ import { setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
+import { usePageTitle } from './composables/usePageTitle';
 
 const router = useRouter();
+const route = useRoute();
 const { user: currentUser, clearUser } = useCurrentUser();
+const { title: dynamicPageTitle } = usePageTitle();
+const pageTitle = computed(() => route.meta.staticTitle || dynamicPageTitle.value);
 const tourRef = ref(null);
 const isInitializing = ref(true);
 

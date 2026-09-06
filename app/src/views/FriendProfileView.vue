@@ -1,14 +1,5 @@
 <template>
   <div class="space-y-4">
-    <button
-      type="button"
-      @click="router.push({ name: 'friends' })"
-      class="flex items-center gap-2 text-slate-300 hover:text-white font-bold text-base cursor-pointer"
-    >
-      <ArrowLeft class="w-5 h-5 stroke-[2.5]" />
-      <span>Amigos</span>
-    </button>
-
     <div v-if="loading" class="py-16 text-center text-slate-400">Cargando perfil...</div>
 
     <div v-else-if="!friend" class="card-duo text-center py-8 text-slate-400 space-y-2">
@@ -154,7 +145,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Flame, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
+import { Flame, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';
@@ -164,6 +155,9 @@ import { READING_REACTIONS } from '../constants';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
+import { usePageTitle } from '../composables/usePageTitle';
+
+const { setTitle } = usePageTitle();
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -216,6 +210,7 @@ const loadFriendProfile = async (friendId) => {
   loading.value = true;
   friend.value = null;
   nudged.value = false;
+  setTitle('Perfil');
   try {
     const res = await ApiService.getFriendProfile(friendId);
     if (res.success) {
@@ -223,6 +218,7 @@ const loadFriendProfile = async (friendId) => {
         ...res.user,
         mutual_friends_count: res.mutual_friends_count
       };
+      setTitle(friend.value.display_name);
       if (res.nudged_today) {
         nudged.value = true;
       }

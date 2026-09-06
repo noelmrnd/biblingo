@@ -27,14 +27,11 @@
 </template>
 
 <script setup>
-defineProps({
-  streakCount: {
-    type: Number,
-    default: 0
-  },
-  streakFreezes: {
-    type: Number,
-    default: 0
-  }
-});
+import { computed } from 'vue';
+import { useCurrentUser } from '../composables/useCurrentUser';
+
+const { user } = useCurrentUser();
+
+const streakCount = computed(() => user.value?.is_streak_lost ? 0 : (user.value?.streak_count || 0));
+const streakFreezes = computed(() => user.value?.streak_freezes || 0);
 </script>

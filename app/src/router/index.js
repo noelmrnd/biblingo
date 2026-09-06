@@ -8,9 +8,9 @@ import SettingsView from '../views/SettingsView.vue';
 const routes = [
   { path: '/', name: 'dashboard', component: DashboardView },
   { path: '/friends', name: 'friends', component: FriendsView },
-  { path: '/friends/:id', name: 'friend-profile', component: FriendProfileView, props: true },
+  { path: '/friends/:id', name: 'friend-profile', component: FriendProfileView, props: true, meta: { backTo: { name: 'friends' } } },
   { path: '/profile', name: 'profile', component: ProfileView },
-  { path: '/profile/settings', name: 'profile-settings', component: SettingsView },
+  { path: '/profile/settings', name: 'profile-settings', component: SettingsView, meta: { backTo: { name: 'profile' }, staticTitle: 'Ajustes' } },
   // Cualquier ruta no reconocida (ej. /invite/CODIGO en web) cae al dashboard.
   // DeepLinkService ya captura la URL original al cargar el módulo, antes de este redirect.
   { path: '/:pathMatch(.*)*', redirect: '/' }

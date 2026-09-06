@@ -1,14 +1,5 @@
 <template>
   <div class="space-y-6">
-    <button
-      type="button"
-      @click="router.push({ name: 'profile' })"
-      class="flex items-center gap-2 text-slate-300 hover:text-white font-bold text-base cursor-pointer"
-    >
-      <ArrowLeft class="w-5 h-5 stroke-[2.5]" />
-      <span>Perfil</span>
-    </button>
-
     <div class="space-y-4">
       <!-- Título de Sección: Configuración -->
       <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
@@ -258,8 +249,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { ArrowLeft, UserRound, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import { UserRound, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
@@ -278,8 +268,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['logout', 'user-updated', 'open-tour']);
-
-const router = useRouter();
 
 const isLogoutModalOpen = ref(false);
 const isFeedbackModalOpen = ref(false);
