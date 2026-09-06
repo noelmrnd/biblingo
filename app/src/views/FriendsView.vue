@@ -34,11 +34,7 @@
     <AddFriendModal
       :is-open="isAddFriendModalOpen"
       @close="isAddFriendModalOpen = false"
-      @added="rankingRef?.loadFriends()"
     />
-
-    <!-- Tabla de Clasificación de Personas que sigues -->
-    <StreakRanking ref="rankingRef" :user="user" />
   </div>
 </template>
 
@@ -49,7 +45,6 @@ import { Share2, UserRoundPlus } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import ShareProfileModal from '../components/ShareProfileModal.vue';
 import AddFriendModal from '../components/AddFriendModal.vue';
-import StreakRanking from '../components/StreakRanking.vue';
 
 defineProps({
   user: { type: Object, required: true }
@@ -58,5 +53,4 @@ defineProps({
 const isInviteExpanded = ref(false);
 const isShareModalOpen = ref(false);
 const isAddFriendModalOpen = ref(false);
-const rankingRef = ref(null);
 </script>
