@@ -98,15 +98,26 @@ let debounceTimer = null;
 // sobreescriba los datos del mes que se esta viendo ahora.
 let requestSeq = 0;
 
+// Meses pasados no cambian, cachean para siempre. El mes en curso si puede
+// quedar desactualizado (se leyo desde otro dispositivo) — TTL mas alto que el
+// de refreshProfile porque no es realista que alguien vuelva a esta app tan
+// rapido despues de leer en otra.
+const CURRENT_MONTH_TTL_MS = 5 * 60 * 1000;
+const currentMonthKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
+
 const loadMonth = async () => {
   const seq = ++requestSeq;
   const year = displayedMonth.value.getFullYear();
   const month = displayedMonth.value.getMonth() + 1;
   const cacheKey = `${year}-${month}`;
 
-  if (monthCache.has(cacheKey)) {
-    readDates.value = monthCache.get(cacheKey);
-    return;
+  const cached = monthCache.get(cacheKey);
+  if (cached) {
+    const isStale = cacheKey === currentMonthKey && (Date.now() - cached.cachedAt > CURRENT_MONTH_TTL_MS);
+    if (!isStale) {
+      readDates.value = cached.dates;
+      return;
+    }
   }
 
   try {
@@ -114,7 +125,7 @@ const loadMonth = async () => {
     if (seq !== requestSeq) return;
     const dates = res.success ? (res.dates || []) : [];
     readDates.value = dates;
-    monthCache.set(cacheKey, dates);
+    monthCache.set(cacheKey, { dates, cachedAt: Date.now() });
   } catch (e) {
     if (seq !== requestSeq) return;
     console.warn('No se pudo cargar el calendario mensual:', e.message);
@@ -133,9 +144,7 @@ const markTodayRead = () => {
   const todayStr = toLocalDateString(today);
   if (monthOffset.value === 0 && !readDates.value.includes(todayStr)) {
     readDates.value = [...readDates.value, todayStr];
-
-    const cacheKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
-    monthCache.set(cacheKey, readDates.value);
+    monthCache.set(currentMonthKey, { dates: readDates.value, cachedAt: Date.now() });
   }
 };
 
