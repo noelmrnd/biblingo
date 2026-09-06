@@ -4,50 +4,47 @@ declare(strict_types=1);
 
 namespace Biblingo\Utils;
 
+/**
+ * Generador de IDs tipo Snowflake (64 bits: 41 timestamp + 5 datacenter + 5 worker + 12 sequence).
+ * Unico punto de uso en el proyecto es SnowflakeId::nextId(); se simplifico a esa
+ * unica API publica, sin parse/getters/generate() con overrides que nadie usaba.
+ *
+ * @link https://www.callicoder.com/distributed-unique-id-sequence-number-generator
+ */
 class SnowflakeId
 {
-    private static ?SnowflakeGenerator $defaultGenerator = null;
+    private const MAX_DATACENTER_LENGTH = 5;
+    private const MAX_WORKER_LENGTH = 5;
+    private const MAX_SEQUENCE_LENGTH = 12;
+    private const START_TIME = '2022-01-01 00:00:00';
 
-    private int $timestamp;
-    private int $sequence;
-    private int $worker;
-    private int $datacenter;
-    private int $startTime;
-    private int $value;
-
-    public static function getGenerator(): SnowflakeGenerator
-    {
-        if (self::$defaultGenerator === null) {
-            // Sin SNOWFLAKE_DATACENTER/WORKER en env (caso normal hoy), no usar mt_rand:
-            // dos procesos con el mismo par (datacenter, worker) al azar y el mismo
-            // milisegundo colisionarian. PID y hostname son deterministicos por proceso
-            // vivo, asi que diferencian entre workers de PHP-FPM y entre contenedores
-            // sin necesitar configuracion manual.
-            $dc = isset($_ENV['SNOWFLAKE_DATACENTER'])
-                ? (int)$_ENV['SNOWFLAKE_DATACENTER']
-                : (crc32(gethostname() ?: 'biblingo') % 32);
-            $w = isset($_ENV['SNOWFLAKE_WORKER'])
-                ? (int)$_ENV['SNOWFLAKE_WORKER']
-                : (getmypid() % 32);
-            self::$defaultGenerator = new SnowflakeGenerator($dc, $w);
-        }
-
-        return self::$defaultGenerator;
-    }
-
-    public static function generate(?int $datacenter = null, ?int $worker = null): self
-    {
-        if ($datacenter !== null || $worker !== null) {
-            $generator = new SnowflakeGenerator($datacenter ?? -1, $worker ?? -1);
-            return $generator->generate();
-        }
-
-        return self::getGenerator()->generate();
-    }
+    private static ?int $datacenter = null;
+    private static ?int $worker = null;
+    private static int $lastTimestamp = -1;
+    private static int $sequence = 0;
 
     public static function nextId(): int
     {
-        return self::generate()->getValue();
+        self::init();
+
+        $currentTime = self::currentMillis();
+        $sequence = self::sequence($currentTime);
+        while ($sequence > (-1 ^ (-1 << self::MAX_SEQUENCE_LENGTH))) {
+            usleep(1);
+            $currentTime = self::currentMillis();
+            $sequence = self::sequence($currentTime);
+        }
+
+        $timestamp = $currentTime - self::startTimestamp();
+
+        $workerLeftMoveLength = self::MAX_SEQUENCE_LENGTH;
+        $datacenterLeftMoveLength = self::MAX_WORKER_LENGTH + $workerLeftMoveLength;
+        $timestampLeftMoveLength = self::MAX_DATACENTER_LENGTH + $datacenterLeftMoveLength;
+
+        return ($timestamp << $timestampLeftMoveLength)
+            | (self::$datacenter << $datacenterLeftMoveLength)
+            | (self::$worker << $workerLeftMoveLength)
+            | $sequence;
     }
 
     public static function nextIdString(): string
@@ -55,64 +52,46 @@ class SnowflakeId
         return (string) self::nextId();
     }
 
-    public function __toString(): string
-    {
-        return (string) $this->value;
-    }
-
-    public function __construct(int $timestamp, int $sequence, int $worker, int $datacenter, int $startTime)
-    {
-        $this->timestamp = $timestamp;
-        $this->sequence = $sequence;
-        $this->worker = $worker;
-        $this->datacenter = $datacenter;
-        $this->startTime = $startTime;
-        $this->value = SnowflakeGenerator::getValue($timestamp, $datacenter, $worker, $sequence);
-    }
-
     /**
-     * @throws SnowflakeException
+     * Sin SNOWFLAKE_DATACENTER/WORKER en env (caso normal hoy), no usar mt_rand:
+     * dos procesos con el mismo par (datacenter, worker) al azar y el mismo
+     * milisegundo colisionarian. PID y hostname son deterministicos por proceso
+     * vivo, asi que diferencian entre workers de PHP-FPM y entre contenedores
+     * sin necesitar configuracion manual.
      */
-    public static function parse(int $id, ?int $startTime = null): self
+    private static function init(): void
     {
-        $parts = SnowflakeGenerator::getParts($id);
-        $startTime = $startTime ?? SnowflakeGenerator::getDefaultStartTimestamp();
-        return new static($parts['timestamp'], $parts['sequence'], $parts['worker'], $parts['datacenter'], $startTime);
+        if (self::$datacenter !== null) {
+            return;
+        }
+
+        self::$datacenter = isset($_ENV['SNOWFLAKE_DATACENTER'])
+            ? abs((int)$_ENV['SNOWFLAKE_DATACENTER']) % 32
+            : (crc32(gethostname() ?: 'biblingo') % 32);
+        self::$worker = isset($_ENV['SNOWFLAKE_WORKER'])
+            ? abs((int)$_ENV['SNOWFLAKE_WORKER']) % 32
+            : (getmypid() % 32);
     }
 
-    public function getDate(): \DateTimeImmutable
+    private static function sequence(int $currentTime): int
     {
-        $ts = SnowflakeGenerator::getRealTimestamp($this->startTime, $this->timestamp);
-        return (new \DateTimeImmutable())->setTimestamp($ts);
+        if (self::$lastTimestamp === $currentTime) {
+            self::$sequence++;
+        } else {
+            self::$sequence = 0;
+            self::$lastTimestamp = $currentTime;
+        }
+
+        return self::$sequence;
     }
 
-    public function getValue(): int
+    private static function currentMillis(): int
     {
-        return $this->value;
+        return (int) floor(microtime(true) * 1000);
     }
 
-    public function getTimestamp(): int
+    private static function startTimestamp(): int
     {
-        return $this->timestamp;
-    }
-
-    public function getSequence(): int
-    {
-        return $this->sequence;
-    }
-
-    public function getWorker(): int
-    {
-        return $this->worker;
-    }
-
-    public function getDatacenter(): int
-    {
-        return $this->datacenter;
-    }
-
-    public function getStartTime(): int
-    {
-        return $this->startTime;
+        return (int) strtotime(self::START_TIME) * 1000;
     }
 }

@@ -101,6 +101,9 @@ class UserController {
         }
 
         if ($reminderTime !== null) {
+            if (!preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $reminderTime)) {
+                sendJsonResponse(['error' => 'reminder_time debe tener formato HH:MM (24h).'], 400);
+            }
             $fields[] = 'reminder_time = ?';
             $params[] = $reminderTime;
         }

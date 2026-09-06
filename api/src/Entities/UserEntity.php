@@ -131,6 +131,18 @@ class UserEntity {
         return $stmt->fetch();
     }
 
+    /**
+     * Igual que getStreakRow pero con FOR UPDATE: bloquea la fila hasta el commit
+     * para que dos requests concurrentes de logReading no puedan leer el mismo
+     * estado de racha antes de que cualquiera escriba (la segunda espera el lock
+     * y ve el estado ya actualizado por la primera).
+     */
+    public static function getStreakRowForUpdate(\PDO $db, string $userId): array|false {
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ? FOR UPDATE");
+        $stmt->execute([$userId]);
+        return $stmt->fetch();
+    }
+
     public static function updateStreak(
         \PDO $db,
         string $userId,

@@ -70,70 +70,80 @@ class ReadingController {
 
     private const MAX_STREAK_FREEZES = 2;
     private const FREEZE_EVERY_DAYS = 7;
+    private const VALID_REACTIONS = ['loved', 'thoughtful', 'peaceful', 'challenged', 'saddened'];
 
     public static function logReading(string $userId, ?string $reaction = null) {
-        $db = getDbConnection();
-
-        $user = UserEntity::getStreakRow($db, $userId);
-
-        if (!$user) {
-            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        if ($reaction !== null && !in_array($reaction, self::VALID_REACTIONS, true)) {
+            sendJsonResponse(['error' => 'reaction invalida.'], 400);
         }
 
-        $userTz = $user['timezone'] ?? 'UTC';
-        $today = DateUtils::getUserToday($userTz);
-        $yesterday = DateUtils::getUserYesterday($userTz);
+        $db = getDbConnection();
 
-        $currentStreak = (int)$user['streak_count'];
-        $maxStreak = (int)$user['max_streak_count'];
-        $freezesAvailable = (int)$user['streak_freezes'];
-        $freezesUsed = (int)$user['streak_freezes_used'];
-        $lastRead = $user['last_read_date'];
+        // Lectura + calculo + escritura del estado de racha, todo bajo una misma
+        // transaccion con FOR UPDATE: evita que dos requests concurrentes de
+        // logReading (doble tap, retry) lean el mismo estado viejo y lo pisen dos
+        // veces con resultados inconsistentes.
+        try {
+            $db->beginTransaction();
 
-        $alreadyLoggedToday = ($lastRead === $today);
-        $usedFreeze = false;
+            $user = UserEntity::getStreakRowForUpdate($db, $userId);
 
-        if (!$alreadyLoggedToday) {
-            // Dias saltados entre la ultima lectura y hoy (sin contar ninguno de los dos
-            // extremos). Con last_read=ayer da 0 (racha normal, sin protector).
-            $missedDays = $lastRead ? max(0, DateUtils::daysBetween($lastRead, $today) - 1) : null;
-
-            if ($lastRead === $yesterday) {
-                $currentStreak += 1;
-            } elseif ($missedDays !== null && $missedDays > 0 && $freezesAvailable >= $missedDays) {
-                // Cada protector cubre 1 dia saltado (como Duolingo): con N protectores
-                // disponibles se pueden cubrir hasta N dias seguidos sin perder la racha.
-                $currentStreak += 1;
-                $freezesAvailable -= $missedDays;
-                $freezesUsed += $missedDays;
-                $usedFreeze = true;
-            } else {
-                $currentStreak = 1;
+            if (!$user) {
+                $db->rollBack();
+                sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
             }
 
-            if ($currentStreak > $maxStreak) {
-                $maxStreak = $currentStreak;
-            }
+            $userTz = $user['timezone'] ?? 'UTC';
+            $today = DateUtils::getUserToday($userTz);
+            $yesterday = DateUtils::getUserYesterday($userTz);
 
-            // Otorgar un protector nuevo cada FREEZE_EVERY_DAYS de racha activa, con tope.
-            if ($currentStreak > 0 && $currentStreak % self::FREEZE_EVERY_DAYS === 0 && $freezesAvailable < self::MAX_STREAK_FREEZES) {
-                $freezesAvailable += 1;
-            }
+            $currentStreak = (int)$user['streak_count'];
+            $maxStreak = (int)$user['max_streak_count'];
+            $freezesAvailable = (int)$user['streak_freezes'];
+            $freezesUsed = (int)$user['streak_freezes_used'];
+            $lastRead = $user['last_read_date'];
 
-            try {
-                $db->beginTransaction();
+            $alreadyLoggedToday = ($lastRead === $today);
+            $usedFreeze = false;
+
+            if (!$alreadyLoggedToday) {
+                // Dias saltados entre la ultima lectura y hoy (sin contar ninguno de los dos
+                // extremos). Con last_read=ayer da 0 (racha normal, sin protector).
+                $missedDays = $lastRead ? max(0, DateUtils::daysBetween($lastRead, $today) - 1) : null;
+
+                if ($lastRead === $yesterday) {
+                    $currentStreak += 1;
+                } elseif ($missedDays !== null && $missedDays > 0 && $freezesAvailable >= $missedDays) {
+                    // Cada protector cubre 1 dia saltado (como Duolingo): con N protectores
+                    // disponibles se pueden cubrir hasta N dias seguidos sin perder la racha.
+                    $currentStreak += 1;
+                    $freezesAvailable -= $missedDays;
+                    $freezesUsed += $missedDays;
+                    $usedFreeze = true;
+                } else {
+                    $currentStreak = 1;
+                }
+
+                if ($currentStreak > $maxStreak) {
+                    $maxStreak = $currentStreak;
+                }
+
+                // Otorgar un protector nuevo cada FREEZE_EVERY_DAYS de racha activa, con tope.
+                if ($currentStreak > 0 && $currentStreak % self::FREEZE_EVERY_DAYS === 0 && $freezesAvailable < self::MAX_STREAK_FREEZES) {
+                    $freezesAvailable += 1;
+                }
 
                 UserEntity::updateStreak($db, $userId, $currentStreak, $maxStreak, $freezesAvailable, $freezesUsed, $today);
 
                 $logId = (string)SnowflakeId::nextId();
                 ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
-
-                $db->commit();
-            } catch (\Exception $e) {
-                $db->rollBack();
-                error_log('[ReadingController::logReading] ' . $e->getMessage());
-                sendJsonResponse(['error' => 'Error de base de datos al registrar lectura.'], 500);
             }
+
+            $db->commit();
+        } catch (\Exception $e) {
+            $db->rollBack();
+            error_log('[ReadingController::logReading] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error de base de datos al registrar lectura.'], 500);
         }
 
         sendJsonResponse([

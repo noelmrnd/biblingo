@@ -43,13 +43,15 @@ $method     = $_SERVER['REQUEST_METHOD'];
 
 $input = getJsonInput();
 
-// Rutas publicas que no requieren sesion (el login todavia no tiene token que mandar)
-$publicRoutes = ['/api/auth/social'];
+// Rutas publicas que no requieren sesion (el login todavia no tiene token que mandar).
+// Se comparan por "METODO /ruta", igual que la tabla de rutas real de abajo, para que
+// agregar otro metodo/handler bajo el mismo path no quede exento de auth por accidente.
+$publicRoutes = ['POST /api/auth/social'];
 
 // El resto de rutas exige "Authorization: Bearer <token>". $userId ya NO se toma del
 // cliente (query/body) para saber quien hace la peticion — antes cualquiera podia
 // mandar el user_id de otra persona y actuar como ella sin ninguna credencial.
-$userId = in_array($requestUri, $publicRoutes, true) ? null : Auth::requireUser();
+$userId = in_array("$method $requestUri", $publicRoutes, true) ? null : Auth::requireUser();
 
 // Tabla de rutas: "METODO /ruta" => handler. Cada handler extrae los parametros
 // que le corresponden de $_GET/$input y llama al controller.
