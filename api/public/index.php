@@ -74,6 +74,8 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     UserController::unregisterPushToken($userId);
 } elseif ($requestUri === '/api/user/feedback' && $method === 'POST') {
     UserController::submitFeedback($userId);
+} elseif ($requestUri === '/api/user/account' && $method === 'DELETE') {
+    UserController::deleteAccount($userId);
 } else {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',

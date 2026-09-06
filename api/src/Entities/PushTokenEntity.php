@@ -24,4 +24,15 @@ class PushTokenEntity {
         $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE user_id = ?");
         $stmt->execute([$userId]);
     }
+
+    public static function fetchTokensForUser(\PDO $db, string $userId): array {
+        $stmt = $db->prepare("SELECT token FROM user_push_tokens WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    public static function deleteByTokenValue(\PDO $db, string $token): void {
+        $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE token = ?");
+        $stmt->execute([$token]);
+    }
 }

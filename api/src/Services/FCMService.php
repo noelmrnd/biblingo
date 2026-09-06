@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Biblingo\Services;
 
+use Biblingo\Entities\PushTokenEntity;
+
 class FCMService {
     private static ?string $cachedAccessToken = null;
     private static int $tokenExpiresAt = 0;
@@ -237,9 +239,7 @@ class FCMService {
     private static function removeStaleToken(string $token): void {
         try {
             if (function_exists('getDbConnection')) {
-                $db = getDbConnection();
-                $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE token = ?");
-                $stmt->execute([$token]);
+                PushTokenEntity::deleteByTokenValue(getDbConnection(), $token);
             }
         } catch (\Throwable $e) {
             error_log("[FCMService] Error al eliminar token desactualizado: " . $e->getMessage());
@@ -254,10 +254,7 @@ class FCMService {
             return false;
         }
 
-        $db = getDbConnection();
-        $stmt = $db->prepare("SELECT token FROM user_push_tokens WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        $tokens = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        $tokens = PushTokenEntity::fetchTokensForUser(getDbConnection(), $userId);
 
         if (empty($tokens)) {
             return false;
