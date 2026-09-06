@@ -133,10 +133,9 @@
                 type="button"
                 @click="triggerTestNotification"
                 :disabled="testingNotification"
-                class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                class="text-amber-400/80 hover:text-amber-300 font-semibold text-sm underline underline-offset-2 decoration-amber-400/40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-                <span>{{ testingNotification ? 'Programando...' : 'Probar notificación' }}</span>
+                {{ testingNotification ? 'Programando...' : 'Probar notificación' }}
               </button>
             </div>
           </div>
@@ -251,7 +250,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { UserRound, Bell, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import { UserRound, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import AppButton from '../components/AppButton.vue';
 import AppToggle from '../components/AppToggle.vue';
