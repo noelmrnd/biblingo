@@ -134,10 +134,10 @@
         <AppButton
           color="green"
           block
-          :disabled="savingProfile || !hasProfileChanges || !isUsernameValid"
+          :disabled="saveProfileAction.loading.value || !hasProfileChanges || !isUsernameValid"
           @click="saveProfile"
         >
-          <span v-if="savingProfile">Guardando...</span>
+          <span v-if="saveProfileAction.loading.value">Guardando...</span>
           <span v-else>Guardar datos</span>
         </AppButton>
       </ExpandableCard>
@@ -252,6 +252,7 @@ import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 import { ReviewService } from '../services/review';
+import { useAsyncAction } from '../composables/useAsyncAction';
 import versionInfo from '../version.json';
 
 const appVersion = versionInfo.version;
@@ -291,7 +292,8 @@ const reminderTime = ref('20:00');
 const isReminderExpanded = ref(false);
 const editDisplayName = ref('');
 const editUsername = ref('');
-const savingProfile = ref(false);
+const saveProfileAction = useAsyncAction();
+const saveReminderAction = useAsyncAction();
 const currentTimezone = ref('UTC');
 const isProfileExpanded = ref(false);
 
@@ -333,42 +335,41 @@ const saveProfile = async () => {
     return;
   }
 
-  savingProfile.value = true;
-  try {
-    const res = await ApiService.updateProfile({
-      display_name: newName,
-      username: editUsername.value.trim().toLowerCase(),
-      timezone: currentTimezone.value
-    });
+  const res = await saveProfileAction.run(() => ApiService.updateProfile({
+    display_name: newName,
+    username: editUsername.value.trim().toLowerCase(),
+    timezone: currentTimezone.value
+  }), {
+    successMsg: '¡Perfil actualizado con éxito! ✨',
+    errorMsg: 'No se pudo actualizar el perfil.'
+  });
 
-    if (res && res.user) {
-      emit('user-updated', res.user);
-    } else {
-      emit('user-updated', { display_name: newName, username: editUsername.value.trim().toLowerCase() });
-    }
-    ToastService.success('¡Perfil actualizado con éxito! ✨');
-    isProfileExpanded.value = false;
-  } catch (e) {
-    ToastService.error(e.message || 'No se pudo actualizar el perfil.');
-  } finally {
-    savingProfile.value = false;
+  if (res === undefined) return;
+
+  if (res && res.user) {
+    emit('user-updated', res.user);
+  } else {
+    emit('user-updated', { display_name: newName, username: editUsername.value.trim().toLowerCase() });
   }
+  isProfileExpanded.value = false;
 };
 
 const saveReminder = async () => {
-  try {
+  const res = await saveReminderAction.run(async () => {
     await StorageService.set('reminder_time', reminderTime.value);
     await ApiService.updateProfile({ reminder_time: reminderTime.value });
     await NotificationService.requestPermissions();
     await NotificationService.initPushNotifications(props.user.id);
     await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+    return true;
+  }, {
+    successMsg: '¡Recordatorio guardado! ⏰',
+    errorMsg: 'No se pudo guardar el recordatorio.'
+  });
 
+  if (res) {
     emit('user-updated', { ...props.user, reminder_time: reminderTime.value });
-
-    ToastService.success('¡Recordatorio guardado! ⏰');
     isReminderExpanded.value = false;
-  } catch (e) {
-    ToastService.error('No se pudo guardar el recordatorio.');
   }
 };
 

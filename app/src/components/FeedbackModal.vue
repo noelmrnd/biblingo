@@ -1,7 +1,7 @@
 <template>
   <AppModal
     :is-open="isOpen"
-    :loading="sending"
+    :loading="sendAction.loading.value"
     title="Enviar sugerencia"
     description="Cuéntanos qué se te ocurre o qué no funcionó como esperabas."
     @close="close"
@@ -41,10 +41,10 @@
       <AppButton
         color="green"
         block
-        :disabled="sending || message.trim().length < 5"
+        :disabled="sendAction.loading.value || message.trim().length < 5"
         @click="send"
       >
-        {{ sending ? 'Enviando...' : 'Enviar' }}
+        {{ sendAction.loading.value ? 'Enviando...' : 'Enviar' }}
       </AppButton>
     </template>
   </AppModal>
@@ -56,7 +56,7 @@ import { MessageSquarePlus } from '@lucide/vue';
 import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
 import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
+import { useAsyncAction } from '../composables/useAsyncAction';
 
 const FEEDBACK_TYPES = [
   { id: 'idea', label: 'Idea' },
@@ -72,10 +72,10 @@ const emit = defineEmits(['close']);
 
 const type = ref('idea');
 const message = ref('');
-const sending = ref(false);
+const sendAction = useAsyncAction();
 
 const close = () => {
-  if (sending.value) return;
+  if (sendAction.loading.value) return;
   type.value = 'idea';
   message.value = '';
   emit('close');
@@ -83,17 +83,13 @@ const close = () => {
 
 const send = async () => {
   const trimmed = message.value.trim();
-  if (trimmed.length < 5 || sending.value) return;
+  if (trimmed.length < 5 || sendAction.loading.value) return;
 
-  sending.value = true;
-  try {
-    const res = await ApiService.submitFeedback(type.value, trimmed);
-    sending.value = false;
-    ToastService.success(res.message || '¡Gracias por tu comentario! 🙌');
-    close();
-  } catch (e) {
-    sending.value = false;
-    ToastService.error(e.message || 'No se pudo enviar tu comentario.');
-  }
+  const res = await sendAction.run(() => ApiService.submitFeedback(type.value, trimmed), {
+    successMsg: (r) => r.message || '¡Gracias por tu comentario! 🙌',
+    errorMsg: 'No se pudo enviar tu comentario.'
+  });
+
+  if (res) close();
 };
 </script>

@@ -79,7 +79,7 @@
     <!-- Modal Confirmación de Dejar de Seguir -->
     <UnfollowConfirmModal
       :is-open="isRemoveModalOpen"
-      :loading="removeLoading"
+      :loading="remove.loading.value"
       :display-name="friendToRemove?.display_name"
       @close="closeRemoveModal"
       @confirm="confirmRemoveFriend"
@@ -96,6 +96,7 @@ import { Trophy, UsersRound, Flame, BellRing } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { useNudge } from '../composables/useNudge';
+import { useAsyncAction } from '../composables/useAsyncAction';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -107,7 +108,7 @@ const friends = ref([]);
 const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
 const friendToRemove = ref(null);
-const removeLoading = ref(false);
+const remove = useAsyncAction();
 const activeSwipeFriendId = ref(null);
 
 const loadFriends = async () => {
@@ -145,21 +146,16 @@ const closeRemoveModal = () => {
 };
 
 const confirmRemoveFriend = async () => {
-  if (!friendToRemove.value || removeLoading.value) return;
+  if (!friendToRemove.value) return;
   const friend = friendToRemove.value;
-  removeLoading.value = true;
-  try {
-    const res = await ApiService.unfollowUser(friend.id);
-    if (res.success) {
-      ToastService.success(`Dejaste de seguir a ${friend.display_name}.`);
-      friends.value = friends.value.filter(f => f.id !== friend.id);
-      delete nudge.nudged[friend.id];
-      closeRemoveModal();
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'Error al dejar de seguir.');
-  } finally {
-    removeLoading.value = false;
+  const res = await remove.run(() => ApiService.unfollowUser(friend.id), {
+    errorMsg: 'Error al dejar de seguir.'
+  });
+  if (res?.success) {
+    ToastService.success(`Dejaste de seguir a ${friend.display_name}.`);
+    friends.value = friends.value.filter(f => f.id !== friend.id);
+    delete nudge.nudged[friend.id];
+    closeRemoveModal();
   }
 };
 

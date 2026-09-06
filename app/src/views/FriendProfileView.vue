@@ -30,11 +30,11 @@
           v-if="!friend.is_following"
           color="green"
           block
-          :disabled="followLoading"
+          :disabled="follow.loading.value"
           @click="followFriend"
         >
           <UserRoundPlus class="w-5 h-5 stroke-[2.5]" />
-          <span>{{ followLoading ? 'Siguiendo...' : 'Seguir' }}</span>
+          <span>{{ follow.loading.value ? 'Siguiendo...' : 'Seguir' }}</span>
         </AppButton>
 
         <AppButton
@@ -87,7 +87,7 @@
 
     <UnfollowConfirmModal
       :is-open="isRemoveModalOpen"
-      :loading="removeLoading"
+      :loading="remove.loading.value"
       :display-name="friend?.display_name"
       @close="isRemoveModalOpen = false"
       @confirm="confirmRemove"
@@ -121,6 +121,7 @@ import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { useFollowListPanel } from '../composables/useFollowListPanel';
 import { useNudge } from '../composables/useNudge';
+import { useAsyncAction } from '../composables/useAsyncAction';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -134,8 +135,8 @@ const loading = ref(true);
 const friend = ref(null);
 const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
-const removeLoading = ref(false);
-const followLoading = ref(false);
+const remove = useAsyncAction();
+const follow = useAsyncAction();
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
@@ -169,36 +170,25 @@ onMounted(() => loadFriendProfile(props.id));
 watch(() => props.id, (newId) => loadFriendProfile(newId));
 
 const followFriend = async () => {
-  if (followLoading.value) return;
-  followLoading.value = true;
-  try {
-    const res = await ApiService.followUser(friend.value.username);
-    if (res.success) {
-      friend.value.is_following = true;
-      friend.value.is_mutual = friend.value.is_followed_by;
-      ToastService.success(`¡Ahora sigues a ${friend.value.display_name}! 🎉`);
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'No se pudo seguir a este usuario.');
-  } finally {
-    followLoading.value = false;
+  const res = await follow.run(() => ApiService.followUser(friend.value.username), {
+    errorMsg: 'No se pudo seguir a este usuario.'
+  });
+  if (res?.success) {
+    friend.value.is_following = true;
+    friend.value.is_mutual = friend.value.is_followed_by;
+    ToastService.success(`¡Ahora sigues a ${friend.value.display_name}! 🎉`);
   }
 };
 
 const confirmRemove = async () => {
-  removeLoading.value = true;
-  try {
-    const res = await ApiService.unfollowUser(friend.value.id);
-    if (res.success) {
-      ToastService.success(`Dejaste de seguir a ${friend.value.display_name}.`);
-      friend.value.is_following = false;
-      friend.value.is_mutual = false;
-    }
-  } catch (e) {
-    ToastService.error(e.message || 'Error al dejar de seguir.');
-  } finally {
-    removeLoading.value = false;
-    isRemoveModalOpen.value = false;
+  const res = await remove.run(() => ApiService.unfollowUser(friend.value.id), {
+    errorMsg: 'Error al dejar de seguir.'
+  });
+  if (res?.success) {
+    ToastService.success(`Dejaste de seguir a ${friend.value.display_name}.`);
+    friend.value.is_following = false;
+    friend.value.is_mutual = false;
   }
+  isRemoveModalOpen.value = false;
 };
 </script>
