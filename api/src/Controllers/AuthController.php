@@ -91,7 +91,7 @@ class AuthController {
 
         $userTz = $user['timezone'] ?? 'UTC';
         $lastRead = $user['last_read_date'];
-        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz);
+        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz, (int)$user['streak_freezes']);
 
         $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
 

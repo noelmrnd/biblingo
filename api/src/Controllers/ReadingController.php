@@ -21,7 +21,7 @@ class ReadingController {
         }
 
         $lastRead = $user['last_read_date'];
-        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone']);
+        $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone'], (int)$user['streak_freezes']);
 
         $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
 
@@ -93,15 +93,18 @@ class ReadingController {
         $usedFreeze = false;
 
         if (!$alreadyLoggedToday) {
-            $gapDays = $lastRead ? DateUtils::daysBetween($lastRead, $today) : null;
+            // Dias saltados entre la ultima lectura y hoy (sin contar ninguno de los dos
+            // extremos). Con last_read=ayer da 0 (racha normal, sin protector).
+            $missedDays = $lastRead ? max(0, DateUtils::daysBetween($lastRead, $today) - 1) : null;
 
             if ($lastRead === $yesterday) {
                 $currentStreak += 1;
-            } elseif ($gapDays === 2 && $freezesAvailable > 0) {
-                // Se salto exactamente 1 dia: se cubre con un protector en vez de perder la racha.
+            } elseif ($missedDays !== null && $missedDays > 0 && $freezesAvailable >= $missedDays) {
+                // Cada protector cubre 1 dia saltado (como Duolingo): con N protectores
+                // disponibles se pueden cubrir hasta N dias seguidos sin perder la racha.
                 $currentStreak += 1;
-                $freezesAvailable -= 1;
-                $freezesUsed += 1;
+                $freezesAvailable -= $missedDays;
+                $freezesUsed += $missedDays;
                 $usedFreeze = true;
             } else {
                 $currentStreak = 1;

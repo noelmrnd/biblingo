@@ -52,7 +52,7 @@ class FriendController {
                 $friendId = (string)$f['id'];
                 $streakCount = (int)$f['streak_count'];
                 $lastRead = $f['last_read_date'];
-                $status = StreakUtils::computeStatus($lastRead, $streakCount, $f['timezone']);
+                $status = StreakUtils::computeStatus($lastRead, $streakCount, $f['timezone'], (int)$f['streak_freezes']);
 
                 $lastNudgeDate = $nudgeMap[$friendId] ?? null;
                 $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $status->today);
@@ -264,7 +264,7 @@ class FriendController {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
-        $status = StreakUtils::computeStatus($friend['last_read_date'], (int)$friend['streak_count'], $friend['timezone']);
+        $status = StreakUtils::computeStatus($friend['last_read_date'], (int)$friend['streak_count'], $friend['timezone'], (int)$friend['streak_freezes']);
         $isMutual = $isFollowing && $isFollowedBy;
 
         sendJsonResponse([

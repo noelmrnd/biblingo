@@ -39,14 +39,14 @@ class FollowEntity {
     /** Lista de seguidos del usuario mas su propia fila, ordenados por racha. Oculta seguidos banned/deleted. */
     public static function fetchFollowingWithSelf(\PDO $db, string $userId): array {
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.streak_freezes, u.last_read_date, u.username, u.timezone,
                    0 AS is_self,
                    EXISTS(SELECT 1 FROM follows fb WHERE fb.follower_id = u.id AND fb.followed_id = ?) AS is_mutual
             FROM follows f
             JOIN users u ON f.followed_id = u.id
             WHERE f.follower_id = ? AND u.status = 'active'
             UNION ALL
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
+            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.streak_freezes, u.last_read_date, u.username, u.timezone,
                    1 AS is_self, 1 AS is_mutual
             FROM users u
             WHERE u.id = ?

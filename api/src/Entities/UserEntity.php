@@ -119,7 +119,7 @@ class UserEntity {
 
     /** Solo devuelve cuentas activas: ver el perfil de un banned/deleted responde "no encontrado". */
     public static function getProfileRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ? AND status = 'active'");
+        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, streak_freezes, last_read_date, timezone, created_at FROM users WHERE id = ? AND status = 'active'");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }
@@ -138,7 +138,7 @@ class UserEntity {
     }
 
     public static function getUpdatedProfileRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT id, display_name, email, username, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT id, display_name, email, username, streak_count, max_streak_count, streak_freezes, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }

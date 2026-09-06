@@ -12,11 +12,19 @@ namespace Biblingo\Utils;
  * si, aunque la columna aun no se haya actualizado, ya deberia verse como rota.
  */
 class StreakUtils {
-    public static function computeStatus(?string $lastReadDate, int $streakCount, ?string $timezone): StreakStatus {
+    /**
+     * $freezesAvailable: protectores en inventario del usuario. Un dia perdido se
+     * considera "recuperable" (racha no se ve como perdida todavia) mientras la
+     * cantidad de dias saltados quepa dentro de los protectores disponibles — los
+     * mismos consume ReadingController::logReading al volver a leer.
+     */
+    public static function computeStatus(?string $lastReadDate, int $streakCount, ?string $timezone, int $freezesAvailable = 0): StreakStatus {
         $today = DateUtils::getUserToday($timezone);
         $yesterday = DateUtils::getUserYesterday($timezone);
         $hasReadToday = $lastReadDate === $today;
-        $isStreakLost = ($streakCount > 0 && $lastReadDate !== $today && $lastReadDate !== $yesterday);
+
+        $missedDays = $lastReadDate ? max(0, DateUtils::daysBetween($lastReadDate, $today) - 1) : 0;
+        $isStreakLost = ($streakCount > 0 && !$hasReadToday && $lastReadDate !== $yesterday && $missedDays > $freezesAvailable);
 
         return new StreakStatus(
             $today,
