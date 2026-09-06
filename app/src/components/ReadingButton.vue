@@ -1,6 +1,18 @@
 <template>
   <div class="w-full">
     <AppButton
+      v-if="hasReadToday"
+      color="dark"
+      size="lg"
+      block
+      readonly
+    >
+      <CheckCircle2 class="w-6 h-6 text-brand-green stroke-[2.5]" />
+      <span>¡Perfecto, ya leíste hoy!</span>
+    </AppButton>
+
+    <AppButton
+      v-else
       color="green"
       size="lg"
       block
@@ -23,7 +35,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { BookOpen } from '@lucide/vue';
+import { BookOpen, CheckCircle2 } from '@lucide/vue';
 import AppButton from './AppButton.vue';
 import confetti from 'canvas-confetti';
 import ReactionModal from './ReactionModal.vue';
@@ -33,7 +45,8 @@ import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
 
 const props = defineProps({
-  user: { type: Object, required: true }
+  user: { type: Object, required: true },
+  hasReadToday: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['reading-logged']);

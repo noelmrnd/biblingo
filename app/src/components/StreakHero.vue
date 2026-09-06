@@ -22,22 +22,14 @@
       </p>
     </div>
 
-    <!-- Subtítulo / Badge de Estado -->
-    <div v-if="hasReadToday === true" class="inline-flex flex-wrap items-center justify-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-base font-extrabold mt-3 shadow-inner">
-      <CheckCircle2 class="w-5 h-5 text-emerald-400 stroke-[2.5]" />
-      <span>¡Perfecto, ya leíste hoy!</span>
-    </div>
-    <p v-else-if="user.is_streak_lost" class="text-slate-200 text-base mt-3">
+    <p v-if="user.is_streak_lost" class="text-slate-200 text-base mt-3">
       Se rompió tu racha.
     </p>
   </div>
 </template>
 
 <script setup>
-import { CheckCircle2 } from '@lucide/vue';
-
 defineProps({
-  user: { type: Object, required: true },
-  hasReadToday: { type: Boolean, default: null }
+  user: { type: Object, required: true }
 });
 </script>

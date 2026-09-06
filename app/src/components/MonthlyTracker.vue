@@ -91,15 +91,40 @@ const monthDays = computed(() => {
   });
 });
 
+const MONTH_CHANGE_DEBOUNCE_MS = 350;
+let debounceTimer = null;
+// Evita que una respuesta vieja (de un mes que ya se dejo atras a clicks rapidos)
+// sobreescriba los datos del mes que se esta viendo ahora.
+let requestSeq = 0;
+
 const loadMonth = async () => {
+  const seq = ++requestSeq;
+  const year = displayedMonth.value.getFullYear();
+  const month = displayedMonth.value.getMonth() + 1;
   try {
-    const res = await ApiService.getReadingCalendar(displayedMonth.value.getFullYear(), displayedMonth.value.getMonth() + 1);
+    const res = await ApiService.getReadingCalendar(year, month);
+    if (seq !== requestSeq) return;
     readDates.value = res.success ? (res.dates || []) : [];
   } catch (e) {
+    if (seq !== requestSeq) return;
     console.warn('No se pudo cargar el calendario mensual:', e.message);
   }
 };
 
-watch(monthOffset, loadMonth);
+watch(monthOffset, () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(loadMonth, MONTH_CHANGE_DEBOUNCE_MS);
+});
 onMounted(loadMonth);
+
+// Actualizacion optimista al registrar lectura hoy: evita un round-trip solo para
+// marcar un check que ya sabemos que es cierto (si se esta viendo el mes actual).
+const markTodayRead = () => {
+  const todayStr = toLocalDateString(today);
+  if (monthOffset.value === 0 && !readDates.value.includes(todayStr)) {
+    readDates.value = [...readDates.value, todayStr];
+  }
+};
+
+defineExpose({ markTodayRead });
 </script>

@@ -11,12 +11,14 @@
           <span class="font-extrabold text-xl tracking-tight text-white">Biblingo</span>
         </div>
 
-        <div class="flex items-center gap-2">
+        <button
+          type="button"
+          @click="isRulesModalOpen = true"
+          class="flex items-center gap-2 cursor-pointer"
+          aria-label="Cómo funciona la racha"
+        >
           <!-- Protectores de racha disponibles -->
-          <div
-            v-if="streakFreezes > 0"
-            class="flex items-center gap-1.5 bg-slate-900 border border-sky-500/30 px-3 py-1 rounded-full shadow-inner"
-          >
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-sky-500/30 px-3 py-1 rounded-full shadow-inner">
             <span class="text-base leading-none">🧊</span>
             <span class="font-bold text-sky-300 text-lg">{{ streakFreezes }}</span>
           </div>
@@ -26,7 +28,7 @@
             <span class="text-lg animate-flame-pulse">🔥</span>
             <span class="font-bold text-amber-400 text-xl">{{ streakCount }}</span>
           </div>
-        </div>
+        </button>
       </template>
 
       <template v-else>
@@ -51,15 +53,18 @@
         <slot />
       </div>
     </main>
+
+    <AppRulesModal :is-open="isRulesModalOpen" @close="isRulesModalOpen = false" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft } from '@lucide/vue';
 import { keyboardHeight } from '../utils/keyboard';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import AppRulesModal from './AppRulesModal.vue';
 
 const props = defineProps({
   // true: header global (logo + racha). false: header propio con title/backTo.
@@ -70,6 +75,7 @@ const props = defineProps({
 
 const router = useRouter();
 const { user } = useCurrentUser();
+const isRulesModalOpen = ref(false);
 
 const streakCount = computed(() => user.value?.is_streak_lost ? 0 : (user.value?.streak_count || 0));
 const streakFreezes = computed(() => user.value?.streak_freezes || 0);

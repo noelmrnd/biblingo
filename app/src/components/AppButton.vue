@@ -1,14 +1,15 @@
 <template>
   <button
     :type="type"
-    :disabled="disabled || loading"
+    :disabled="disabled || readonly || loading"
     :class="[
       'font-extrabold rounded-2xl border-b-4 active:translate-y-1 transition-all duration-75 shadow-lg inline-flex items-center justify-center gap-2 cursor-pointer select-none box-border',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:translate-y-0',
       'whitespace-nowrap',
       block ? 'w-full' : '',
+      readonly ? '!opacity-100 !cursor-default': '',
       sizeClasses,
-      colorClass
+      colorClass,
     ]"
   >
     <slot />
@@ -22,7 +23,7 @@ const props = defineProps({
   color: {
     type: String,
     default: 'green',
-    validator: (val) => ['green', 'blue', 'dark', 'orange', 'rose', 'outline'].includes(val)
+    validator: (val) => ['green', 'blue', 'dark', 'orange', 'rose'].includes(val)
   },
   size: {
     type: String,
@@ -38,6 +39,10 @@ const props = defineProps({
     default: 'button'
   },
   disabled: {
+    type: Boolean,
+    default: false
+  },
+  readonly: {
     type: Boolean,
     default: false
   },
@@ -69,8 +74,6 @@ const colorClass = computed(() => {
       return 'bg-brand-flame hover:bg-brand-flame-dark text-white border-amber-700';
     case 'rose':
       return 'bg-rose-600 hover:bg-rose-500 text-white border-rose-800';
-    case 'outline':
-      return 'bg-transparent hover:bg-slate-800/60 text-slate-200 border-2 border-slate-600';
     case 'green':
     default:
       return 'bg-brand-green hover:bg-brand-green-dark text-white border-emerald-700';

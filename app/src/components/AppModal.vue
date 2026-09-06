@@ -12,8 +12,9 @@
           class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full pb-safe-cond flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
         >
           <div class="p-5">
+
             <!-- Header (Fijo arriba si hay título, icono o slot header) -->
-            <div v-if="$slots.header || title || $slots.icon" class="flex-shrink-0 pb-3">
+            <div v-if="$slots.header || title || $slots.icon" class="flex-shrink-0 pb-6">
               <slot name="header">
                 <div class="flex items-start justify-between gap-3">
                   <div class="flex items-start gap-3 min-w-0">

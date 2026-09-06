@@ -46,7 +46,7 @@
 
         <AppButton
           v-else
-          color="outline"
+          color="green"
           block
           @click="isRemoveModalOpen = true"
         >

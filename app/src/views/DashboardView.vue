@@ -10,18 +10,19 @@
     </div>
 
     <div v-else class="space-y-4">
-      <StreakHero :user="user" :has-read-today="hasReadToday" />
+      <StreakHero :user="user" />
 
-      <!-- Botón de Lectura de Hoy (Solo visible cuando se haya confirmado que falta por leer) -->
+      <!-- Botón de Lectura de Hoy: readonly una vez que ya se registró -->
       <ReadingButton
-        v-if="hasReadToday === false"
+        v-if="hasReadToday !== null"
         :user="user"
+        :has-read-today="hasReadToday"
         @reading-logged="onReadingLogged"
       />
 
       <ReadingTimer />
 
-      <MonthlyTracker />
+      <MonthlyTracker ref="monthlyTrackerRef" />
     </div>
   </AppPage>
 </template>
@@ -57,10 +58,12 @@ if (lastLoadedUserId !== props.user?.id) {
 
 const initialLoading = ref(isFirstAppLoad);
 const hasReadToday = ref(props.user?.has_read_today ?? null);
+const monthlyTrackerRef = ref(null);
 const { refreshProfile, mergeUser } = useCurrentUser();
 
 const onReadingLogged = ({ res }) => {
   hasReadToday.value = true;
+  monthlyTrackerRef.value?.markTodayRead();
   mergeUser({
     streak_count: res.streak_count,
     max_streak_count: res.max_streak_count,
