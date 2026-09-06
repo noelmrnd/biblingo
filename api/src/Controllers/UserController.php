@@ -146,6 +146,33 @@ class UserController {
     }
 
     /**
+     * Registra una sugerencia, reporte de bug u otro comentario enviado desde el perfil.
+     */
+    public static function submitFeedback(string $userId) {
+        $input = getJsonInput();
+        $type = strtolower(trim($input['type'] ?? 'other'));
+        $message = trim($input['message'] ?? '');
+
+        if (!in_array($type, ['idea', 'bug', 'other'], true)) {
+            $type = 'other';
+        }
+
+        if (mb_strlen($message) < 5 || mb_strlen($message) > 2000) {
+            sendJsonResponse(['error' => 'El mensaje debe tener entre 5 y 2000 caracteres.'], 400);
+        }
+
+        $db = getDbConnection();
+        $feedbackId = SnowflakeId::nextId();
+        $stmt = $db->prepare("INSERT INTO feedback (id, user_id, type, message) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$feedbackId, $userId, $type, $message]);
+
+        sendJsonResponse([
+            'success' => true,
+            'message' => '¡Gracias por tu comentario! 🙌'
+        ]);
+    }
+
+    /**
      * Elimina permanentemente la cuenta del usuario y todos sus datos asociados
      * (rachas, amistades, solicitudes, toques, tokens push) vía ON DELETE CASCADE.
      * Requerido por Apple App Store Review Guideline 5.1.1(v).

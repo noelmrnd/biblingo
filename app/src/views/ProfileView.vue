@@ -240,12 +240,20 @@
 
     <!-- Botones de Acción -->
     <div class="space-y-3">
-      <button 
-        @click="rateApp" 
+      <button
+        @click="rateApp"
         class="w-full bg-slate-800/90 hover:bg-slate-700/80 text-slate-300 hover:text-white font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
         <Star class="w-5 h-5 text-amber-400 fill-amber-400 stroke-[2.5]" />
         <span>Calificar la aplicación</span>
+      </button>
+
+      <button
+        @click="isFeedbackModalOpen = true"
+        class="w-full bg-slate-800/90 hover:bg-slate-700/80 text-slate-300 hover:text-white font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-sky-400/50 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
+      >
+        <MessageSquarePlus class="w-5 h-5 text-sky-400 stroke-[2.5]" />
+        <span>Enviar sugerencia</span>
       </button>
 
       <button
@@ -310,6 +318,57 @@
       </template>
     </AppModal>
 
+    <!-- Modal Enviar Sugerencia / Reporte -->
+    <AppModal
+      :is-open="isFeedbackModalOpen"
+      :loading="sendingFeedback"
+      title="Enviar sugerencia"
+      description="Cuéntanos qué se te ocurre o qué no funcionó como esperabas."
+      @close="closeFeedbackModal"
+    >
+      <template #icon>
+        <div class="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center shrink-0">
+          <MessageSquarePlus class="w-5 h-5 text-sky-400 stroke-[2.5]" />
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            v-for="option in feedbackTypes"
+            :key="option.id"
+            type="button"
+            @click="feedbackType = option.id"
+            :class="feedbackType === option.id
+              ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black'
+              : 'text-slate-400 hover:text-slate-200 border-slate-800 font-extrabold'"
+            class="py-2.5 px-2 rounded-xl text-sm transition-all border cursor-pointer select-none active:scale-95"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+
+        <textarea
+          v-model="feedbackMessage"
+          rows="5"
+          maxlength="2000"
+          placeholder="Escribe aquí tu idea, sugerencia o el problema que encontraste..."
+          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-medium rounded-2xl p-4 text-base focus:outline-none transition-colors resize-none"
+        ></textarea>
+      </div>
+
+      <template #footer>
+        <AppButton
+          color="green"
+          block
+          :disabled="sendingFeedback || feedbackMessage.trim().length < 5"
+          @click="sendFeedback"
+        >
+          {{ sendingFeedback ? 'Enviando...' : 'Enviar' }}
+        </AppButton>
+      </template>
+    </AppModal>
+
     <!-- Lista de Seguidores / Seguidos -->
     <FollowListModal
       :is-open="isFollowListOpen"
@@ -330,7 +389,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
-import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, BookOpenCheck, Heart } from '@lucide/vue';
+import { UserRound, Flame, Zap, Bell, LogOut, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, BookOpenCheck, Heart, MessageSquarePlus } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { NotificationService } from '../services/notifications';
@@ -401,6 +460,40 @@ const rateApp = async () => {
   const requested = await ReviewService.requestReview({ force: true });
   if (!requested && !ReviewService.isAvailable()) {
     ToastService.info('La calificación en tienda está disponible en la app instalada.');
+  }
+};
+
+const feedbackTypes = [
+  { id: 'idea', label: 'Idea' },
+  { id: 'bug', label: 'Problema' },
+  { id: 'other', label: 'Otro' }
+];
+
+const isFeedbackModalOpen = ref(false);
+const feedbackType = ref('idea');
+const feedbackMessage = ref('');
+const sendingFeedback = ref(false);
+
+const closeFeedbackModal = () => {
+  if (sendingFeedback.value) return;
+  isFeedbackModalOpen.value = false;
+  feedbackType.value = 'idea';
+  feedbackMessage.value = '';
+};
+
+const sendFeedback = async () => {
+  const message = feedbackMessage.value.trim();
+  if (message.length < 5 || sendingFeedback.value) return;
+
+  sendingFeedback.value = true;
+  try {
+    const res = await ApiService.submitFeedback(feedbackType.value, message);
+    ToastService.success(res.message || '¡Gracias por tu comentario! 🙌');
+    closeFeedbackModal();
+  } catch (e) {
+    ToastService.error(e.message || 'No se pudo enviar tu comentario.');
+  } finally {
+    sendingFeedback.value = false;
   }
 };
 

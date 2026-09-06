@@ -78,6 +78,17 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 5c. Sugerencias y reportes enviados desde el perfil
+CREATE TABLE IF NOT EXISTS feedback (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    type ENUM('idea', 'bug', 'other') NOT NULL DEFAULT 'other',
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_created (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 6. Eventos de Dominio (Patrón Outbox para procesamiento desacoplado)
 CREATE TABLE IF NOT EXISTS domain_events (
     id VARCHAR(36) PRIMARY KEY,

@@ -128,6 +128,14 @@ export const ApiService = {
     });
   },
 
+  // type: 'idea' | 'bug' | 'other'
+  async submitFeedback(type, message) {
+    return request('/user/feedback', {
+      method: 'POST',
+      body: JSON.stringify({ type, message })
+    });
+  },
+
   async nudgeFriend(userId, friendId) {
     return request('/friends/nudge', {
       method: 'POST',
