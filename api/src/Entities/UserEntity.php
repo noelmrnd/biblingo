@@ -52,8 +52,9 @@ class UserEntity {
         return (bool)$stmt->fetch();
     }
 
+    /** Solo encuentra cuentas activas: no se puede seguir a un usuario banned/deleted. */
     public static function findByUsername(\PDO $db, string $username): array|false {
-        $stmt = $db->prepare("SELECT id, display_name FROM users WHERE username = ?");
+        $stmt = $db->prepare("SELECT id, display_name FROM users WHERE username = ? AND status = 'active'");
         $stmt->execute([$username]);
         return $stmt->fetch();
     }
@@ -116,8 +117,9 @@ class UserEntity {
         $stmt->execute([$streakCount, $maxStreakCount, $streakFreezes, $streakFreezesUsed, $lastReadDate, $userId]);
     }
 
+    /** Solo devuelve cuentas activas: ver el perfil de un banned/deleted responde "no encontrado". */
     public static function getProfileRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ? AND status = 'active'");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }

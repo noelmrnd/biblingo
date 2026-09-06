@@ -217,7 +217,7 @@ class FriendController {
                    EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = u.id) AS i_follow,
                    EXISTS(SELECT 1 FROM follows WHERE follower_id = u.id AND followed_id = ?) AS follows_me
             FROM users u
-            WHERE u.id = ?
+            WHERE u.id = ? AND u.status = 'active'
         ");
         $stmt->execute([$userId, $userId, $friendId]);
         return $stmt->fetch();

@@ -12,19 +12,31 @@ class FollowEntity {
         return (bool)$stmt->fetch();
     }
 
+    /** Solo cuenta seguidores con cuenta activa (oculta banned/deleted). */
     public static function countFollowers(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE followed_id = ?");
+        $stmt = $db->prepare("
+            SELECT COUNT(*) AS total
+            FROM follows f
+            JOIN users u ON u.id = f.follower_id
+            WHERE f.followed_id = ? AND u.status = 'active'
+        ");
         $stmt->execute([$userId]);
         return (int)($stmt->fetch()['total'] ?? 0);
     }
 
+    /** Solo cuenta seguidos con cuenta activa (oculta banned/deleted). */
     public static function countFollowing(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE follower_id = ?");
+        $stmt = $db->prepare("
+            SELECT COUNT(*) AS total
+            FROM follows f
+            JOIN users u ON u.id = f.followed_id
+            WHERE f.follower_id = ? AND u.status = 'active'
+        ");
         $stmt->execute([$userId]);
         return (int)($stmt->fetch()['total'] ?? 0);
     }
 
-    /** Lista de seguidos del usuario mas su propia fila, ordenados por racha. */
+    /** Lista de seguidos del usuario mas su propia fila, ordenados por racha. Oculta seguidos banned/deleted. */
     public static function fetchFollowingWithSelf(\PDO $db, string $userId): array {
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
@@ -32,7 +44,7 @@ class FollowEntity {
                    EXISTS(SELECT 1 FROM follows fb WHERE fb.follower_id = u.id AND fb.followed_id = ?) AS is_mutual
             FROM follows f
             JOIN users u ON f.followed_id = u.id
-            WHERE f.follower_id = ?
+            WHERE f.follower_id = ? AND u.status = 'active'
             UNION ALL
             SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
                    1 AS is_self, 1 AS is_mutual
@@ -44,24 +56,26 @@ class FollowEntity {
         return $stmt->fetchAll();
     }
 
+    /** Oculta seguidores banned/deleted. */
     public static function fetchFollowers(\PDO $db, string $targetId): array {
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.streak_count
             FROM follows f
             JOIN users u ON f.follower_id = u.id
-            WHERE f.followed_id = ?
+            WHERE f.followed_id = ? AND u.status = 'active'
             ORDER BY u.streak_count DESC, u.display_name ASC
         ");
         $stmt->execute([$targetId]);
         return $stmt->fetchAll();
     }
 
+    /** Oculta seguidos banned/deleted. */
     public static function fetchFollowing(\PDO $db, string $targetId): array {
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.streak_count
             FROM follows f
             JOIN users u ON f.followed_id = u.id
-            WHERE f.follower_id = ?
+            WHERE f.follower_id = ? AND u.status = 'active'
             ORDER BY u.streak_count DESC, u.display_name ASC
         ");
         $stmt->execute([$targetId]);
@@ -78,7 +92,7 @@ class FollowEntity {
         $stmt->execute([$followerId, $followedId]);
     }
 
-    /** Cuenta cuantas personas tienen seguimiento mutuo con ambos usuarios ("amigos en comun"). */
+    /** Cuenta cuantas personas activas tienen seguimiento mutuo con ambos usuarios ("amigos en comun"). */
     public static function countMutualFriends(\PDO $db, string $userId, string $friendId): int {
         $stmt = $db->prepare("
             SELECT COUNT(*) AS total FROM (
@@ -93,6 +107,7 @@ class FollowEntity {
                 JOIN follows f2b ON f2b.follower_id = f2.followed_id AND f2b.followed_id = f2.follower_id
                 WHERE f2.follower_id = ?
             ) mutual_b ON mutual_a.uid = mutual_b.uid
+            JOIN users u ON u.id = mutual_a.uid AND u.status = 'active'
             WHERE mutual_a.uid NOT IN (?, ?)
         ");
         $stmt->execute([$userId, $friendId, $userId, $friendId]);
