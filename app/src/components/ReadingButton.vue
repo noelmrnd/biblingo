@@ -75,7 +75,7 @@ const handleReactionConfirmed = async (reaction) => {
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#58CC02', '#FF9600', '#1CB0F6', '#FFD700']
+        colors: ['#4EC313', '#FF640A', '#1D6CED', '#FFD700']
       });
 
       // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy),
