@@ -18,8 +18,17 @@ class SnowflakeId
     public static function getGenerator(): SnowflakeGenerator
     {
         if (self::$defaultGenerator === null) {
-            $dc = isset($_ENV['SNOWFLAKE_DATACENTER']) ? (int)$_ENV['SNOWFLAKE_DATACENTER'] : -1;
-            $w  = isset($_ENV['SNOWFLAKE_WORKER']) ? (int)$_ENV['SNOWFLAKE_WORKER'] : -1;
+            // Sin SNOWFLAKE_DATACENTER/WORKER en env (caso normal hoy), no usar mt_rand:
+            // dos procesos con el mismo par (datacenter, worker) al azar y el mismo
+            // milisegundo colisionarian. PID y hostname son deterministicos por proceso
+            // vivo, asi que diferencian entre workers de PHP-FPM y entre contenedores
+            // sin necesitar configuracion manual.
+            $dc = isset($_ENV['SNOWFLAKE_DATACENTER'])
+                ? (int)$_ENV['SNOWFLAKE_DATACENTER']
+                : (crc32(gethostname() ?: 'biblingo') % 32);
+            $w = isset($_ENV['SNOWFLAKE_WORKER'])
+                ? (int)$_ENV['SNOWFLAKE_WORKER']
+                : (getmypid() % 32);
             self::$defaultGenerator = new SnowflakeGenerator($dc, $w);
         }
 

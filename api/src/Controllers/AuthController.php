@@ -57,41 +57,22 @@ class AuthController {
 
         $db = getDbConnection();
 
-        if ($provider === 'apple') {
-            $user = UserEntity::findByAppleId($db, $providerId);
-        } elseif ($provider === 'google') {
-            $user = UserEntity::findByGoogleId($db, $providerId);
-        } else {
-            $user = UserEntity::findByEmail($db, $verifiedEmail);
+        $user = self::findByProvider($db, $provider, $providerId, $verifiedEmail);
+
+        $isNewUser = !$user;
+        if ($isNewUser) {
+            $user = self::createUser($db, $provider, $providerId, $verifiedEmail, $displayName, $platform, $timezone);
+        }
+        $userId = (string)$user['id'];
+
+        if ($user['status'] === UserEntity::STATUS_BANNED) {
+            sendJsonResponse(['error' => 'Esta cuenta ha sido bloqueada.'], 403);
+        }
+        if ($user['status'] === UserEntity::STATUS_DELETED) {
+            sendJsonResponse(['error' => 'Esta cuenta fue eliminada.'], 403);
         }
 
-        if (!$user) {
-            $baseUsername = slugifyUsername($displayName);
-            $username = $baseUsername;
-            $suffix = 1;
-            while (UserEntity::usernameTaken($db, $username)) {
-                $suffix++;
-                $username = $baseUsername . $suffix;
-            }
-
-            $appleId = ($provider === 'apple') ? $providerId : null;
-            $googleId = ($provider === 'google') ? $providerId : null;
-
-            $userId = (string)SnowflakeId::nextId();
-
-            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone);
-
-            $user = UserEntity::findById($db, $userId);
-        } else {
-            $userId = (string)$user['id'];
-
-            if ($user['status'] === UserEntity::STATUS_BANNED) {
-                sendJsonResponse(['error' => 'Esta cuenta ha sido bloqueada.'], 403);
-            }
-            if ($user['status'] === UserEntity::STATUS_DELETED) {
-                sendJsonResponse(['error' => 'Esta cuenta fue eliminada.'], 403);
-            }
-
+        if (!$isNewUser) {
             UserEntity::updateLoginInfo($db, $userId, $platform, $timezone);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;
@@ -131,6 +112,65 @@ class AuthController {
                 'platform'         => $user['platform']
             ]
         ]);
+    }
+
+    /**
+     * Crea el usuario nuevo. El check-then-insert de username y de apple_id/google_id
+     * no es atomico, asi que dos requests concurrentes con el mismo provider id nuevo
+     * pueden chocar en el INSERT (ambos UNIQUE en schema). Si eso pasa: si choco por
+     * provider id/email, alguien mas ya gano la carrera y devolvemos ese usuario en vez
+     * de fallar; si choco por username, reintentamos una vez con otro sufijo.
+     */
+    private static function createUser(
+        \PDO $db,
+        string $provider,
+        string $providerId,
+        ?string $verifiedEmail,
+        string $displayName,
+        string $platform,
+        string $timezone
+    ): array {
+        $baseUsername = slugifyUsername($displayName);
+        $username = $baseUsername;
+        $suffix = 1;
+        while (UserEntity::usernameTaken($db, $username)) {
+            $suffix++;
+            $username = $baseUsername . $suffix;
+        }
+
+        $appleId = ($provider === 'apple') ? $providerId : null;
+        $googleId = ($provider === 'google') ? $providerId : null;
+        $userId = (string)SnowflakeId::nextId();
+
+        try {
+            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone);
+        } catch (\PDOException $e) {
+            if ($e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            $existing = self::findByProvider($db, $provider, $providerId, $verifiedEmail);
+            if ($existing) {
+                return $existing;
+            }
+
+            // No fue el provider id/email: choco el username contra una carrera. Un reintento basta.
+            $suffix++;
+            $userId = (string)SnowflakeId::nextId();
+            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $baseUsername . $suffix, $platform, $timezone);
+        }
+
+        return UserEntity::findById($db, $userId);
+    }
+
+    private static function findByProvider(\PDO $db, string $provider, string $providerId, ?string $verifiedEmail): array|false {
+        if ($provider === 'apple') {
+            return UserEntity::findByAppleId($db, $providerId);
+        }
+        if ($provider === 'google') {
+            return UserEntity::findByGoogleId($db, $providerId);
+        }
+        return UserEntity::findByEmail($db, $verifiedEmail);
     }
 
     /**
