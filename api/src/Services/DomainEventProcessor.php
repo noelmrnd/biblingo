@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Biblingo\Services;
 
+use Biblingo\Entities\UserEntity;
+
 class DomainEventProcessor {
     /**
      * Procesa una tanda de eventos pendientes.
@@ -62,7 +64,7 @@ class DomainEventProcessor {
         $body       = $payload['notification_body'] ?? 'Alguien te ha agregado a sus amigos.';
         $data       = $payload['notification_data'] ?? ['type' => 'new_follower'];
 
-        if ($receiverId !== null) {
+        if ($receiverId !== null && self::prefEnabled($receiverId, 'new_follower')) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
     }
@@ -73,9 +75,14 @@ class DomainEventProcessor {
         $body       = $payload['notification_body'] ?? '¡Tienes un recordatorio de lectura!';
         $data       = $payload['notification_data'] ?? ['type' => 'nudge'];
 
-        if ($receiverId !== null) {
+        if ($receiverId !== null && self::prefEnabled($receiverId, 'nudge')) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
+    }
+
+    private static function prefEnabled(string $userId, string $key): bool {
+        $prefs = UserEntity::getNotificationPrefs(getDbConnection(), $userId);
+        return $prefs[$key] ?? true;
     }
 
 }

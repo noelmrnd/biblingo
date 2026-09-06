@@ -41,6 +41,7 @@ class ReadingController {
             'last_read_label'      => $status->lastReadLabel,
             'has_read_today'       => $status->hasReadToday,
             'is_streak_lost'       => $status->isStreakLost,
+            'notification_prefs'   => UserEntity::getNotificationPrefs($db, $userId),
         ]);
     }
 

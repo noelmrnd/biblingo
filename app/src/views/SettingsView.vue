@@ -142,6 +142,36 @@
         </AppButton>
       </ExpandableCard>
 
+      <!-- Categorias de Notificacion -->
+      <ExpandableCard
+        v-model="isNotificationsExpanded"
+        title="Notificaciones"
+        description="Elige qué avisos quieres recibir"
+        icon-bg-class="bg-sky-500/10 border-sky-500/30"
+      >
+        <template #icon>
+          <BellRing class="w-5 h-5 text-sky-400 stroke-[2.5]" />
+        </template>
+
+        <div class="space-y-1">
+          <div
+            v-for="cat in NOTIFICATION_CATEGORIES"
+            :key="cat.key"
+            class="flex items-center justify-between gap-3 py-2.5 border-b border-slate-800/70 last:border-0"
+          >
+            <div class="min-w-0">
+              <p class="text-base font-bold text-white">{{ cat.label }}</p>
+              <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
+            </div>
+            <AppToggle
+              :model-value="notificationPrefs[cat.key]"
+              :disabled="prefsLoading[cat.key]"
+              @update:model-value="(val) => togglePref(cat.key, val)"
+            />
+          </div>
+        </div>
+      </ExpandableCard>
+
       <!-- Guía y Tutorial / Tour de Bienvenida -->
       <ExpandableCard
         :collapsible="false"
@@ -240,10 +270,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
-import { UserRound, Bell, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { UserRound, Bell, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import AppButton from '../components/AppButton.vue';
+import AppToggle from '../components/AppToggle.vue';
 import ConfirmActionModal from '../components/ConfirmActionModal.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import FeedbackModal from '../components/FeedbackModal.vue';
@@ -256,6 +287,21 @@ import { useAsyncAction } from '../composables/useAsyncAction';
 import versionInfo from '../version.json';
 
 const appVersion = versionInfo.version;
+
+// daily_reminder y freeze_used tienen efecto real en el cliente (cancelar/reprogramar
+// recordatorios locales, mostrar u ocultar el toast de "protector te salvo"). El resto
+// (streak_at_risk, new_follower, friend_activity, nudge, news) son push del servidor:
+// new_follower y nudge ya se respetan en el backend (DomainEventProcessor), los demas
+// todavia no tienen ningun disparador — quedan guardados listos para cuando se agregue.
+const NOTIFICATION_CATEGORIES = [
+  { key: 'daily_reminder', label: 'Recordatorio de lectura', description: 'Aviso diario a la hora que elijas.' },
+  { key: 'streak_at_risk', label: 'Racha en peligro', description: 'Si se acerca la hora y todavía no leíste hoy.' },
+  { key: 'freeze_used', label: 'Uso del protector de racha', description: 'Cuando un protector salva tu racha automáticamente.' },
+  { key: 'new_follower', label: 'Nuevo seguidor', description: 'Cuando alguien te agrega como amigo.' },
+  { key: 'friend_activity', label: 'Actividad de amigos', description: 'Cuando un amigo lee o sube de racha.' },
+  { key: 'nudge', label: 'Toques', description: 'Cuando un amigo te manda un recordatorio.' },
+  { key: 'news', label: 'Novedades de Biblingo', description: 'Anuncios y nuevas funciones de la app.' },
+];
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -296,6 +342,11 @@ const saveProfileAction = useAsyncAction();
 const saveReminderAction = useAsyncAction();
 const currentTimezone = ref('UTC');
 const isProfileExpanded = ref(false);
+const isNotificationsExpanded = ref(false);
+
+const DEFAULT_PREFS = Object.fromEntries(NOTIFICATION_CATEGORIES.map((c) => [c.key, true]));
+const notificationPrefs = reactive({ ...DEFAULT_PREFS });
+const prefsLoading = reactive({});
 
 const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
@@ -316,8 +367,38 @@ watch(() => props.user, (newUser) => {
     if (newUser.timezone) {
       currentTimezone.value = newUser.timezone;
     }
+    if (newUser.notification_prefs) {
+      Object.assign(notificationPrefs, newUser.notification_prefs);
+    }
   }
 }, { immediate: true });
+
+const togglePref = async (key, value) => {
+  const previous = notificationPrefs[key];
+  notificationPrefs[key] = value;
+  prefsLoading[key] = true;
+
+  try {
+    const res = await ApiService.updateNotificationPrefs({ [key]: value });
+    if (res?.notification_prefs) {
+      Object.assign(notificationPrefs, res.notification_prefs);
+    }
+    emit('user-updated', { ...props.user, notification_prefs: { ...notificationPrefs } });
+
+    if (key === 'daily_reminder') {
+      if (value) {
+        await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+      } else {
+        await NotificationService.cancelReminders();
+      }
+    }
+  } catch (e) {
+    notificationPrefs[key] = previous;
+    ToastService.error(e.message || 'No se pudo actualizar la preferencia.');
+  } finally {
+    prefsLoading[key] = false;
+  }
+};
 
 const saveProfile = async () => {
   document.activeElement?.blur();
@@ -358,9 +439,11 @@ const saveReminder = async () => {
   const res = await saveReminderAction.run(async () => {
     await StorageService.set('reminder_time', reminderTime.value);
     await ApiService.updateProfile({ reminder_time: reminderTime.value });
-    await NotificationService.requestPermissions();
-    await NotificationService.initPushNotifications(props.user.id);
-    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+    if (notificationPrefs.daily_reminder) {
+      await NotificationService.requestPermissions();
+      await NotificationService.initPushNotifications(props.user.id);
+      await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+    }
     return true;
   }, {
     successMsg: '¡Recordatorio guardado! ⏰',
@@ -404,11 +487,14 @@ onMounted(async () => {
   try {
     const res = await ApiService.getSettings();
     if (res.success) {
-      emit('user-updated', res.user);
+      emit('user-updated', { ...res.user, notification_prefs: res.notification_prefs });
       editDisplayName.value = res.user.display_name || '';
       editUsername.value = res.user.username || '';
       if (res.user.timezone) {
         currentTimezone.value = res.user.timezone;
+      }
+      if (res.notification_prefs) {
+        Object.assign(notificationPrefs, res.notification_prefs);
       }
     }
   } catch (e) {

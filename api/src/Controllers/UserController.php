@@ -32,7 +32,37 @@ class UserController {
                 'email'         => $user['email'],
                 'timezone'      => $user['timezone'],
                 'reminder_time' => $user['reminder_time'],
-            ]
+            ],
+            'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
+        ]);
+    }
+
+    /**
+     * Prende/apaga categorias de notificacion (ver UserEntity::DEFAULT_NOTIFICATION_PREFS).
+     * Acepta actualizacion parcial: solo las claves reconocidas del body se tocan,
+     * el resto conserva su valor actual.
+     */
+    public static function updateNotificationPrefs(string $userId) {
+        $input = getJsonInput();
+        $known = array_keys(UserEntity::DEFAULT_NOTIFICATION_PREFS);
+
+        $prefs = [];
+        foreach ($known as $key) {
+            if (array_key_exists($key, $input)) {
+                $prefs[$key] = (bool)$input[$key];
+            }
+        }
+
+        if (empty($prefs)) {
+            sendJsonResponse(['error' => 'Sin categorias validas para actualizar.'], 400);
+        }
+
+        $db = getDbConnection();
+        $updated = UserEntity::updateNotificationPrefs($db, $userId, $prefs);
+
+        sendJsonResponse([
+            'success' => true,
+            'notification_prefs' => $updated,
         ]);
     }
 

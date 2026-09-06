@@ -118,6 +118,7 @@ class AuthController {
                 'is_streak_lost'   => $status->isStreakLost,
                 'reminder_time'    => $user['reminder_time'] ?? '20:00',
                 'timezone'         => $userTz,
+                'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
                 'platform'         => $user['platform']
             ]
         ]);

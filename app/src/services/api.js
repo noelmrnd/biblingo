@@ -125,6 +125,14 @@ export const ApiService = {
     return request('/user/settings');
   },
 
+  // prefs: objeto parcial, solo las claves que cambiaron (ver UserEntity::DEFAULT_NOTIFICATION_PREFS).
+  async updateNotificationPrefs(prefs) {
+    return request('/user/notification-prefs', {
+      method: 'POST',
+      body: JSON.stringify(prefs)
+    });
+  },
+
   async registerPushToken(pushToken, platform = 'ios') {
     return request('/user/push-token', {
       method: 'POST',

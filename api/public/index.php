@@ -91,6 +91,7 @@ $routes = [
 
     'GET /api/user/settings' => fn() => UserController::getSettings($userId),
     'POST /api/user/update' => fn() => UserController::updateProfile($userId),
+    'POST /api/user/notification-prefs' => fn() => UserController::updateNotificationPrefs($userId),
     'POST /api/user/push-token' => fn() => UserController::registerPushToken($userId),
     'DELETE /api/user/push-token' => fn() => UserController::unregisterPushToken($userId),
     'POST /api/user/feedback' => fn() => UserController::submitFeedback($userId),

@@ -78,11 +78,14 @@ const handleReactionConfirmed = async (reaction) => {
         colors: ['#58CC02', '#FF9600', '#1CB0F6', '#FFD700']
       });
 
-      // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy)
-      const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-      NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
+      // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy),
+      // solo si el usuario no apagó la categoria "Recordatorio de lectura".
+      if (props.user.notification_prefs?.daily_reminder !== false) {
+        const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
+        NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
+      }
 
-      if (res.used_freeze) {
+      if (res.used_freeze && props.user.notification_prefs?.freeze_used !== false) {
         ToastService.info('¡Un protector de racha te salvó! 🧊🔥');
       }
 

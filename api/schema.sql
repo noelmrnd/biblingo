@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     timezone VARCHAR(50) DEFAULT 'UTC',
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
     status ENUM('active', 'banned', 'deleted') NOT NULL DEFAULT 'active',
+    notification_prefs JSON NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

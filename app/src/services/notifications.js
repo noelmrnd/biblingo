@@ -158,6 +158,23 @@ export const NotificationService = {
   },
 
   /**
+   * Cancela cualquier recordatorio diario ya programado (pendiente de dispararse),
+   * sin tocar el token push. Se usa al apagar la categoria "Recordatorio de lectura"
+   * en Ajustes.
+   */
+  async cancelReminders() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      if (pending.notifications && pending.notifications.length > 0) {
+        await LocalNotifications.cancel(pending);
+      }
+    } catch (e) {
+      console.warn('Error al cancelar recordatorios programados:', e.message || e);
+    }
+  },
+
+  /**
    * Elimina el token push de la API y limpia el almacenamiento de notificaciones al cerrar sesión.
    */
   async unregisterPushToken() {

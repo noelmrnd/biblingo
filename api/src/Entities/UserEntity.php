@@ -10,6 +10,37 @@ class UserEntity {
     public const STATUS_BANNED = 'banned';
     public const STATUS_DELETED = 'deleted';
 
+    /**
+     * Categorias de notificacion que el usuario puede prender/apagar desde Ajustes.
+     * Todas empiezan en true; una fila sin notification_prefs (columna NULL, cuenta
+     * vieja o nunca tocada) se trata como "todo prendido" via este default, y una
+     * clave nueva que se agregue aca despues tambien nace prendida para todos.
+     */
+    public const DEFAULT_NOTIFICATION_PREFS = [
+        'daily_reminder'  => true,
+        'streak_at_risk'  => true,
+        'freeze_used'     => true,
+        'new_follower'    => true,
+        'friend_activity' => true,
+        'nudge'           => true,
+        'news'            => true,
+    ];
+
+    public static function getNotificationPrefs(\PDO $db, string $userId): array {
+        $stmt = $db->prepare("SELECT notification_prefs FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $raw = $stmt->fetchColumn();
+        $stored = $raw ? (json_decode($raw, true) ?: []) : [];
+        return array_merge(self::DEFAULT_NOTIFICATION_PREFS, $stored);
+    }
+
+    public static function updateNotificationPrefs(\PDO $db, string $userId, array $prefs): array {
+        $merged = array_merge(self::getNotificationPrefs($db, $userId), $prefs);
+        $stmt = $db->prepare("UPDATE users SET notification_prefs = ? WHERE id = ?");
+        $stmt->execute([json_encode($merged), $userId]);
+        return $merged;
+    }
+
     public static function findByAppleId(\PDO $db, string $appleId): array|false {
         $stmt = $db->prepare("SELECT * FROM users WHERE apple_id = ?");
         $stmt->execute([$appleId]);
