@@ -50,12 +50,12 @@
             <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
             <button
               v-if="!friend.is_self && friend.is_mutual && !friend.has_read_today"
-              @click.stop="sendNudge(friend)"
-              :disabled="nudgedFriends[friend.id] || nudgeLoading[friend.id]"
+              @click.stop="nudge.sendNudge(friend.id, friend.display_name)"
+              :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
               class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
             >
               <BellRing class="w-4 h-4 stroke-[2.5]" />
-              <span>{{ nudgedFriends[friend.id] ? 'Enviado' : 'Toque' }}</span>
+              <span>{{ nudge.nudged[friend.id] ? 'Enviado' : 'Toque' }}</span>
             </button>
 
             <!-- Badge de Racha Unificado -->
@@ -95,6 +95,7 @@ import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
 import { Trophy, UsersRound, Flame, BellRing } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
+import { useNudge } from '../composables/useNudge';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -103,27 +104,11 @@ const props = defineProps({
 const router = useRouter();
 
 const friends = ref([]);
-const nudgedFriends = ref({});
-const nudgeLoading = ref({});
+const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
 const friendToRemove = ref(null);
 const removeLoading = ref(false);
 const activeSwipeFriendId = ref(null);
-
-const sendNudge = async (friend) => {
-  if (nudgedFriends.value[friend.id] || nudgeLoading.value[friend.id]) return;
-
-  nudgeLoading.value[friend.id] = true;
-  try {
-    const res = await ApiService.nudgeFriend(friend.id);
-    nudgedFriends.value[friend.id] = true;
-    ToastService.success(res.message || `¡Le enviaste un recordatorio a ${friend.display_name}! 🔔`);
-  } catch (e) {
-    ToastService.error(e.message || `No se pudo enviar el recordatorio.`);
-  } finally {
-    nudgeLoading.value[friend.id] = false;
-  }
-};
 
 const loadFriends = async () => {
   try {
@@ -133,7 +118,7 @@ const loadFriends = async () => {
       // Sincronizar estado de toques enviados hoy desde la API
       friends.value.forEach(f => {
         if (f.nudged_today) {
-          nudgedFriends.value[f.id] = true;
+          nudge.markNudged(f.id);
         }
       });
     }
@@ -168,7 +153,7 @@ const confirmRemoveFriend = async () => {
     if (res.success) {
       ToastService.success(`Dejaste de seguir a ${friend.display_name}.`);
       friends.value = friends.value.filter(f => f.id !== friend.id);
-      delete nudgedFriends.value[friend.id];
+      delete nudge.nudged[friend.id];
       closeRemoveModal();
     }
   } catch (e) {

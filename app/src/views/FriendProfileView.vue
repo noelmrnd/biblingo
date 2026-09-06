@@ -51,11 +51,11 @@
           v-if="friend.is_mutual && !friend.has_read_today"
           color="orange"
           block
-          :disabled="nudged || nudgeLoading"
-          @click="sendNudge"
+          :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
+          @click="nudge.sendNudge(friend.id, friend.display_name)"
         >
           <BellRing class="w-5 h-5 stroke-[2.5]" />
-          <span>{{ nudged ? 'Toque enviado' : 'Dar un toque' }}</span>
+          <span>{{ nudge.nudged[friend.id] ? 'Toque enviado' : 'Dar un toque' }}</span>
         </AppButton>
       </div>
 
@@ -120,6 +120,7 @@ import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { useFollowListPanel } from '../composables/useFollowListPanel';
+import { useNudge } from '../composables/useNudge';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -131,8 +132,7 @@ const router = useRouter();
 
 const loading = ref(true);
 const friend = ref(null);
-const nudged = ref(false);
-const nudgeLoading = ref(false);
+const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
 const removeLoading = ref(false);
 const followLoading = ref(false);
@@ -144,7 +144,6 @@ const followList = useFollowListPanel(route, router);
 const loadFriendProfile = async (friendId) => {
   loading.value = true;
   friend.value = null;
-  nudged.value = false;
   try {
     const res = await ApiService.getFriendProfile(friendId);
     if (res.success) {
@@ -153,7 +152,7 @@ const loadFriendProfile = async (friendId) => {
         mutual_friends_count: res.mutual_friends_count
       };
       if (res.nudged_today) {
-        nudged.value = true;
+        nudge.markNudged(res.user.id);
       }
     }
   } catch (e) {
@@ -168,20 +167,6 @@ onMounted(() => loadFriendProfile(props.id));
 // La ruta reutiliza el componente al navegar entre perfiles de amigos (mismo nombre
 // de ruta, distinto id), asi que onMounted no vuelve a dispararse por si solo.
 watch(() => props.id, (newId) => loadFriendProfile(newId));
-
-const sendNudge = async () => {
-  if (nudged.value || nudgeLoading.value) return;
-  nudgeLoading.value = true;
-  try {
-    const res = await ApiService.nudgeFriend(friend.value.id);
-    nudged.value = true;
-    ToastService.success(res.message || `¡Le enviaste un recordatorio a ${friend.value.display_name}! 🔔`);
-  } catch (e) {
-    ToastService.error(e.message || 'No se pudo enviar el recordatorio.');
-  } finally {
-    nudgeLoading.value = false;
-  }
-};
 
 const followFriend = async () => {
   if (followLoading.value) return;
