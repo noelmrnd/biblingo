@@ -1,5 +1,5 @@
 <template>
-  <div class="relative text-center pt-6 pb-8 px-6 overflow-hidden bg-[radial-gradient(ellipse_at_top,_rgba(255,150,0,0.18),_transparent_62%)]">
+  <div class="relative text-center pt-6 pb-8 px-6 -mx-4 overflow-hidden bg-[radial-gradient(ellipse_at_top,_rgba(255,150,0,0.18),_transparent_62%)]">
     <!-- Llama animada (o congelada si la racha ya se perdió) -->
     <div class="inline-block relative my-3">
       <div

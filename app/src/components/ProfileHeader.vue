@@ -1,5 +1,5 @@
 <template>
-  <div class="relative text-center pt-4 pb-6 space-y-3 overflow-hidden bg-[radial-gradient(ellipse_at_top,_rgba(28,176,246,0.18),_transparent_62%)]">
+  <div class="relative text-center pt-4 pb-6 px-4 -mx-4 space-y-3 overflow-hidden bg-[radial-gradient(ellipse_at_top,_rgba(28,176,246,0.18),_transparent_62%)]">
     <slot name="corner" />
 
     <div class="w-20 h-20 bg-gradient-to-tr from-brand-blue to-sky-400 rounded-full flex items-center justify-center shadow-xl mx-auto border-4 border-slate-800">
