@@ -81,8 +81,7 @@ class ReadingController {
 
         // Lectura + calculo + escritura del estado de racha, todo bajo una misma
         // transaccion con FOR UPDATE: evita que dos requests concurrentes de
-        // logReading (doble tap, retry) lean el mismo estado viejo y lo pisen dos
-        // veces con resultados inconsistentes.
+        // logReading lean el mismo estado viejo y lo pisen dos veces.
         try {
             $db->beginTransaction();
 
@@ -141,7 +140,9 @@ class ReadingController {
 
             $db->commit();
         } catch (\Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             error_log('[ReadingController::logReading] ' . $e->getMessage());
             sendJsonResponse(['error' => 'Error de base de datos al registrar lectura.'], 500);
         }

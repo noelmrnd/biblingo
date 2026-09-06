@@ -30,6 +30,18 @@ class DomainEventStore {
     }
 
     /**
+     * Avisa al worker que hay un evento nuevo para procesar (ver EventWakeup),
+     * para que reaccione al instante en vez de esperar el proximo poll. Debe
+     * llamarse recien despues del commit() de la transaccion que llamo a
+     * record() — antes de eso el evento todavia no es visible para el worker.
+     * El controller no necesita saber que el aviso viaja por un socket: solo
+     * conoce el store de domain_events, no el mecanismo de transporte.
+     */
+    public static function notifyWorker(): void {
+        EventWakeup::notify();
+    }
+
+    /**
      * Reclama de forma atomica una tanda de eventos pendientes marcandolos como
      * 'processing' antes de devolverlos, para que dos workers concurrentes (dos
      * replicas, o un daemon con una pasada lenta solapada con la siguiente) no

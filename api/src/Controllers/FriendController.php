@@ -121,8 +121,14 @@ class FriendController {
             }
 
             $db->commit();
+
+            if ($inserted) {
+                DomainEventStore::notifyWorker();
+            }
         } catch (\Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             error_log('[FriendController::follow] ' . $e->getMessage());
             sendJsonResponse(['error' => 'Error al seguir usuario.'], 500);
         }
@@ -223,8 +229,12 @@ class FriendController {
             DomainEventStore::record($event, $db);
 
             $db->commit();
+
+            DomainEventStore::notifyWorker();
         } catch (\Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             error_log('[FriendController::nudgeFriend] ' . $e->getMessage());
             sendJsonResponse(['error' => 'Error al enviar el recordatorio.'], 500);
         }
