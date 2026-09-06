@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\ReadingLogEntity;
+use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\Auth;
 use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\JwtVerifier;
@@ -56,27 +58,20 @@ class AuthController {
         $db = getDbConnection();
 
         if ($provider === 'apple') {
-            $stmt = $db->prepare("SELECT * FROM users WHERE apple_id = ?");
-            $stmt->execute([$providerId]);
+            $user = UserEntity::findByAppleId($db, $providerId);
         } elseif ($provider === 'google') {
-            $stmt = $db->prepare("SELECT * FROM users WHERE google_id = ?");
-            $stmt->execute([$providerId]);
+            $user = UserEntity::findByGoogleId($db, $providerId);
         } else {
-            $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
-            $stmt->execute([$verifiedEmail]);
+            $user = UserEntity::findByEmail($db, $verifiedEmail);
         }
-        $user = $stmt->fetch();
 
         if (!$user) {
             $baseUsername = slugifyUsername($displayName);
             $username = $baseUsername;
             $suffix = 1;
-            $checkStmt = $db->prepare("SELECT id FROM users WHERE username = ?");
-            $checkStmt->execute([$username]);
-            while ($checkStmt->fetch()) {
+            while (UserEntity::usernameTaken($db, $username)) {
                 $suffix++;
                 $username = $baseUsername . $suffix;
-                $checkStmt->execute([$username]);
             }
 
             $appleId = ($provider === 'apple') ? $providerId : null;
@@ -84,19 +79,12 @@ class AuthController {
 
             $userId = (string)SnowflakeId::nextId();
 
-            $insertStmt = $db->prepare("
-                INSERT INTO users (id, apple_id, google_id, email, display_name, username, platform, timezone)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            $insertStmt->execute([$userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone]);
+            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone);
 
-            $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
-            $stmt->execute([$userId]);
-            $user = $stmt->fetch();
+            $user = UserEntity::findById($db, $userId);
         } else {
             $userId = (string)$user['id'];
-            $updateStmt = $db->prepare("UPDATE users SET platform = ?, timezone = ? WHERE id = ?");
-            $updateStmt->execute([$platform, $timezone, $userId]);
+            UserEntity::updateLoginInfo($db, $userId, $platform, $timezone);
             $user['platform'] = $platform;
             $user['timezone'] = $timezone;
         }
@@ -107,9 +95,7 @@ class AuthController {
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz);
 
-        $totalDaysStmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
-        $totalDaysStmt->execute([$userId]);
-        $totalDaysRead = (int)($totalDaysStmt->fetch()['total'] ?? 0);
+        $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
 
         sendJsonResponse([
             'success' => true,

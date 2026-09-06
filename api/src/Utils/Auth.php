@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Biblingo\Utils;
 
+use Biblingo\Entities\AuthTokenEntity;
+
 /**
  * Sesion por token Bearer. Antes del login se emite un token opaco (issueToken);
  * cada request posterior debe mandarlo en "Authorization: Bearer <token>" para que
@@ -20,8 +22,7 @@ class Auth {
         $tokenHash = hash('sha256', $rawToken);
         $expiresAt = date('Y-m-d H:i:s', time() + self::TOKEN_TTL_DAYS * 86400);
 
-        $stmt = $db->prepare("INSERT INTO auth_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)");
-        $stmt->execute([SnowflakeId::nextId(), $userId, $tokenHash, $expiresAt]);
+        AuthTokenEntity::insert($db, (string)SnowflakeId::nextId(), $userId, $tokenHash, $expiresAt);
 
         return $rawToken;
     }
@@ -46,9 +47,7 @@ class Auth {
         }
 
         $db = getDbConnection();
-        $stmt = $db->prepare("SELECT user_id FROM auth_tokens WHERE token_hash = ? AND expires_at > NOW()");
-        $stmt->execute([hash('sha256', $rawToken)]);
-        $row = $stmt->fetch();
+        $row = AuthTokenEntity::findValidUserIdByHash($db, hash('sha256', $rawToken));
 
         return $row ? (string)$row['user_id'] : null;
     }

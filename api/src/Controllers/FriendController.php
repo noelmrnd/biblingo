@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\FollowEntity;
+use Biblingo\Entities\FriendNudgeEntity;
+use Biblingo\Entities\ReadingLogEntity;
+use Biblingo\Entities\UserEntity;
 use Biblingo\Events\FriendAddedEvent;
 use Biblingo\Events\FriendNudgedEvent;
 use Biblingo\Services\DomainEventStore;
@@ -20,32 +24,11 @@ class FriendController {
     public static function getFriends(string $userId) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
-                   0 AS is_self,
-                   EXISTS(SELECT 1 FROM follows fb WHERE fb.follower_id = u.id AND fb.followed_id = ?) AS is_mutual
-            FROM follows f
-            JOIN users u ON f.followed_id = u.id
-            WHERE f.follower_id = ?
-            UNION ALL
-            SELECT u.id, u.display_name, u.streak_count, u.max_streak_count, u.last_read_date, u.username, u.timezone,
-                   1 AS is_self, 1 AS is_mutual
-            FROM users u
-            WHERE u.id = ?
-            ORDER BY streak_count DESC, display_name ASC
-        ");
-        $stmt->execute([$userId, $userId, $userId]);
-        $following = $stmt->fetchAll();
+        $following = FollowEntity::fetchFollowingWithSelf($db, $userId);
 
-        $nudgesStmt = $db->prepare("
-            SELECT receiver_id, MAX(nudge_date) AS last_nudge_date
-            FROM friend_nudges
-            WHERE sender_id = ?
-            GROUP BY receiver_id
-        ");
-        $nudgesStmt->execute([$userId]);
+        $nudgeRows = FriendNudgeEntity::fetchLastNudgeMap($db, $userId);
         $nudgeMap = [];
-        foreach ($nudgesStmt->fetchAll() as $n) {
+        foreach ($nudgeRows as $n) {
             $nudgeMap[(string)$n['receiver_id']] = $n['last_nudge_date'];
         }
 
@@ -92,9 +75,7 @@ class FriendController {
 
         $db = getDbConnection();
 
-        $targetStmt = $db->prepare("SELECT id, display_name FROM users WHERE username = ?");
-        $targetStmt->execute([$username]);
-        $target = $targetStmt->fetch();
+        $target = UserEntity::findByUsername($db, $username);
 
         if (!$target) {
             sendJsonResponse(['error' => 'El usuario no fue encontrado.'], 404);
@@ -110,9 +91,7 @@ class FriendController {
             sendJsonResponse(['error' => "Ya sigues a {$target['display_name']}."], 400);
         }
 
-        $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
-        $meStmt->execute([$userId]);
-        $me = $meStmt->fetch();
+        $me = UserEntity::getDisplayName($db, $userId);
         $myDisplayName = $me['display_name'] ?? 'Un usuario';
 
         $wasFollowedByTarget = self::isFollowing($db, $targetId, $userId);
@@ -120,8 +99,7 @@ class FriendController {
         try {
             $db->beginTransaction();
 
-            $insert = $db->prepare("INSERT IGNORE INTO follows (id, follower_id, followed_id) VALUES (?, ?, ?)");
-            $insert->execute([SnowflakeId::nextId(), $userId, $targetId]);
+            FollowEntity::insertFollow($db, (string)SnowflakeId::nextId(), $userId, $targetId);
 
             $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
             DomainEventStore::record($event, $db);
@@ -160,8 +138,7 @@ class FriendController {
         }
 
         $db = getDbConnection();
-        $del = $db->prepare("DELETE FROM follows WHERE follower_id = ? AND followed_id = ?");
-        $del->execute([$userId, $friendId]);
+        FollowEntity::deleteFollow($db, $userId, $friendId);
 
         sendJsonResponse([
             'success'   => true,
@@ -181,21 +158,11 @@ class FriendController {
         $db = getDbConnection();
         $today = date('Y-m-d');
 
-        $nudgeCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
-        $nudgeCheck->execute([$userId, $friendId, $today]);
-        if ($nudgeCheck->fetch()) {
+        if (FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $today)) {
             sendJsonResponse(['error' => 'Ya le enviaste un recordatorio a este amigo hoy. ⏳'], 400);
         }
 
-        $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.last_read_date, u.timezone,
-                   EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = u.id) AS i_follow,
-                   EXISTS(SELECT 1 FROM follows WHERE follower_id = u.id AND followed_id = ?) AS follows_me
-            FROM users u
-            WHERE u.id = ?
-        ");
-        $stmt->execute([$userId, $userId, $friendId]);
-        $friend = $stmt->fetch();
+        $friend = self::fetchNudgeTargetRow($db, $userId, $friendId);
 
         if (!$friend || empty($friend['id'])) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
@@ -208,21 +175,15 @@ class FriendController {
         $friendTz = $friend['timezone'] ?? 'UTC';
         $friendToday = DateUtils::getUserToday($friendTz);
 
-        if ($friendToday !== $today) {
-            $preciseCheck = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
-            $preciseCheck->execute([$userId, $friendId, $friendToday]);
-            if ($preciseCheck->fetch()) {
-                sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
-            }
+        if ($friendToday !== $today && FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $friendToday)) {
+            sendJsonResponse(['error' => "Ya le enviaste un recordatorio a {$friend['display_name']} hoy. ⏳"], 400);
         }
 
         if (!empty($friend['last_read_date']) && $friend['last_read_date'] === $friendToday) {
             sendJsonResponse(['error' => "{$friend['display_name']} ya completó su lectura de hoy."], 400);
         }
 
-        $meStmt = $db->prepare("SELECT display_name FROM users WHERE id = ?");
-        $meStmt->execute([$userId]);
-        $me = $meStmt->fetch();
+        $me = UserEntity::getDisplayName($db, $userId);
         if (!$me) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
@@ -231,9 +192,8 @@ class FriendController {
         try {
             $db->beginTransaction();
 
-            $nudgeId = SnowflakeId::nextId();
-            $insertNudge = $db->prepare("INSERT INTO friend_nudges (id, sender_id, receiver_id, nudge_date) VALUES (?, ?, ?, ?)");
-            $insertNudge->execute([$nudgeId, $userId, $friendId, $friendToday]);
+            $nudgeId = (string)SnowflakeId::nextId();
+            FriendNudgeEntity::insert($db, $nudgeId, $userId, $friendId, $friendToday);
 
             $event = new FriendNudgedEvent($userId, $friendId, $myDisplayName, $friendToday);
             DomainEventStore::record($event, $db);
@@ -251,6 +211,18 @@ class FriendController {
         ]);
     }
 
+    private static function fetchNudgeTargetRow(\PDO $db, string $userId, string $friendId): array|false {
+        $stmt = $db->prepare("
+            SELECT u.id, u.display_name, u.last_read_date, u.timezone,
+                   EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = u.id) AS i_follow,
+                   EXISTS(SELECT 1 FROM follows WHERE follower_id = u.id AND followed_id = ?) AS follows_me
+            FROM users u
+            WHERE u.id = ?
+        ");
+        $stmt->execute([$userId, $userId, $friendId]);
+        return $stmt->fetch();
+    }
+
     /**
      * Perfil completo de un usuario (o el propio, si friendId === userId) en una sola
      * llamada: stats + historial de 30 dias para el tracker semanal + contadores de
@@ -265,7 +237,7 @@ class FriendController {
         $isFollowing = $isSelf ? true : self::isFollowing($db, $userId, $friendId);
         $isFollowedBy = $isSelf ? true : self::isFollowing($db, $friendId, $userId);
 
-        $friend = self::fetchUserRow($db, $friendId);
+        $friend = UserEntity::getProfileRow($db, $friendId);
         if (!$friend) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
@@ -285,7 +257,7 @@ class FriendController {
                 'last_read_label'     => $status->lastReadLabel,
                 'has_read_today'      => $status->hasReadToday,
                 'is_streak_lost'      => $status->isStreakLost,
-                'total_days_read'     => self::countTotalDaysRead($db, $friendId),
+                'total_days_read'     => ReadingLogEntity::countTotalDaysRead($db, $friendId),
                 'reaction_counts'     => self::countReactions($db, $friendId),
                 'member_since'        => substr((string)$friend['created_at'], 0, 10),
                 'followers_count'     => self::countFollowers($db, $friendId),
@@ -294,9 +266,9 @@ class FriendController {
                 'is_followed_by'      => $isFollowedBy,
                 'is_mutual'           => $isMutual,
             ],
-            'history'              => $isSelf ? self::fetchHistory($db, $friendId, $status->today) : null,
-            'nudged_today'         => ($isSelf || !$isMutual) ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
-            'mutual_friends_count' => $isSelf ? 0 : self::countMutualFriends($db, $userId, $friendId),
+            'history'              => $isSelf ? ReadingLogEntity::fetchHistoryDates($db, $friendId, $status->today, 30) : null,
+            'nudged_today'         => ($isSelf || !$isMutual) ? false : FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $status->today),
+            'mutual_friends_count' => $isSelf ? 0 : FollowEntity::countMutualFriends($db, $userId, $friendId),
         ]);
     }
 
@@ -311,25 +283,9 @@ class FriendController {
 
         $db = getDbConnection();
 
-        if ($type === 'followers') {
-            $stmt = $db->prepare("
-                SELECT u.id, u.display_name, u.streak_count
-                FROM follows f
-                JOIN users u ON f.follower_id = u.id
-                WHERE f.followed_id = ?
-                ORDER BY u.streak_count DESC, u.display_name ASC
-            ");
-        } else {
-            $stmt = $db->prepare("
-                SELECT u.id, u.display_name, u.streak_count
-                FROM follows f
-                JOIN users u ON f.followed_id = u.id
-                WHERE f.follower_id = ?
-                ORDER BY u.streak_count DESC, u.display_name ASC
-            ");
-        }
-        $stmt->execute([$targetId]);
-        $rows = $stmt->fetchAll();
+        $rows = $type === 'followers'
+            ? FollowEntity::fetchFollowers($db, $targetId)
+            : FollowEntity::fetchFollowing($db, $targetId);
 
         sendJsonResponse([
             'success' => true,
@@ -348,87 +304,23 @@ class FriendController {
     }
 
     public static function isFollowing(\PDO $db, string $followerId, string $followedId): bool {
-        $stmt = $db->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
-        $stmt->execute([$followerId, $followedId]);
-        return (bool)$stmt->fetch();
+        return FollowEntity::isFollowing($db, $followerId, $followedId);
     }
 
     public static function countFollowers(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE followed_id = ?");
-        $stmt->execute([$userId]);
-        return (int)($stmt->fetch()['total'] ?? 0);
+        return FollowEntity::countFollowers($db, $userId);
     }
 
     public static function countFollowing(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM follows WHERE follower_id = ?");
-        $stmt->execute([$userId]);
-        return (int)($stmt->fetch()['total'] ?? 0);
-    }
-
-    private static function fetchUserRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, last_read_date, timezone, created_at FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        return $stmt->fetch();
-    }
-
-    private static function countTotalDaysRead(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        return (int)($stmt->fetch()['total'] ?? 0);
+        return FollowEntity::countFollowing($db, $userId);
     }
 
     /** Conteo de reacciones registradas por dia de lectura, ej. {"loved": 12, "peaceful": 5}. */
     public static function countReactions(\PDO $db, string $userId): array {
-        $stmt = $db->prepare("
-            SELECT reaction, COUNT(*) AS total
-            FROM reading_logs
-            WHERE user_id = ? AND reaction IS NOT NULL
-            GROUP BY reaction
-        ");
-        $stmt->execute([$userId]);
-
         $counts = [];
-        foreach ($stmt->fetchAll() as $row) {
+        foreach (ReadingLogEntity::countReactionsGrouped($db, $userId) as $row) {
             $counts[$row['reaction']] = (int)$row['total'];
         }
         return $counts;
-    }
-
-    /** Historial de lectura, usado para el tracker semanal/mensual. */
-    private static function fetchHistory(\PDO $db, string $userId, string $today, int $days = 30): array {
-        $stmt = $db->prepare("
-            SELECT read_date FROM reading_logs
-            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL {$days} DAY)
-            ORDER BY read_date DESC
-        ");
-        $stmt->execute([$userId, $today]);
-        return array_column($stmt->fetchAll(), 'read_date');
-    }
-
-    private static function wasNudgedToday(\PDO $db, string $userId, string $friendId, string $today): bool {
-        $stmt = $db->prepare("SELECT 1 FROM friend_nudges WHERE sender_id = ? AND receiver_id = ? AND nudge_date = ?");
-        $stmt->execute([$userId, $friendId, $today]);
-        return (bool)$stmt->fetch();
-    }
-
-    /** Cuenta cuantas personas tienen seguimiento mutuo con ambos usuarios ("amigos en comun"). */
-    private static function countMutualFriends(\PDO $db, string $userId, string $friendId): int {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) AS total FROM (
-                SELECT f1.followed_id AS uid
-                FROM follows f1
-                JOIN follows f1b ON f1b.follower_id = f1.followed_id AND f1b.followed_id = f1.follower_id
-                WHERE f1.follower_id = ?
-            ) mutual_a
-            JOIN (
-                SELECT f2.followed_id AS uid
-                FROM follows f2
-                JOIN follows f2b ON f2b.follower_id = f2.followed_id AND f2b.followed_id = f2.follower_id
-                WHERE f2.follower_id = ?
-            ) mutual_b ON mutual_a.uid = mutual_b.uid
-            WHERE mutual_a.uid NOT IN (?, ?)
-        ");
-        $stmt->execute([$userId, $friendId, $userId, $friendId]);
-        return (int)($stmt->fetch()['total'] ?? 0);
     }
 }

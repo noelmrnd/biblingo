@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\ReadingLogEntity;
+use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
@@ -12,9 +14,7 @@ class ReadingController {
     public static function getStatus(string $userId) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT username, streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
+        $user = UserEntity::getReadingStatusRow($db, $userId);
 
         if (!$user) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
@@ -23,9 +23,7 @@ class ReadingController {
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone']);
 
-        $totalDaysStmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
-        $totalDaysStmt->execute([$userId]);
-        $totalDaysRead = (int)($totalDaysStmt->fetch()['total'] ?? 0);
+        $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
 
         sendJsonResponse([
             'success'              => true,
@@ -58,17 +56,11 @@ class ReadingController {
         $db = getDbConnection();
         $monthStart = sprintf('%04d-%02d-01', $year, $month);
 
-        $stmt = $db->prepare("
-            SELECT read_date FROM reading_logs
-            WHERE user_id = ?
-              AND read_date >= ?
-              AND read_date < DATE_ADD(?, INTERVAL 1 MONTH)
-        ");
-        $stmt->execute([$userId, $monthStart, $monthStart]);
+        $dates = ReadingLogEntity::fetchCalendarDates($db, $userId, $monthStart);
 
         sendJsonResponse([
             'success' => true,
-            'dates'   => array_column($stmt->fetchAll(), 'read_date'),
+            'dates'   => $dates,
         ]);
     }
 
@@ -78,9 +70,7 @@ class ReadingController {
     public static function logReading(string $userId, ?string $reaction = null) {
         $db = getDbConnection();
 
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
+        $user = UserEntity::getStreakRow($db, $userId);
 
         if (!$user) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
@@ -126,22 +116,10 @@ class ReadingController {
             try {
                 $db->beginTransaction();
 
-                // 1. Actualizar contador y fecha en la tabla de usuarios
-                $updateStmt = $db->prepare("
-                    UPDATE users
-                    SET streak_count = ?, max_streak_count = ?, streak_freezes = ?, streak_freezes_used = ?, last_read_date = ?
-                    WHERE id = ?
-                ");
-                $updateStmt->execute([$currentStreak, $maxStreak, $freezesAvailable, $freezesUsed, $today, $userId]);
+                UserEntity::updateStreak($db, $userId, $currentStreak, $maxStreak, $freezesAvailable, $freezesUsed, $today);
 
-                // 2. Registrar la entrada en el historial de lecturas con Snowflake ID
-                $logId = SnowflakeId::nextId();
-                $logStmt = $db->prepare("
-                    INSERT INTO reading_logs (id, user_id, read_date, reaction)
-                    VALUES (?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE reaction = VALUES(reaction), created_at = CURRENT_TIMESTAMP
-                ");
-                $logStmt->execute([$logId, $userId, $today, $reaction]);
+                $logId = (string)SnowflakeId::nextId();
+                ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
 
                 $db->commit();
             } catch (\Exception $e) {

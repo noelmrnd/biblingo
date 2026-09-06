@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Biblingo\Controllers;
 
+use Biblingo\Entities\FeedbackEntity;
+use Biblingo\Entities\PushTokenEntity;
+use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
@@ -15,9 +18,7 @@ class UserController {
      */
     public static function getSettings(string $userId) {
         $db = getDbConnection();
-        $stmt = $db->prepare("SELECT display_name, username, email, timezone, reminder_time FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
+        $user = UserEntity::getSettingsRow($db, $userId);
 
         if (!$user) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
@@ -62,9 +63,7 @@ class UserController {
             if (!preg_match('/^[a-z0-9_]{3,20}$/', $username)) {
                 sendJsonResponse(['error' => 'El usuario debe tener 3-20 caracteres: minusculas, numeros o guion bajo.'], 400);
             }
-            $checkStmt = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
-            $checkStmt->execute([$username, $userId]);
-            if ($checkStmt->fetch()) {
+            if (UserEntity::usernameTakenByOther($db, $username, $userId)) {
                 sendJsonResponse(['error' => 'Ese nombre de usuario ya está en uso.'], 400);
             }
             $fields[] = 'username = ?';
@@ -82,15 +81,10 @@ class UserController {
         }
 
         if (!empty($fields)) {
-            $params[] = $userId;
-            $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
-            $stmt = $db->prepare($sql);
-            $stmt->execute($params);
+            UserEntity::updateFields($db, $userId, $fields, $params);
         }
 
-        $userStmt = $db->prepare("SELECT id, display_name, email, username, streak_count, max_streak_count, last_read_date, reminder_time, timezone, platform FROM users WHERE id = ?");
-        $userStmt->execute([$userId]);
-        $updatedUser = $userStmt->fetch();
+        $updatedUser = UserEntity::getUpdatedProfileRow($db, $userId);
         if (!$updatedUser) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
@@ -128,13 +122,8 @@ class UserController {
 
         $db = getDbConnection();
         try {
-            $tokenId = SnowflakeId::nextId();
-            $tokenStmt = $db->prepare("
-                INSERT INTO user_push_tokens (id, user_id, token, platform)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), platform = VALUES(platform), updated_at = CURRENT_TIMESTAMP
-            ");
-            $tokenStmt->execute([$tokenId, $userId, $pushToken, $platform]);
+            $tokenId = (string)SnowflakeId::nextId();
+            PushTokenEntity::upsert($db, $tokenId, $userId, $pushToken, $platform);
 
             sendJsonResponse([
                 'success' => true,
@@ -169,11 +158,9 @@ class UserController {
         $db = getDbConnection();
         try {
             if ($removeAll) {
-                $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE user_id = ?");
-                $stmt->execute([$userId]);
+                PushTokenEntity::deleteAllForUser($db, $userId);
             } else {
-                $stmt = $db->prepare("DELETE FROM user_push_tokens WHERE user_id = ? AND token = ?");
-                $stmt->execute([$userId, $pushToken]);
+                PushTokenEntity::deleteByToken($db, $userId, $pushToken);
             }
 
             sendJsonResponse([
@@ -202,9 +189,8 @@ class UserController {
         }
 
         $db = getDbConnection();
-        $feedbackId = SnowflakeId::nextId();
-        $stmt = $db->prepare("INSERT INTO feedback (id, user_id, type, message) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$feedbackId, $userId, $type, $message]);
+        $feedbackId = (string)SnowflakeId::nextId();
+        FeedbackEntity::insert($db, $feedbackId, $userId, $type, $message);
 
         sendJsonResponse([
             'success' => true,
@@ -220,15 +206,12 @@ class UserController {
     public static function deleteAccount(string $userId) {
         $db = getDbConnection();
 
-        $checkStmt = $db->prepare("SELECT id FROM users WHERE id = ?");
-        $checkStmt->execute([$userId]);
-        if (!$checkStmt->fetch()) {
+        if (!UserEntity::existsId($db, $userId)) {
             sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
         }
 
         try {
-            $deleteStmt = $db->prepare("DELETE FROM users WHERE id = ?");
-            $deleteStmt->execute([$userId]);
+            UserEntity::delete($db, $userId);
 
             sendJsonResponse([
                 'success' => true,
