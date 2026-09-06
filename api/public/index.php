@@ -40,6 +40,10 @@ if ($requestUri === '/api/auth/social' && $method === 'POST') {
     AuthController::handleSocialAuth();
 } elseif ($requestUri === '/api/reading/status' && $method === 'GET') {
     ReadingController::getStatus($userId);
+} elseif ($requestUri === '/api/reading/calendar' && $method === 'GET') {
+    $year = (int)($_GET['year'] ?? 0);
+    $month = (int)($_GET['month'] ?? 0);
+    ReadingController::getCalendar($userId, $year, $month);
 } elseif ($requestUri === '/api/reading/log' && $method === 'POST') {
     $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
     ReadingController::logReading($userId, $reaction);

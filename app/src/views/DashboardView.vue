@@ -20,8 +20,7 @@
 
     <ReadingTimer />
 
-    <MonthlyTracker :target-id="user.id" />
-    <WeeklyTracker :target-id="user.id" />
+    <MonthlyTracker />
   </div>
 </template>
 
@@ -42,7 +41,6 @@ import { NotificationService } from '../services/notifications';
 import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
 import { useCurrentUser } from '../composables/useCurrentUser';
-import WeeklyTracker from "@/components/WeeklyTracker.vue";
 
 const props = defineProps({
   user: { type: Object, required: true }

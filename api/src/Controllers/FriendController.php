@@ -396,11 +396,11 @@ class FriendController {
         return $counts;
     }
 
-    /** Historial de 30 dias de lectura, usado para el tracker semanal. */
-    private static function fetchHistory(\PDO $db, string $userId, string $today): array {
+    /** Historial de lectura, usado para el tracker semanal/mensual. */
+    private static function fetchHistory(\PDO $db, string $userId, string $today, int $days = 30): array {
         $stmt = $db->prepare("
             SELECT read_date FROM reading_logs
-            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL 30 DAY)
+            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL {$days} DAY)
             ORDER BY read_date DESC
         ");
         $stmt->execute([$userId, $today]);

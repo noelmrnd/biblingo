@@ -70,6 +70,11 @@ export const ApiService = {
     return request('/reading/status');
   },
 
+  // Dias leidos de un mes especifico, para el calendario del tracker mensual.
+  async getReadingCalendar(year, month) {
+    return request(`/reading/calendar?year=${year}&month=${month}`);
+  },
+
   async logReading(userId, reaction = null) {
     return request('/reading/log', {
       method: 'POST',

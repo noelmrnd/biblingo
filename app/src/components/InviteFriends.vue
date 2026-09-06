@@ -3,7 +3,7 @@
     <ExpandableCard
       v-model="isInviteExpanded"
       title="Invitar amigos"
-      description="Comparte tu usuario o agrega a tus amigos"
+      description="Comparte tu perfil o agrega a tus amigos"
       icon-bg-class="bg-brand-green/10 border-brand-green/30"
       card-class="bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30"
     >

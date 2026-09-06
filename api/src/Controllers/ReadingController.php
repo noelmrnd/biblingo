@@ -46,6 +46,32 @@ class ReadingController {
         ]);
     }
 
+    /**
+     * Dias leidos dentro de un mes especifico (year/month), para el calendario mensual
+     * de Racha. A diferencia de getStatus, no trae nada mas (sin racha/seguidores/etc).
+     */
+    public static function getCalendar(string $userId, int $year, int $month) {
+        if ($month < 1 || $month > 12) {
+            sendJsonResponse(['error' => 'month debe estar entre 1 y 12.'], 400);
+        }
+
+        $db = getDbConnection();
+        $monthStart = sprintf('%04d-%02d-01', $year, $month);
+
+        $stmt = $db->prepare("
+            SELECT read_date FROM reading_logs
+            WHERE user_id = ?
+              AND read_date >= ?
+              AND read_date < DATE_ADD(?, INTERVAL 1 MONTH)
+        ");
+        $stmt->execute([$userId, $monthStart, $monthStart]);
+
+        sendJsonResponse([
+            'success' => true,
+            'dates'   => array_column($stmt->fetchAll(), 'read_date'),
+        ]);
+    }
+
     private const MAX_STREAK_FREEZES = 2;
     private const FREEZE_EVERY_DAYS = 7;
 
