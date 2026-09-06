@@ -35,49 +35,56 @@ $publicRoutes = ['/api/auth/social'];
 // mandar el user_id de otra persona y actuar como ella sin ninguna credencial.
 $userId = in_array($requestUri, $publicRoutes, true) ? null : Auth::requireUser();
 
-// Rutas API
-if ($requestUri === '/api/auth/social' && $method === 'POST') {
-    AuthController::handleSocialAuth();
-} elseif ($requestUri === '/api/auth/logout' && $method === 'POST') {
-    AuthController::logout($userId);
-} elseif ($requestUri === '/api/reading/status' && $method === 'GET') {
-    ReadingController::getStatus($userId);
-} elseif ($requestUri === '/api/reading/calendar' && $method === 'GET') {
-    $year = (int)($_GET['year'] ?? 0);
-    $month = (int)($_GET['month'] ?? 0);
-    ReadingController::getCalendar($userId, $year, $month);
-} elseif ($requestUri === '/api/reading/log' && $method === 'POST') {
-    $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
-    ReadingController::logReading($userId, $reaction);
-} elseif ($requestUri === '/api/friends' && $method === 'GET') {
-    FriendController::getFriends($userId);
-} elseif ($requestUri === '/api/friends/profile' && $method === 'GET') {
-    $friendId = $_GET['friend_id'] ?? null;
-    if (!$friendId) sendJsonResponse(['error' => 'friend_id requerido'], 400);
-    FriendController::getFriendProfile($userId, $friendId);
-} elseif ($requestUri === '/api/friends/list' && $method === 'GET') {
-    $targetId = $_GET['user_id'] ?? null;
-    $type = $_GET['type'] ?? null;
-    if (!$targetId || !$type) sendJsonResponse(['error' => 'user_id y type son requeridos'], 400);
-    FriendController::getFollowList($userId, $targetId, $type);
-} elseif ($requestUri === '/api/friends/follow' && $method === 'POST') {
-    FriendController::follow($userId);
-} elseif (($requestUri === '/api/friends/unfollow' && $method === 'POST') || ($requestUri === '/api/friends' && $method === 'DELETE')) {
-    FriendController::unfollow($userId);
-} elseif ($requestUri === '/api/friends/nudge' && $method === 'POST') {
-    FriendController::nudgeFriend($userId);
-} elseif ($requestUri === '/api/user/settings' && $method === 'GET') {
-    UserController::getSettings($userId);
-} elseif ($requestUri === '/api/user/update' && $method === 'POST') {
-    UserController::updateProfile($userId);
-} elseif ($requestUri === '/api/user/push-token' && $method === 'POST') {
-    UserController::registerPushToken($userId);
-} elseif ($requestUri === '/api/user/push-token' && $method === 'DELETE') {
-    UserController::unregisterPushToken($userId);
-} elseif ($requestUri === '/api/user/feedback' && $method === 'POST') {
-    UserController::submitFeedback($userId);
-} elseif ($requestUri === '/api/user/account' && $method === 'DELETE') {
-    UserController::deleteAccount($userId);
+// Tabla de rutas: "METODO /ruta" => handler. Cada handler extrae los parametros
+// que le corresponden de $_GET/$input y llama al controller.
+$routes = [
+    'POST /api/auth/social' => fn() => AuthController::handleSocialAuth(),
+    'POST /api/auth/logout' => fn() => AuthController::logout($userId),
+
+    'GET /api/reading/status' => fn() => ReadingController::getStatus($userId),
+    'GET /api/reading/calendar' => function () use ($userId) {
+        $year = (int)($_GET['year'] ?? 0);
+        $month = (int)($_GET['month'] ?? 0);
+        ReadingController::getCalendar($userId, $year, $month);
+    },
+    'POST /api/reading/log' => function () use ($userId, $input) {
+        $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
+        ReadingController::logReading($userId, $reaction);
+    },
+
+    'GET /api/friends' => fn() => FriendController::getFriends($userId),
+    'DELETE /api/friends' => fn() => FriendController::unfollow($userId),
+    'GET /api/friends/profile' => function () use ($userId) {
+        $friendId = $_GET['friend_id'] ?? null;
+        if (!$friendId) {
+            sendJsonResponse(['error' => 'friend_id requerido'], 400);
+        }
+        FriendController::getFriendProfile($userId, $friendId);
+    },
+    'GET /api/friends/list' => function () use ($userId) {
+        $targetId = $_GET['user_id'] ?? null;
+        $type = $_GET['type'] ?? null;
+        if (!$targetId || !$type) {
+            sendJsonResponse(['error' => 'user_id y type son requeridos'], 400);
+        }
+        FriendController::getFollowList($userId, $targetId, $type);
+    },
+    'POST /api/friends/follow' => fn() => FriendController::follow($userId),
+    'POST /api/friends/unfollow' => fn() => FriendController::unfollow($userId),
+    'POST /api/friends/nudge' => fn() => FriendController::nudgeFriend($userId),
+
+    'GET /api/user/settings' => fn() => UserController::getSettings($userId),
+    'POST /api/user/update' => fn() => UserController::updateProfile($userId),
+    'POST /api/user/push-token' => fn() => UserController::registerPushToken($userId),
+    'DELETE /api/user/push-token' => fn() => UserController::unregisterPushToken($userId),
+    'POST /api/user/feedback' => fn() => UserController::submitFeedback($userId),
+    'DELETE /api/user/account' => fn() => UserController::deleteAccount($userId),
+];
+
+$routeKey = "{$method} {$requestUri}";
+
+if (isset($routes[$routeKey])) {
+    $routes[$routeKey]();
 } else {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',
