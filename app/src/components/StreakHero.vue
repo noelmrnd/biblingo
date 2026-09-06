@@ -8,9 +8,9 @@
       >
         {{ user.is_streak_lost ? '🥶' : '🔥' }}
       </div>
-      <div class="absolute -bottom-2 right-0 bg-amber-400 text-slate-950 font-black text-base px-2.5 py-0.5 rounded-full shadow">
-        x{{ user.is_streak_lost ? 0 : user.streak_count }}
-      </div>
+<!--      <div class="absolute -bottom-2 right-0 bg-amber-400 text-slate-950 font-black text-base px-2.5 py-0.5 rounded-full shadow">-->
+<!--        x{{ user.is_streak_lost ? 0 : user.streak_count }}-->
+<!--      </div>-->
     </div>
 
     <div class="mt-2 space-y-1">
