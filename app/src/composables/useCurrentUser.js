@@ -34,6 +34,16 @@ export function useCurrentUser() {
   };
 
   /**
+   * Marca que el usuario ya trae datos frescos de racha/reacciones/seguidores
+   * (login y /auth/me devuelven el mismo superset que /reading/status), para
+   * que refreshProfile() no repita la llamada si algo monta justo despues
+   * dentro del TTL.
+   */
+  const markFreshLoad = () => {
+    lastFullRefresh = Date.now();
+  };
+
+  /**
    * Refresca racha/reacciones/seguidores/etc desde /reading/status. Si otra vista ya
    * lo pidio hace menos de FULL_REFRESH_TTL_MS, no repite la peticion — solo devuelve
    * el usuario ya actualizado.
@@ -60,5 +70,5 @@ export function useCurrentUser() {
     }
   };
 
-  return { user, setUser, mergeUser, clearUser, refreshProfile };
+  return { user, setUser, mergeUser, clearUser, refreshProfile, markFreshLoad };
 }

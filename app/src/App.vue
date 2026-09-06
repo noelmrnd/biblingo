@@ -47,7 +47,7 @@ import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
 
 const router = useRouter();
-const { user: currentUser, clearUser } = useCurrentUser();
+const { user: currentUser, clearUser, markFreshLoad } = useCurrentUser();
 const tourRef = ref(null);
 const isInitializing = ref(true);
 
@@ -66,6 +66,7 @@ const onLoginSuccess = async (user, token) => {
   // el token guardado, o fallan con 401 por la condición de carrera.
   await UserService.saveToken(token);
   currentUser.value = user;
+  markFreshLoad();
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
 
   // Procesar invitación pendiente si existía
@@ -146,6 +147,7 @@ onMounted(async () => {
   // (no se cachea el objeto user en disco) y sincroniza timezone si cambió.
   try {
     currentUser.value = await UserService.initSession();
+    if (currentUser.value) markFreshLoad();
   } catch (e) {
     console.warn('No se pudo restaurar la sesión:', e.message);
     clearUser();
