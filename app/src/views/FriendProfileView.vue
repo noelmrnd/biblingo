@@ -20,8 +20,7 @@
             <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
             <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
           </p>
-          <p class="text-slate-300 text-base font-medium">Leyó: {{ friend.last_read_label }}</p>
-          <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
+          <p v-if="memberSinceLabel" class="text-slate-400 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
         </div>
         <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
           <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">
@@ -31,6 +30,58 @@
             <strong class="text-white font-extrabold">{{ friend.following_count || 0 }}</strong> seguidos
           </button>
         </div>
+      </div>
+
+      <div class="flex gap-3">
+        <AppButton
+          v-if="!friend.is_following"
+          color="green"
+          block
+          :disabled="followLoading"
+          @click="followFriend"
+        >
+          <UserRoundPlus class="w-5 h-5 stroke-[2.5]" />
+          <span>{{ followLoading ? 'Siguiendo...' : 'Seguir' }}</span>
+        </AppButton>
+
+        <AppButton
+          v-else
+          color="outline"
+          block
+          @click="isRemoveModalOpen = true"
+        >
+          <UserCheck class="w-5 h-5 stroke-[2.5]" />
+          <span>Siguiendo</span>
+        </AppButton>
+
+        <AppButton
+          v-if="friend.is_mutual && !friend.has_read_today"
+          color="orange"
+          block
+          :disabled="nudged || nudgeLoading"
+          @click="sendNudge"
+        >
+          <BellRing class="w-5 h-5 stroke-[2.5]" />
+          <span>{{ nudged ? 'Toque enviado' : 'Dar un toque' }}</span>
+        </AppButton>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <StatCard
+          :value="friend.is_streak_lost ? 0 : friend.streak_count"
+          label="Racha actual"
+          color-class="text-amber-400"
+        >
+          <template #icon>
+            <span v-if="friend.is_streak_lost" class="text-xl leading-none">🥶</span>
+            <Flame v-else class="w-5 h-5 text-amber-400 stroke-[2.5]" />
+          </template>
+        </StatCard>
+        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green">
+          <template #icon>
+            <BookOpenCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
+          </template>
+        </StatCard>
       </div>
 
       <ExpandableCard
@@ -56,79 +107,19 @@
         <p v-else class="text-slate-400 text-base font-medium">Aún no ha registrado reacciones.</p>
       </ExpandableCard>
 
-      <div class="grid grid-cols-2 gap-3">
-        <StatCard
-          :value="friend.is_streak_lost ? 0 : friend.streak_count"
-          label="Racha actual"
-          color-class="text-amber-400"
-        >
-          <template #icon>
-            <span v-if="friend.is_streak_lost" class="text-xl leading-none">🥶</span>
-            <Flame v-else class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-          </template>
-        </StatCard>
-        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green">
-          <template #icon>
-            <BookOpenCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
-          </template>
-        </StatCard>
-      </div>
-
       <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
         <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
         <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
       </div>
-
-      <button
-        v-if="friend.is_mutual && !friend.has_read_today"
-        @click="sendNudge"
-        :disabled="nudged || nudgeLoading"
-        class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
-      >
-        <BellRing class="w-5 h-5 stroke-[2.5]" />
-        <span>{{ nudged ? 'Toque enviado' : 'Dar un toque' }}</span>
-      </button>
-
-      <button
-        v-if="friend.is_following"
-        type="button"
-        @click="isRemoveModalOpen = true"
-        class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
-      >
-        <UserMinus class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        <span>Dejar de seguir</span>
-      </button>
     </template>
 
-    <AppModal
+    <UnfollowConfirmModal
       :is-open="isRemoveModalOpen"
       :loading="removeLoading"
-      :title="friend ? `¿Dejar de seguir a ${friend.display_name}?` : '¿Dejar de seguir?'"
-      description="Ya no verás su progreso en tu ranking."
+      :display-name="friend?.display_name"
       @close="isRemoveModalOpen = false"
-      :show-close="false"
-    >
-      <template #icon>
-        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-          <UserMinus class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex items-center gap-3 w-full">
-          <div class="flex-1">
-            <AppButton color="dark" block :disabled="removeLoading" @click="isRemoveModalOpen = false">
-              Cancelar
-            </AppButton>
-          </div>
-          <div class="flex-1">
-            <AppButton color="rose" block :disabled="removeLoading" @click="confirmRemove">
-              {{ removeLoading ? 'Procesando...' : 'Dejar de seguir' }}
-            </AppButton>
-          </div>
-        </div>
-      </template>
-    </AppModal>
+      @confirm="confirmRemove"
+    />
 
     <FollowListModal
       :is-open="isFollowListOpen"
@@ -145,12 +136,12 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Flame, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
+import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';
-import AppModal from '../components/AppModal.vue';
+import UnfollowConfirmModal from '../components/UnfollowConfirmModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
 import { READING_REACTIONS } from '../constants';
 import { ApiService } from '../services/api';
@@ -171,6 +162,7 @@ const nudged = ref(false);
 const nudgeLoading = ref(false);
 const isRemoveModalOpen = ref(false);
 const removeLoading = ref(false);
+const followLoading = ref(false);
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
@@ -246,13 +238,31 @@ const sendNudge = async () => {
   }
 };
 
+const followFriend = async () => {
+  if (followLoading.value) return;
+  followLoading.value = true;
+  try {
+    const res = await ApiService.followUser(friend.value.username);
+    if (res.success) {
+      friend.value.is_following = true;
+      friend.value.is_mutual = friend.value.is_followed_by;
+      ToastService.success(`¡Ahora sigues a ${friend.value.display_name}! 🎉`);
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'No se pudo seguir a este usuario.');
+  } finally {
+    followLoading.value = false;
+  }
+};
+
 const confirmRemove = async () => {
   removeLoading.value = true;
   try {
     const res = await ApiService.unfollowUser(friend.value.id);
     if (res.success) {
       ToastService.success(`Dejaste de seguir a ${friend.value.display_name}.`);
-      router.push({ name: 'friends' });
+      friend.value.is_following = false;
+      friend.value.is_mutual = false;
     }
   } catch (e) {
     ToastService.error(e.message || 'Error al dejar de seguir.');

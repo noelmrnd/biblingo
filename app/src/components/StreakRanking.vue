@@ -77,55 +77,22 @@
     </div>
 
     <!-- Modal Confirmación de Dejar de Seguir -->
-    <AppModal
+    <UnfollowConfirmModal
       :is-open="isRemoveModalOpen"
       :loading="removeLoading"
-      :title="friendToRemove ? `¿Dejar de seguir a ${friendToRemove.display_name}?` : '¿Dejar de seguir?'"
-      description="Ya no verás su progreso en tu ranking."
+      :display-name="friendToRemove?.display_name"
       @close="closeRemoveModal"
-      :show-close="false"
-    >
-      <template #icon>
-        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-          <UserMinus class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex items-center gap-3 w-full">
-          <div class="flex-1">
-            <AppButton
-              color="dark"
-              block
-              :disabled="removeLoading"
-              @click="closeRemoveModal"
-            >
-              Cancelar
-            </AppButton>
-          </div>
-          <div class="flex-1">
-            <AppButton
-              color="rose"
-              block
-              :disabled="removeLoading"
-              @click="confirmRemoveFriend"
-            >
-              {{ removeLoading ? 'Procesando...' : 'Dejar de seguir' }}
-            </AppButton>
-          </div>
-        </div>
-      </template>
-    </AppModal>
+      @confirm="confirmRemoveFriend"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import AppButton from './AppButton.vue';
-import AppModal from './AppModal.vue';
 import SwipeItem from './SwipeItem.vue';
-import { Trophy, UsersRound, Flame, BellRing, UserMinus } from '@lucide/vue';
+import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
+import { Trophy, UsersRound, Flame, BellRing } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 

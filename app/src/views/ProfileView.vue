@@ -17,7 +17,7 @@
       <div>
         <h2 class="text-2xl font-extrabold text-white">{{ user.display_name }}</h2>
         <p class="text-slate-300 text-base font-medium font-mono">@{{ user.username }}</p>
-        <p v-if="memberSinceLabel" class="text-slate-400 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
+        <p v-if="memberSinceLabel" class="text-slate-400 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
       </div>
       <div class="flex items-center justify-center gap-6 text-slate-300 text-base font-medium">
         <button type="button" @click="openFollowList('followers')" class="cursor-pointer hover:text-white transition-colors">

@@ -260,12 +260,10 @@ class FriendController {
         $db = getDbConnection();
         $isSelf = ($userId === $friendId);
 
+        // Publico, como en Duolingo: cualquier usuario autenticado puede ver el perfil
+        // de cualquier otro, siga o no lo siga (igual que getFollowList).
         $isFollowing = $isSelf ? true : self::isFollowing($db, $userId, $friendId);
         $isFollowedBy = $isSelf ? true : self::isFollowing($db, $friendId, $userId);
-
-        if (!$isSelf && !$isFollowing && !$isFollowedBy) {
-            sendJsonResponse(['error' => 'No tienes permiso para ver el perfil de este usuario.'], 403);
-        }
 
         $friend = self::fetchUserRow($db, $friendId);
         if (!$friend) {
