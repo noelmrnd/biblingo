@@ -44,6 +44,7 @@ import MonthlyTracker from '../components/MonthlyTracker.vue';
 import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import { getMilestoneForStreak } from '../constants';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -79,6 +80,11 @@ const onReadingLogged = ({ res }) => {
       ? `Te quedan ${res.streak_freezes}.`
       : 'Ya no te quedan más.';
     ToastService.info(`Se usó un protector de racha 🧊. ${remaining}`);
+  }
+
+  const milestone = getMilestoneForStreak(res.streak_count);
+  if (milestone) {
+    ToastService.success(`${milestone.emoji} ${milestone.label}`, 5000);
   }
 };
 

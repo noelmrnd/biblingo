@@ -43,6 +43,7 @@ import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
+import { getMilestoneForStreak } from '../constants';
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -70,13 +71,28 @@ const handleReactionConfirmed = async (reaction) => {
       // Caso 2: Limpiar las notificaciones locales entregadas y el badge solo tras haber leído
       await NotificationService.clearLocalNotifications();
 
-      // Efecto Confeti 🎉
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#4EC313', '#FF640A', '#1D6CED', '#FFD700']
-      });
+      // Efecto Confeti 🎉 (mas grande y en varias rafagas si es un hito de racha,
+      // para que se sienta distinto a un dia cualquiera)
+      const milestone = getMilestoneForStreak(res.streak_count);
+      if (milestone) {
+        const burst = (particleCount, angle, originX) => confetti({
+          particleCount,
+          spread: 100,
+          angle,
+          origin: { x: originX, y: 0.6 },
+          colors: ['#4EC313', '#FF640A', '#1D6CED', '#FFD700']
+        });
+        burst(120, 60, 0.2);
+        burst(120, 120, 0.8);
+        setTimeout(() => burst(140, 90, 0.5), 200);
+      } else {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#4EC313', '#FF640A', '#1D6CED', '#FFD700']
+        });
+      }
 
       // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy),
       // solo si el usuario no apagó la categoria "Recordatorio de lectura".

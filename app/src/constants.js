@@ -38,3 +38,28 @@ export const READING_REACTIONS = [
 
 export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id) || null;
 
+// Hitos de racha: dias exactos en que se celebra (streak_count sube de a 1 por dia,
+// asi que un match exacto alcanza, no hace falta >=).
+export const STREAK_MILESTONES = [
+  { days: 7, emoji: '🥉', label: '¡Una semana completa!' },
+  { days: 30, emoji: '🥈', label: '¡Un mes de racha!' },
+  { days: 100, emoji: '🥇', label: '¡100 días! Sos imparable' },
+  { days: 365, emoji: '👑', label: '¡Un año leyendo! Leyenda total' },
+];
+
+export const getMilestoneForStreak = (streakCount) =>
+  STREAK_MILESTONES.find((m) => m.days === streakCount) || null;
+
+// Escalado visual de la llama de racha en StreakHero segun el hito mas alto alcanzado
+// (no exacto como getMilestoneForStreak: aplica a partir del umbral y se mantiene).
+export const STREAK_TIERS = [
+  { minDays: 365, emoji: '👑', glow: 'rgba(255,215,0,0.9)', sizeClass: 'text-8xl' },
+  { minDays: 100, emoji: '🔥', glow: 'rgba(255,80,0,0.9)', sizeClass: 'text-8xl' },
+  { minDays: 30, emoji: '🔥', glow: 'rgba(255,150,0,0.85)', sizeClass: 'text-7xl' },
+  { minDays: 7, emoji: '🔥', glow: 'rgba(255,150,0,0.8)', sizeClass: 'text-7xl' },
+  { minDays: 0, emoji: '🔥', glow: 'rgba(255,150,0,0.8)', sizeClass: 'text-7xl' },
+];
+
+export const getStreakTier = (streakCount) =>
+  STREAK_TIERS.find((t) => streakCount >= t.minDays);
+
