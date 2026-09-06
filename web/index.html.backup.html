@@ -164,12 +164,12 @@
   </footer>
 
   <script>
-    // Redirección inteligente si se accede mediante enlace de invitación /invite/CODIGO
+    // Redirección inteligente si se accede mediante enlace de invitación /invite/USERNAME
     const path = window.location.pathname;
     if (path.includes('/invite/')) {
-      const code = path.split('/invite/')[1];
-      if (code) {
-        window.location.href = 'https://app.biblingo.me?invite=' + code;
+      const username = path.split('/invite/')[1];
+      if (username) {
+        window.location.href = 'https://app.biblingo.me?invite=' + username;
       }
     }
   </script>

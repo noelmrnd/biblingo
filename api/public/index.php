@@ -99,7 +99,7 @@ $routes = [
     'DELETE /api/user/account' => fn() => UserController::deleteAccount($userId),
 ];
 
-$routeKey = "{$method} {$requestUri}";
+$routeKey = "$method $requestUri";
 
 if (isset($routes[$routeKey])) {
     $routes[$routeKey]();
