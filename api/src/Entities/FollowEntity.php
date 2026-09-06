@@ -82,6 +82,13 @@ class FollowEntity {
         return $stmt->fetchAll();
     }
 
+    /** IDs de todos a quienes sigue el usuario, para chequear pertenencia en memoria en vez de una query por fila. */
+    public static function fetchFollowingIds(\PDO $db, string $userId): array {
+        $stmt = $db->prepare("SELECT followed_id FROM follows WHERE follower_id = ?");
+        $stmt->execute([$userId]);
+        return array_map('strval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
+    }
+
     public static function insertFollow(\PDO $db, string $id, string $followerId, string $followedId): void {
         $stmt = $db->prepare("INSERT IGNORE INTO follows (id, follower_id, followed_id) VALUES (?, ?, ?)");
         $stmt->execute([$id, $followerId, $followedId]);

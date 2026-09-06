@@ -118,11 +118,16 @@ class FCMService {
             self::$cachedAccessToken = (string)$res['access_token'];
             self::$tokenExpiresAt = $now + (int)($res['expires_in'] ?? 3600);
 
-            // Guardar en disco para que otras peticiones HTTP o workers CLI lo reutilicen
-            @file_put_contents($cacheFile, json_encode([
+            // Guardar en disco para que otras peticiones HTTP o workers CLI lo reutilicen.
+            // Se escribe a un archivo temporal y se renombra (rename es atomico en el
+            // mismo filesystem) para que un lector concurrente nunca vea un JSON a medias.
+            $tmpFile = $cacheFile . '.' . getmypid() . '.tmp';
+            if (@file_put_contents($tmpFile, json_encode([
                 'access_token' => self::$cachedAccessToken,
                 'expires_at'   => self::$tokenExpiresAt,
-            ]), LOCK_EX);
+            ])) !== false) {
+                @rename($tmpFile, $cacheFile);
+            }
 
             return self::$cachedAccessToken;
         }

@@ -15,6 +15,19 @@ use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
 
+/**
+ * Modelo de autorizacion de este controller (todo requiere sesion valida via
+ * Auth::requireUser(), eso ya lo filtra index.php; esto es sobre datos de OTROS
+ * usuarios dentro de una request ya autenticada):
+ *
+ * - Publico entre usuarios autenticados, estilo Duolingo — no hace falta seguir
+ *   a alguien ni que te siga para ver sus datos: getFriendProfile, getFollowList.
+ * - Requiere seguimiento mutuo (i_follow Y follows_me): nudgeFriend.
+ * - Solo el dueño de los datos: getFriends (propio ranking/lista de seguidos).
+ *
+ * follow()/unfollow() no exponen datos de otro usuario, solo actuan sobre la
+ * relacion del propio $userId.
+ */
 class FriendController {
     /**
      * Lista de personas que el usuario sigue (ranking), mas su propia fila. El
@@ -287,9 +300,12 @@ class FriendController {
             ? FollowEntity::fetchFollowers($db, $targetId)
             : FollowEntity::fetchFollowing($db, $targetId);
 
+        // Una sola query con los IDs que sigo, en vez de un isFollowing() por fila.
+        $followingIds = array_flip(FollowEntity::fetchFollowingIds($db, $userId));
+
         sendJsonResponse([
             'success' => true,
-            'users' => array_map(function ($r) use ($db, $userId) {
+            'users' => array_map(function ($r) use ($followingIds, $userId) {
                 $id = (string)$r['id'];
                 $isSelf = ($id === $userId);
                 return [
@@ -297,7 +313,7 @@ class FriendController {
                     'display_name' => $r['display_name'],
                     'streak_count' => (int)$r['streak_count'],
                     'is_self'      => $isSelf,
-                    'is_following' => $isSelf ? true : self::isFollowing($db, $userId, $id),
+                    'is_following' => $isSelf || isset($followingIds[$id]),
                 ];
             }, $rows)
         ]);
