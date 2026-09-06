@@ -7,52 +7,6 @@
         <span>Configuración</span>
       </h3>
 
-      <!-- Ajustes de Notificación Diaria -->
-      <ExpandableCard
-        v-model="isReminderExpanded"
-        title="Recordatorio diario"
-        :description="`Programado a las ${reminderTime || '20:00'} hrs`"
-        icon-bg-class="bg-amber-500/10 border-amber-500/30"
-      >
-        <template #icon>
-          <Bell class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-        </template>
-
-        <p class="text-slate-300 text-base font-medium">
-          Te notificaremos cada día para ayudarte a mantener y proteger tu racha de lectura.
-        </p>
-
-        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
-          <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
-          <input
-            v-model="reminderTime"
-            type="time"
-            step="600"
-            class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
-          />
-        </div>
-
-        <div class="flex flex-col gap-2.5 pt-1">
-          <AppButton
-            color="green"
-            block
-            @click="saveReminder"
-          >
-            Guardar recordatorio
-          </AppButton>
-
-          <button
-            type="button"
-            @click="triggerTestNotification"
-            :disabled="testingNotification"
-            class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-            <span>{{ testingNotification ? 'Programando...' : 'Probar notificación' }}</span>
-          </button>
-        </div>
-      </ExpandableCard>
-
       <!-- Datos de Perfil -->
       <ExpandableCard
         v-model="isProfileExpanded"
@@ -154,18 +108,37 @@
         </template>
 
         <div class="space-y-1">
-          <div
-            v-for="cat in NOTIFICATION_CATEGORIES"
-            :key="cat.key"
-            class="flex items-center justify-between gap-3 py-2.5 border-b border-slate-800/70 last:border-0"
-          >
-            <div class="min-w-0">
-              <p class="text-base font-bold text-white">{{ cat.label }}</p>
-              <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
+          <div v-for="cat in NOTIFICATION_CATEGORIES" :key="cat.key" class="border-b border-slate-800/70 last:border-0">
+            <div class="flex items-center justify-between gap-3 py-2.5">
+              <div class="min-w-0">
+                <p class="text-base font-bold text-white">{{ cat.label }}</p>
+                <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
+              </div>
+              <AppToggle v-model="notificationPrefs[cat.key]" />
             </div>
-            <AppToggle
-              v-model="notificationPrefs[cat.key]"
-            />
+
+            <!-- Hora del recordatorio: solo tiene sentido con la categoria activa -->
+            <div v-if="cat.key === 'daily_reminder' && notificationPrefs.daily_reminder" class="pb-3 space-y-2.5">
+              <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
+                <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
+                <input
+                  v-model="reminderTime"
+                  type="time"
+                  step="600"
+                  class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
+                />
+              </div>
+
+              <button
+                type="button"
+                @click="triggerTestNotification"
+                :disabled="testingNotification"
+                class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+                <span>{{ testingNotification ? 'Programando...' : 'Probar notificación' }}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -342,11 +315,9 @@ const rateApp = async () => {
 };
 
 const reminderTime = ref('20:00');
-const isReminderExpanded = ref(false);
 const editDisplayName = ref('');
 const editUsername = ref('');
 const saveProfileAction = useAsyncAction();
-const saveReminderAction = useAsyncAction();
 const currentTimezone = ref('UTC');
 const isProfileExpanded = ref(false);
 const isNotificationsExpanded = ref(false);
@@ -356,7 +327,12 @@ const notificationPrefs = reactive({ ...DEFAULT_PREFS });
 const savedPrefs = ref({ ...DEFAULT_PREFS });
 const savePrefsAction = useAsyncAction();
 
-const prefsDirty = computed(() => NOTIFICATION_CATEGORIES.some((c) => notificationPrefs[c.key] !== savedPrefs.value[c.key]));
+const savedReminderTime = ref('20:00');
+const prefsDirty = computed(() => {
+  const prefsChanged = NOTIFICATION_CATEGORIES.some((c) => notificationPrefs[c.key] !== savedPrefs.value[c.key]);
+  const timeChanged = notificationPrefs.daily_reminder && reminderTime.value !== savedReminderTime.value;
+  return prefsChanged || timeChanged;
+});
 
 const isNameChanged = computed(() => {
   return editDisplayName.value.trim() !== '' && editDisplayName.value.trim() !== (props.user.display_name || '');
@@ -386,34 +362,42 @@ watch(() => props.user, (newUser) => {
 
 const saveNotificationPrefs = async () => {
   // Solo manda las categorias que realmente cambiaron desde el ultimo guardado.
-  const changed = Object.fromEntries(
+  const changedPrefs = Object.fromEntries(
     NOTIFICATION_CATEGORIES
       .map((c) => c.key)
       .filter((key) => notificationPrefs[key] !== savedPrefs.value[key])
       .map((key) => [key, notificationPrefs[key]])
   );
-  if (Object.keys(changed).length === 0) return;
+  const timeChanged = notificationPrefs.daily_reminder && reminderTime.value !== savedReminderTime.value;
 
-  const dailyReminderChanged = Object.prototype.hasOwnProperty.call(changed, 'daily_reminder');
+  if (Object.keys(changedPrefs).length === 0 && !timeChanged) return;
 
-  const res = await savePrefsAction.run(() => ApiService.updateNotificationPrefs(changed), {
-    successMsg: 'Preferencias de notificacion guardadas.',
-    errorMsg: 'No se pudo actualizar las notificaciones.'
+  const res = await savePrefsAction.run(async () => {
+    if (Object.keys(changedPrefs).length > 0) {
+      await ApiService.updateNotificationPrefs(changedPrefs);
+    }
+    if (timeChanged) {
+      await StorageService.set('reminder_time', reminderTime.value);
+      await ApiService.updateProfile({ reminder_time: reminderTime.value });
+    }
+    return true;
+  }, {
+    successMsg: 'Preferencias de notificación guardadas.',
+    errorMsg: 'No se pudo guardar las notificaciones.'
   });
 
   if (res === undefined) return;
 
-  const finalPrefs = res?.notification_prefs || { ...notificationPrefs };
-  Object.assign(notificationPrefs, finalPrefs);
-  savedPrefs.value = { ...finalPrefs };
-  emit('user-updated', { ...props.user, notification_prefs: { ...finalPrefs } });
+  Object.assign(savedPrefs.value, notificationPrefs);
+  savedReminderTime.value = reminderTime.value;
+  emit('user-updated', { ...props.user, notification_prefs: { ...notificationPrefs }, reminder_time: reminderTime.value });
 
-  if (dailyReminderChanged) {
-    if (finalPrefs.daily_reminder) {
-      await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
-    } else {
-      await NotificationService.cancelReminders();
-    }
+  if (notificationPrefs.daily_reminder) {
+    await NotificationService.requestPermissions();
+    await NotificationService.initPushNotifications(props.user.id);
+    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
+  } else {
+    await NotificationService.cancelReminders();
   }
 };
 
@@ -452,27 +436,6 @@ const saveProfile = async () => {
   isProfileExpanded.value = false;
 };
 
-const saveReminder = async () => {
-  const res = await saveReminderAction.run(async () => {
-    await StorageService.set('reminder_time', reminderTime.value);
-    await ApiService.updateProfile({ reminder_time: reminderTime.value });
-    if (notificationPrefs.daily_reminder) {
-      await NotificationService.requestPermissions();
-      await NotificationService.initPushNotifications(props.user.id);
-      await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false);
-    }
-    return true;
-  }, {
-    successMsg: '¡Recordatorio guardado! ⏰',
-    errorMsg: 'No se pudo guardar el recordatorio.'
-  });
-
-  if (res) {
-    emit('user-updated', { ...props.user, reminder_time: reminderTime.value });
-    isReminderExpanded.value = false;
-  }
-};
-
 const testingNotification = ref(false);
 
 const triggerTestNotification = async () => {
@@ -496,6 +459,7 @@ onMounted(async () => {
   } else if (props.user.reminder_time) {
     reminderTime.value = props.user.reminder_time;
   }
+  savedReminderTime.value = reminderTime.value;
 
   // Trae los datos propios del servidor en vez de confiar en el objeto user cacheado
   // localmente (pudo quedar desactualizado, ej. username agregado despues del login).
