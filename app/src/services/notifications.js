@@ -210,7 +210,7 @@ export const NotificationService = {
    */
   async sendTestNotification(delaySeconds = 3) {
     if (!Capacitor.isNativePlatform()) {
-      ToastService.info(`[Simulación Web] 🔔 Notificación en ${delaySeconds}s: "¡Las notificaciones locales funcionan! 🎉"`);
+      ToastService.info(`[Simulación Web] 🔔 Notificación en ${delaySeconds} segundos: "¡Las notificaciones locales funcionan! 🎉"`);
       return true;
     }
 
@@ -230,7 +230,7 @@ export const NotificationService = {
           {
             id: notifId,
             title: '📖 Biblingo: Notificación de prueba',
-            body: '¡Las notificaciones locales funcionan perfectamente! 🎉 Tu libro te espera hoy.',
+            body: '¡Las notificaciones funcionan perfectamente! 🎉 Tu libro te espera hoy.',
             schedule: { at: scheduleDate },
             sound: 'beep.wav',
             actionTypeId: 'OPEN_READING',
@@ -239,7 +239,7 @@ export const NotificationService = {
         ]
       });
 
-      ToastService.success(`Notificación en ${delaySeconds}s. ¡Bloquea o sal de la app para ver el aviso! 📲`);
+      ToastService.success(`Notificación en ${delaySeconds} segundos. ¡Bloquea o sal de la app para ver el aviso! 📲`);
       return true;
     } catch (e) {
       console.error('Error al programar notificación de prueba:', e);

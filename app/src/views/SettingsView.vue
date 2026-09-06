@@ -48,7 +48,7 @@
             class="w-full bg-slate-900/90 hover:bg-slate-800 text-amber-300 font-bold py-3 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Bell class="w-4 h-4 text-amber-400 stroke-[2.5]" />
-            <span>{{ testingNotification ? 'Programando...' : 'Probar notificación (en 3 segundos)' }}</span>
+            <span>{{ testingNotification ? 'Programando...' : 'Probar notificación' }}</span>
           </button>
         </div>
       </ExpandableCard>
@@ -57,7 +57,7 @@
       <ExpandableCard
         v-model="isProfileExpanded"
         title="Datos de perfil"
-        :description="isProfileExpanded ? 'Ocultar información personal' : 'Toca para ver o editar tu información'"
+        description="Ve o edita los datos de cuenta"
         icon-bg-class="bg-brand-green/10 border-brand-green/30"
       >
         <template #icon>
