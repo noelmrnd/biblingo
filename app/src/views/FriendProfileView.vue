@@ -96,8 +96,6 @@
         <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
       </div>
 
-      <WeeklyTracker :preloaded-history="friend.history" :preloaded-has-read-today="friend.has_read_today" />
-
       <button
         v-if="friend.is_mutual && !friend.has_read_today"
         @click="sendNudge"
@@ -170,7 +168,6 @@ import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
 import { READING_REACTIONS } from '../constants';
-import WeeklyTracker from '../components/WeeklyTracker.vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
@@ -231,7 +228,6 @@ const loadFriendProfile = async (friendId) => {
     if (res.success) {
       friend.value = {
         ...res.user,
-        history: res.history,
         mutual_friends_count: res.mutual_friends_count
       };
       if (res.nudged_today) {

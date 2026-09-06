@@ -20,7 +20,8 @@
 
     <ReadingTimer />
 
-    <StreakRanking :user="user" />
+    <MonthlyTracker :target-id="user.id" />
+    <WeeklyTracker :target-id="user.id" />
   </div>
 </template>
 
@@ -36,11 +37,12 @@ import { BookOpen } from '@lucide/vue';
 import ReadingButton from '../components/ReadingButton.vue';
 import ReadingTimer from '../components/ReadingTimer.vue';
 import StreakHero from '../components/StreakHero.vue';
-import StreakRanking from '../components/StreakRanking.vue';
+import MonthlyTracker from '../components/MonthlyTracker.vue';
 import { NotificationService } from '../services/notifications';
 import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import WeeklyTracker from "@/components/WeeklyTracker.vue";
 
 const props = defineProps({
   user: { type: Object, required: true }

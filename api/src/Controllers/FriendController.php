@@ -296,7 +296,7 @@ class FriendController {
                 'is_followed_by'      => $isFollowedBy,
                 'is_mutual'           => $isMutual,
             ],
-            'history'              => self::fetchHistory($db, $friendId, $status->today),
+            'history'              => $isSelf ? self::fetchHistory($db, $friendId, $status->today) : null,
             'nudged_today'         => ($isSelf || !$isMutual) ? false : self::wasNudgedToday($db, $userId, $friendId, $status->today),
             'mutual_friends_count' => $isSelf ? 0 : self::countMutualFriends($db, $userId, $friendId),
         ]);

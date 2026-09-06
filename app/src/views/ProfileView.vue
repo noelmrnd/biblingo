@@ -102,10 +102,6 @@
         </div>
       </div>
 
-      <!-- Tracker semanal de 7 días (Lun - Dom) -->
-      <WeeklyTracker :target-id="user.id" />
-
-      <InviteFriends :user="user" />
     </div>
 
     <!-- Lista de Seguidores / Seguidos -->
@@ -128,8 +124,6 @@ import { useRoute, useRouter } from 'vue-router';
 import FollowListModal from '../components/FollowListModal.vue';
 import { UserRound, Flame, Zap, Settings, BookOpenCheck, Heart } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
-import WeeklyTracker from '../components/WeeklyTracker.vue';
-import InviteFriends from '../components/InviteFriends.vue';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { READING_REACTIONS } from '../constants';
 import { useCurrentUser } from '../composables/useCurrentUser';
