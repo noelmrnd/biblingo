@@ -124,7 +124,8 @@ class ReadingController {
                 $db->commit();
             } catch (\Exception $e) {
                 $db->rollBack();
-                sendJsonResponse(['error' => 'Error de base de datos al registrar lectura: ' . $e->getMessage()], 500);
+                error_log('[ReadingController::logReading] ' . $e->getMessage());
+                sendJsonResponse(['error' => 'Error de base de datos al registrar lectura.'], 500);
             }
         }
 

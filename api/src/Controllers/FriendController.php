@@ -120,7 +120,8 @@ class FriendController {
             $db->commit();
         } catch (\Exception $e) {
             $db->rollBack();
-            sendJsonResponse(['error' => 'Error al seguir usuario: ' . $e->getMessage()], 500);
+            error_log('[FriendController::follow] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al seguir usuario.'], 500);
         }
 
         sendJsonResponse([

@@ -134,9 +134,11 @@ class UserController {
             if ($e->getCode() === '23000' || str_contains($e->getMessage(), '1452')) {
                 sendJsonResponse(['error' => 'Usuario no encontrado en el sistema.'], 404);
             }
-            sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
+            error_log('[UserController::registerPushToken] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al guardar el token Push.'], 500);
         } catch (\Throwable $e) {
-            sendJsonResponse(['error' => 'Error al guardar el token Push: ' . $e->getMessage()], 500);
+            error_log('[UserController::registerPushToken] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al guardar el token Push.'], 500);
         }
     }
 
@@ -168,7 +170,8 @@ class UserController {
                 'message' => $removeAll ? 'Todos los tokens Push fueron eliminados.' : 'Token Push eliminado con éxito.'
             ]);
         } catch (\Exception $e) {
-            sendJsonResponse(['error' => 'Error al eliminar el token Push: ' . $e->getMessage()], 500);
+            error_log('[UserController::unregisterPushToken] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al eliminar el token Push.'], 500);
         }
     }
 
@@ -220,7 +223,8 @@ class UserController {
                 'message' => 'Tu cuenta fue eliminada.'
             ]);
         } catch (\Exception $e) {
-            sendJsonResponse(['error' => 'Error al eliminar la cuenta: ' . $e->getMessage()], 500);
+            error_log('[UserController::deleteAccount] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error al eliminar la cuenta.'], 500);
         }
     }
 }
