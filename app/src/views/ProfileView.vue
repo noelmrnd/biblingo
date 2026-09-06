@@ -7,8 +7,8 @@
       :member-since-label="memberSinceLabel"
       :followers-count="user.followers_count"
       :following-count="user.following_count"
-      @open-followers="openFollowList('followers')"
-      @open-following="openFollowList('following')"
+      @open-followers="followList.open('followers')"
+      @open-following="followList.open('following')"
     >
       <template #corner>
         <button
@@ -60,14 +60,14 @@
 
     <!-- Lista de Seguidores / Seguidos -->
     <FollowListModal
-      :is-open="isFollowListOpen"
+      :is-open="followList.isOpen.value"
       :user-id="user.id"
-      :initial-tab="followListInitialTab"
+      :initial-tab="followList.initialTab.value"
       :display-name="user.display_name"
       is-own-profile
-      @close="closeFollowList"
-      @change-tab="switchFollowListTab"
-      @select-user="goToFriendProfile"
+      @close="followList.close"
+      @change-tab="followList.switchTab"
+      @select-user="followList.goToFriendProfile"
     />
   </AppPage>
 </template>
@@ -83,6 +83,7 @@ import { Flame, Zap, Settings, BookOpenCheck, Shield } from '@lucide/vue';
 import StatCard from '../components/StatCard.vue';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import { useFollowListPanel } from '../composables/useFollowListPanel';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -98,30 +99,7 @@ const router = useRouter();
 const { refreshProfile } = useCurrentUser();
 onMounted(() => refreshProfile());
 
-// El modal se sincroniza con ?panel= en la URL: abrirlo empuja una entrada al
-// historial, asi el boton atras del navegador lo cierra solo, y al volver desde el
-// perfil de un amigo (navegado desde la lista) se reabre automaticamente.
-const isFollowListOpen = computed(() => !!route.query.panel);
-const followListInitialTab = computed(() => route.query.panel === 'following' ? 'following' : 'followers');
-
-const openFollowList = (tab) => {
-  router.push({ query: { ...route.query, panel: tab } });
-};
-
-// Cambiar entre Seguidores/Seguidos reemplaza la entrada actual en vez de apilar una
-// nueva, para que "atras" cierre el modal en un solo paso sin importar cuantas veces
-// se cambio de tab.
-const switchFollowListTab = (tab) => {
-  router.replace({ query: { ...route.query, panel: tab } });
-};
-
-const closeFollowList = () => {
-  router.back();
-};
-
-const goToFriendProfile = (id) => {
-  router.push({ name: 'friend-profile', params: { id } });
-};
+const followList = useFollowListPanel(route, router);
 
 const memberSinceLabel = computed(() => formatMemberSince(props.user.member_since));
 </script>

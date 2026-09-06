@@ -15,8 +15,8 @@
         :member-since-label="memberSinceLabel"
         :followers-count="friend.followers_count"
         :following-count="friend.following_count"
-        @open-followers="openFollowList('followers')"
-        @open-following="openFollowList('following')"
+        @open-followers="followList.open('followers')"
+        @open-following="followList.open('following')"
       >
         <template #badge>
           <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black font-sans">AMIGOS</span>
@@ -94,13 +94,13 @@
     />
 
     <FollowListModal
-      :is-open="isFollowListOpen"
+      :is-open="followList.isOpen.value"
       :user-id="props.id"
-      :initial-tab="followListInitialTab"
+      :initial-tab="followList.initialTab.value"
       :display-name="friend?.display_name"
-      @close="closeFollowList"
-      @change-tab="switchFollowListTab"
-      @select-user="goToFriendProfile"
+      @close="followList.close"
+      @change-tab="followList.switchTab"
+      @select-user="followList.goToFriendProfile"
     />
   </AppPage>
 </template>
@@ -119,6 +119,7 @@ import FollowListModal from '../components/FollowListModal.vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { formatMemberSince } from '../utils/dateFormatter';
+import { useFollowListPanel } from '../composables/useFollowListPanel';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -138,27 +139,7 @@ const followLoading = ref(false);
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
-// El modal se sincroniza con ?panel= en la URL: abrirlo empuja una entrada al
-// historial, asi el boton atras del navegador lo cierra solo, y al volver desde el
-// perfil de otro amigo (navegado desde la lista) se reabre automaticamente.
-const isFollowListOpen = computed(() => !!route.query.panel);
-const followListInitialTab = computed(() => route.query.panel === 'following' ? 'following' : 'followers');
-
-const openFollowList = (tab) => {
-  router.push({ query: { ...route.query, panel: tab } });
-};
-
-const switchFollowListTab = (tab) => {
-  router.replace({ query: { ...route.query, panel: tab } });
-};
-
-const closeFollowList = () => {
-  router.back();
-};
-
-const goToFriendProfile = (id) => {
-  router.push({ name: 'friend-profile', params: { id } });
-};
+const followList = useFollowListPanel(route, router);
 
 const loadFriendProfile = async (friendId) => {
   loading.value = true;
