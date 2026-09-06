@@ -69,7 +69,8 @@ const tabs = [
     to: { name: 'profile' },
     icon: UserRound,
     activeColor: 'text-brand-blue',
-    glowColor: 'rgba(28,176,246,0.35)'
+    glowColor: 'rgba(28,176,246,0.35)',
+    matchNames: ['profile', 'profile-settings']
   }
 ];
 
