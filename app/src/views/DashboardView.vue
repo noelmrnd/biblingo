@@ -42,7 +42,6 @@ import ReadingTimer from '../components/ReadingTimer.vue';
 import StreakHero from '../components/StreakHero.vue';
 import MonthlyTracker from '../components/MonthlyTracker.vue';
 import { NotificationService } from '../services/notifications';
-import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
 import { useCurrentUser } from '../composables/useCurrentUser';
 
@@ -101,10 +100,7 @@ const loadReadingStatus = async () => {
   }
 };
 
-onMounted(async () => {
-  const updated = await loadReadingStatus();
-  const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-  const streakCount = updated ? updated.streak_count : props.user.streak_count;
-  NotificationService.schedule7DayBurst(savedTime, streakCount, hasReadToday.value);
+onMounted(() => {
+  loadReadingStatus();
 });
 </script>

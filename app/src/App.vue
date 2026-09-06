@@ -41,6 +41,7 @@ import ToastNotification from './components/ToastNotification.vue';
 import { ToastService } from './services/toast';
 import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
+import { StorageService } from './services/storage';
 import { ApiService, setUnauthorizedHandler } from './services/api';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
@@ -60,6 +61,15 @@ const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle
   onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
 });
 
+// Reprograma la rafaga de 7 dias con los datos ya frescos del login/inicio de
+// sesion (streak_count, has_read_today, reminder_time), en vez de esperar a
+// que DashboardView monte — asi corre sin importar en que tab entre primero.
+const scheduleReminderForUser = async (user) => {
+  if (user.notification_prefs?.daily_reminder === false) return;
+  const savedTime = (await StorageService.get('reminder_time')) || user.reminder_time || '20:00';
+  NotificationService.schedule7DayBurst(savedTime, user.streak_count, user.has_read_today || false);
+};
+
 const onLoginSuccess = async (user, token) => {
   // Guardar el token antes de exponer currentUser: al asignarlo se monta
   // DashboardView de inmediato y dispara llamadas a la API que ya necesitan
@@ -68,6 +78,7 @@ const onLoginSuccess = async (user, token) => {
   currentUser.value = user;
   markFreshLoad();
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
+  scheduleReminderForUser(user);
 
   // Procesar invitación pendiente si existía
   await resolvePendingInvite(user);
@@ -147,7 +158,10 @@ onMounted(async () => {
   // (no se cachea el objeto user en disco) y sincroniza timezone si cambió.
   try {
     currentUser.value = await UserService.initSession();
-    if (currentUser.value) markFreshLoad();
+    if (currentUser.value) {
+      markFreshLoad();
+      scheduleReminderForUser(currentUser.value);
+    }
   } catch (e) {
     console.warn('No se pudo restaurar la sesión:', e.message);
     clearUser();
