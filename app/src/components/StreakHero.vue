@@ -30,15 +30,6 @@
     <p v-else-if="user.is_streak_lost" class="text-slate-200 text-base mt-3">
       Se rompió tu racha.
     </p>
-
-    <!-- Protectores de racha disponibles -->
-    <div
-      v-if="user.streak_freezes > 0"
-      class="inline-flex items-center gap-2 bg-sky-500/10 text-sky-300 border border-sky-500/30 px-3 py-1 rounded-full text-sm font-bold mt-3"
-    >
-      <span class="text-base leading-none">🧊</span>
-      <span>{{ user.streak_freezes }} protector{{ user.streak_freezes > 1 ? 'es' : '' }} de racha</span>
-    </div>
   </div>
 </template>
 

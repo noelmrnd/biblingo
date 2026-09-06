@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4">
     <button
       type="button"
       @click="router.push({ name: 'friends' })"
@@ -42,14 +42,6 @@
         </div>
       </div>
 
-      <div class="card-duo bg-slate-900/90 border-slate-800 p-4 flex items-center justify-center gap-3">
-        <BookOpenCheck class="w-6 h-6 text-brand-green stroke-[2.5]" />
-        <span class="text-slate-200 text-base font-semibold">
-          <span class="text-brand-green font-extrabold text-xl">{{ friend.total_days_read || 0 }}</span>
-          {{ (friend.total_days_read || 0) === 1 ? 'día leído' : 'días leídos' }} en total
-        </span>
-      </div>
-
       <ExpandableCard
         :collapsible="false"
         title="Reacciones"
@@ -74,21 +66,21 @@
       </ExpandableCard>
 
       <div class="grid grid-cols-2 gap-3">
-        <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
-          <div class="flex items-center justify-center gap-3">
-            <span v-if="friend.is_streak_lost" class="text-3xl leading-none">🥶</span>
-            <Flame v-else class="w-7 h-7 text-amber-400 stroke-[2.5]" />
-            <div class="text-3xl font-extrabold text-amber-400">{{ friend.streak_count }}</div>
-          </div>
-          <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>actual</div>
-        </div>
-        <div class="card-duo bg-slate-900/90 border-slate-800 p-4 text-center space-y-2">
-          <div class="flex items-center justify-center gap-3">
-            <Zap class="w-7 h-7 text-purple-400 stroke-[2.5]" />
-            <div class="text-3xl font-extrabold text-purple-400">{{ friend.max_streak_count }}</div>
-          </div>
-          <div class="text-slate-300 text-base font-semibold uppercase tracking-wider">Racha<br/>máxima</div>
-        </div>
+        <StatCard
+          :value="friend.is_streak_lost ? 0 : friend.streak_count"
+          label="Racha actual"
+          color-class="text-amber-400"
+        >
+          <template #icon>
+            <span v-if="friend.is_streak_lost" class="text-xl leading-none">🥶</span>
+            <Flame v-else class="w-5 h-5 text-amber-400 stroke-[2.5]" />
+          </template>
+        </StatCard>
+        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green">
+          <template #icon>
+            <BookOpenCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
+          </template>
+        </StatCard>
       </div>
 
       <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
@@ -162,8 +154,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Flame, Zap, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
+import { ArrowLeft, Flame, BellRing, UserMinus, UserX, UsersRound, BookOpenCheck, Heart } from '@lucide/vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
+import StatCard from '../components/StatCard.vue';
 import AppButton from '../components/AppButton.vue';
 import AppModal from '../components/AppModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
