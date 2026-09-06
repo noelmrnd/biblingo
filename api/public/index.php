@@ -12,6 +12,22 @@ use Biblingo\Controllers\ReadingController;
 use Biblingo\Controllers\UserController;
 use Biblingo\Utils\Auth;
 
+// Cualquier error/excepcion no capturada devuelve JSON en vez del HTML por
+// defecto de PHP (que expone stack traces con rutas del servidor al cliente).
+set_exception_handler(function (\Throwable $e) {
+    error_log('Uncaught exception: ' . $e);
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+    echo json_encode(['error' => 'Error interno del servidor']);
+    exit;
+});
+
+set_error_handler(function (int $severity, string $message, string $file, int $line) {
+    throw new \ErrorException($message, 0, $severity, $file, $line);
+});
+
 // Manejo de cabeceras CORS globales
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
