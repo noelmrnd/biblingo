@@ -211,80 +211,26 @@
     </div>
 
     <!-- Modal Confirmación de Cerrar Sesión -->
-    <AppModal
+    <ConfirmActionModal
       :is-open="isLogoutModalOpen"
+      :icon="LogOut"
       title="¿Cerrar sesión?"
       description="Tu racha y tus progresos de lectura están guardados en tu cuenta."
+      confirm-label="Cerrar sesión"
       @close="isLogoutModalOpen = false"
-      :show-close="false"
-    >
-      <template #icon>
-        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-          <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex items-center gap-3 w-full">
-          <div class="flex-1">
-            <AppButton
-              color="dark"
-              block
-              @click="isLogoutModalOpen = false"
-            >
-              Cancelar
-            </AppButton>
-          </div>
-          <div class="flex-1">
-            <AppButton
-              color="rose"
-              block
-              @click="confirmLogout"
-            >
-              Cerrar sesión
-            </AppButton>
-          </div>
-        </div>
-      </template>
-    </AppModal>
+      @confirm="confirmLogout"
+    />
 
     <!-- Modal Confirmación de Eliminar Cuenta -->
-    <AppModal
+    <ConfirmActionModal
       :is-open="isDeleteAccountModalOpen"
+      :icon="Trash2"
       title="¿Eliminar tu cuenta?"
       description="Se borra tu racha, amigos e historial de lectura. Esta acción no se puede deshacer."
+      confirm-label="Eliminar"
       @close="isDeleteAccountModalOpen = false"
-      :show-close="false"
-    >
-      <template #icon>
-        <div class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-          <Trash2 class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex items-center gap-3 w-full">
-          <div class="flex-1">
-            <AppButton
-              color="dark"
-              block
-              @click="isDeleteAccountModalOpen = false"
-            >
-              Cancelar
-            </AppButton>
-          </div>
-          <div class="flex-1">
-            <AppButton
-              color="rose"
-              block
-              @click="confirmDeleteAccount"
-            >
-              Eliminar
-            </AppButton>
-          </div>
-        </div>
-      </template>
-    </AppModal>
+      @confirm="confirmDeleteAccount"
+    />
 
     <FeedbackModal
       :is-open="isFeedbackModalOpen"
@@ -298,7 +244,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { UserRound, Bell, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import AppButton from '../components/AppButton.vue';
-import AppModal from '../components/AppModal.vue';
+import ConfirmActionModal from '../components/ConfirmActionModal.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
 import FeedbackModal from '../components/FeedbackModal.vue';
 import { NotificationService } from '../services/notifications';
