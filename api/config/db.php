@@ -11,8 +11,10 @@ function getDbConnection() {
         $host = getEnvVar('MAIN_DB_HOST', 'localhost');
         $port = getEnvVar('MAIN_DB_PORT', '3306');
         $db   = getEnvVar('MAIN_DB_NAME', 'biblingo');
-        $user = getEnvVar('MAIN_DB_USERNAME', 'root');
-        $pass = getEnvVar('MAIN_DB_PASSWORD', 'root');
+        // Sin default para user/password: si faltan en env, mejor que la conexion
+        // falle fuerte a que se conecte en silencio con credenciales de root/dev.
+        $user = getEnvVar('MAIN_DB_USERNAME');
+        $pass = getEnvVar('MAIN_DB_PASSWORD');
         $charset = getEnvVar('MAIN_DB_CHARSET', 'utf8mb4');
 
         $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
@@ -24,7 +26,8 @@ function getDbConnection() {
         try {
             $pdo = new PDO($dsn, $user, $pass, $options);
         } catch (PDOException $e) {
-            sendJsonResponse(['error' => 'Error de conexión a la base de datos: ' . $e->getMessage()], 500);
+            error_log('[db] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error de conexión a la base de datos.'], 500);
             exit;
         }
     }

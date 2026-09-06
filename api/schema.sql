@@ -101,7 +101,19 @@ CREATE TABLE IF NOT EXISTS domain_events (
     occurred_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     processed_at TIMESTAMP NULL,
     error_message TEXT NULL,
+    retry_count INT NOT NULL DEFAULT 0,
     INDEX idx_status_occurred (status, occurred_on),
     INDEX idx_aggregate (aggregate_type, aggregate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Rate limiting generico por ventana fija: (bucket, subject) identifica que se
+-- limita (ej. "auth_social" + IP, "nudge" + user_id) y cuenta hits dentro de la
+-- ventana vigente. Ver Utils/RateLimiter.
+CREATE TABLE IF NOT EXISTS rate_limits (
+    bucket VARCHAR(50) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    window_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    hits INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (bucket, subject)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

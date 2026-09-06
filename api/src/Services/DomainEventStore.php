@@ -30,7 +30,9 @@ class DomainEventStore {
     }
 
     /**
-     * Obtiene una lista de eventos pendientes ordenados cronológicamente.
+     * Obtiene una lista de eventos pendientes ordenados cronológicamente. Incluye
+     * eventos que fallaron pero todavia tienen reintentos disponibles (ver
+     * markAsFailed) — status='failed' definitivo solo se alcanza tras agotarlos.
      */
     public static function getPendingEvents(int $limit = 50, ?\PDO $pdo = null): array {
         $db = $pdo ?? getDbConnection();
@@ -62,17 +64,24 @@ class DomainEventStore {
         $stmt->execute([$eventId]);
     }
 
+    private const MAX_RETRIES = 5;
+
     /**
-     * Marca un evento como fallido y almacena el mensaje de error.
+     * Registra el fallo e incrementa retry_count. Mientras queden reintentos
+     * disponibles vuelve a 'pending' para que el worker lo tome de nuevo en la
+     * siguiente pasada; agotados los reintentos queda en 'failed' definitivo.
      */
     public static function markAsFailed(string $eventId, string $errorMessage, ?\PDO $pdo = null): void {
         $db = $pdo ?? getDbConnection();
 
         $stmt = $db->prepare("
             UPDATE domain_events
-            SET status = 'failed', processed_at = CURRENT_TIMESTAMP, error_message = ?
+            SET retry_count = retry_count + 1,
+                status = IF(retry_count + 1 < ?, 'pending', 'failed'),
+                processed_at = CURRENT_TIMESTAMP,
+                error_message = ?
             WHERE id = ?
         ");
-        $stmt->execute([$errorMessage, $eventId]);
+        $stmt->execute([self::MAX_RETRIES, $errorMessage, $eventId]);
     }
 }

@@ -65,7 +65,7 @@ class JwtVerifier {
         return is_array($json) ? $json : null;
     }
 
-    private static function verifyRs256Jwt(string $jwt, string $jwksUrl, string $expectedIss, array $allowedAudiences): ?array {
+    private static function verifyRs256Jwt(string $jwt, string $jwksUrl, array $expectedIssuers, array $allowedAudiences): ?array {
         $parts = explode('.', $jwt);
         if (count($parts) !== 3) {
             return null;
@@ -110,7 +110,7 @@ class JwtVerifier {
             return null;
         }
 
-        if (($payload['iss'] ?? null) !== $expectedIss) {
+        if (!in_array($payload['iss'] ?? null, $expectedIssuers, true)) {
             return null;
         }
         if (empty($payload['exp']) || (int)$payload['exp'] < time()) {
@@ -131,24 +131,21 @@ class JwtVerifier {
      * Devuelve el payload verificado (con 'sub', 'email' si viene) o null si es invalido.
      */
     public static function verifyAppleIdToken(string $idToken, array $allowedAudiences): ?array {
-        return self::verifyRs256Jwt($idToken, 'https://appleid.apple.com/auth/keys', 'https://appleid.apple.com', $allowedAudiences);
+        return self::verifyRs256Jwt($idToken, 'https://appleid.apple.com/auth/keys', ['https://appleid.apple.com'], $allowedAudiences);
     }
 
     /**
-     * Verifica un id_token de Google usando el endpoint oficial tokeninfo, que valida
-     * la firma del lado de Google — evita reimplementar la verificacion JWKS dos veces.
+     * Verifica un id_token de Google contra las claves publicas JWKS de Google.
+     * El endpoint "tokeninfo" usado antes esta documentado por Google como solo
+     * para debugging (rate limit no garantizado para produccion); esto verifica
+     * la firma localmente, igual que con Apple, sin depender de esa cuota.
      */
     public static function verifyGoogleIdToken(string $idToken, array $allowedAudiences): ?array {
-        $payload = self::fetchJson('https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken));
-        if (!$payload || isset($payload['error'])) {
-            return null;
-        }
-        if (empty($payload['exp']) || (int)$payload['exp'] < time()) {
-            return null;
-        }
-        if (!in_array($payload['aud'] ?? null, $allowedAudiences, true)) {
-            return null;
-        }
-        return $payload;
+        return self::verifyRs256Jwt(
+            $idToken,
+            'https://www.googleapis.com/oauth2/v3/certs',
+            ['https://accounts.google.com', 'accounts.google.com'],
+            $allowedAudiences
+        );
     }
 }

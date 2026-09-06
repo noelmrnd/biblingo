@@ -52,6 +52,9 @@ class ReadingController {
         if ($month < 1 || $month > 12) {
             sendJsonResponse(['error' => 'month debe estar entre 1 y 12.'], 400);
         }
+        if ($year < 2020 || $year > 2100) {
+            sendJsonResponse(['error' => 'year invalido.'], 400);
+        }
 
         $db = getDbConnection();
         $monthStart = sprintf('%04d-%02d-01', $year, $month);
