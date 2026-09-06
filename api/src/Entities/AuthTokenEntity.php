@@ -22,4 +22,14 @@ class AuthTokenEntity {
         $stmt->execute([$tokenHash]);
         return $stmt->fetch();
     }
+
+    public static function deleteByHash(\PDO $db, string $tokenHash): void {
+        $stmt = $db->prepare("DELETE FROM auth_tokens WHERE token_hash = ?");
+        $stmt->execute([$tokenHash]);
+    }
+
+    public static function deleteAllForUser(\PDO $db, string $userId): void {
+        $stmt = $db->prepare("DELETE FROM auth_tokens WHERE user_id = ?");
+        $stmt->execute([$userId]);
+    }
 }

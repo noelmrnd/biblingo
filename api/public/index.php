@@ -38,6 +38,8 @@ $userId = in_array($requestUri, $publicRoutes, true) ? null : Auth::requireUser(
 // Rutas API
 if ($requestUri === '/api/auth/social' && $method === 'POST') {
     AuthController::handleSocialAuth();
+} elseif ($requestUri === '/api/auth/logout' && $method === 'POST') {
+    AuthController::logout($userId);
 } elseif ($requestUri === '/api/reading/status' && $method === 'GET') {
     ReadingController::getStatus($userId);
 } elseif ($requestUri === '/api/reading/calendar' && $method === 'GET') {

@@ -132,4 +132,24 @@ class AuthController {
             ]
         ]);
     }
+
+    /**
+     * Cierra sesion revocando el token Bearer usado en esta request. Con
+     * {"all": true} revoca todos los tokens del usuario (todos los dispositivos).
+     */
+    public static function logout(string $userId) {
+        $input = getJsonInput();
+        $everywhere = !empty($input['all']);
+
+        if ($everywhere) {
+            Auth::revokeAllTokens($userId);
+        } else {
+            Auth::revokeCurrentToken();
+        }
+
+        sendJsonResponse([
+            'success' => true,
+            'message' => $everywhere ? 'Sesión cerrada en todos los dispositivos.' : 'Sesión cerrada.'
+        ]);
+    }
 }

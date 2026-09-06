@@ -60,4 +60,17 @@ class Auth {
         }
         return $userId;
     }
+
+    /** Revoca el token Bearer de la request actual (logout de este dispositivo). */
+    public static function revokeCurrentToken(): void {
+        $rawToken = self::bearerToken();
+        if ($rawToken) {
+            AuthTokenEntity::deleteByHash(getDbConnection(), hash('sha256', $rawToken));
+        }
+    }
+
+    /** Revoca todos los tokens de sesion del usuario (logout en todos los dispositivos). */
+    public static function revokeAllTokens(string $userId): void {
+        AuthTokenEntity::deleteAllForUser(getDbConnection(), $userId);
+    }
 }
