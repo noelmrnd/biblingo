@@ -36,6 +36,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Icono/color por defecto de notificaciones push (FCM): sin esto, Android intenta
+             usar el ic_launcher a color como silueta monocromatica y se ve como cuadrado blanco -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_stat_notify" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/colorPrimary" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

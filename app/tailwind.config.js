@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         brand: {
+          // tab bar: #020617
           green: '#4EC313',
           'green-dark': '#337F0C',
           blue: '#1D6CED',

@@ -1,5 +1,5 @@
 <template>
-  <nav class="flex-none z-30 bg-slate-950/95 backdrop-blur-lg border-t border-brand-border pt-2 pb-safe-sm px-4">
+  <nav class="flex-none z-30 bg-slate-950 backdrop-blur-lg border-t border-brand-border pt-2 pb-safe-sm px-4">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <button
         v-for="tab in tabs"
