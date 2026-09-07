@@ -117,22 +117,12 @@ class FriendController {
             $inserted = FollowEntity::insertFollow($db, (string)SnowflakeId::nextId(), $userId, $targetId);
 
             if ($inserted) {
+                // El chequeo de medallas (following/followers/mutual) no ocurre aca:
+                // reacciona a este mismo evento en BadgeEventHandler::onFriendAdded,
+                // via DomainEventProcessor, para no acoplar el controller a que
+                // categorias de medallas dispara un follow.
                 $event = new FriendAddedEvent($userId, $targetId, $myDisplayName);
                 DomainEventStore::record($event, $db);
-
-                $followingCount = FollowEntity::countFollowing($db, $userId);
-                BadgeEntity::checkAndAward($db, $userId, [
-                    'following' => $followingCount,
-                    'mutual'    => FollowEntity::countTotalMutualFriends($db, $userId),
-                ]);
-
-                // El seguido tambien puede cruzar un umbral de "cuantos me siguen" o
-                // de mutuos con este follow ajeno, no solo el que sigue.
-                $followersCount = FollowEntity::countFollowers($db, $targetId);
-                BadgeEntity::checkAndAward($db, $targetId, [
-                    'followers' => $followersCount,
-                    'mutual'    => FollowEntity::countTotalMutualFriends($db, $targetId),
-                ]);
             }
 
             $db->commit();
@@ -240,14 +230,11 @@ class FriendController {
             $nudgeId = (string)SnowflakeId::nextId();
             FriendNudgeEntity::insert($db, $nudgeId, $userId, $friendId, $friendToday);
 
+            // Igual que en follow(): el chequeo de medallas (nudge_sent/nudge_received)
+            // reacciona a este evento en BadgeEventHandler::onFriendNudged, desacoplado
+            // de este controller.
             $event = new FriendNudgedEvent($userId, $friendId, $myDisplayName, $friendToday);
             DomainEventStore::record($event, $db);
-
-            $nudgesSent = FriendNudgeEntity::countSentByUser($db, $userId);
-            BadgeEntity::checkAndAward($db, $userId, ['nudge_sent' => $nudgesSent]);
-
-            $nudgesReceived = FriendNudgeEntity::countReceivedByUser($db, $friendId);
-            BadgeEntity::checkAndAward($db, $friendId, ['nudge_received' => $nudgesReceived]);
 
             $db->commit();
 

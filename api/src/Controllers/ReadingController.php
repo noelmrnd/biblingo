@@ -140,18 +140,7 @@ class ReadingController {
                 $logId = (string)SnowflakeId::nextId();
                 ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
 
-                $badgeValues = [
-                    'streak'    => $currentStreak,
-                    'days_read' => ReadingLogEntity::countTotalDaysRead($db, $userId),
-                ];
-                if ($reaction !== null) {
-                    $reactionCounts = ReadingLogEntity::countReactionsGrouped($db, $userId);
-                    foreach ($reactionCounts as $row) {
-                        $badgeValues["reaction:{$row['reaction']}"] = (int)$row['total'];
-                    }
-                    $badgeValues['reactions_all'] = count($reactionCounts);
-                }
-                $newBadges = BadgeEntity::checkAndAward($db, $userId, $badgeValues);
+                $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction);
             }
 
             $db->commit();
@@ -176,5 +165,29 @@ class ReadingController {
             'reaction'         => $reaction,
             'new_badges'       => $newBadges
         ]);
+    }
+
+    /**
+     * Chequeo de medallas ligado a la respuesta HTTP de logReading (no via
+     * domain event) porque el frontend necesita 'new_badges' en la MISMA
+     * response para el confetti/toast instantaneo — ver BadgeEventHandler
+     * para el resto de las medallas (following/nudge), que si se disparan
+     * de forma desacoplada porque su UI no depende de la response inmediata.
+     */
+    private static function checkBadgesAfterLog(\PDO $db, string $userId, int $currentStreak, ?string $reaction): array {
+        $badgeValues = [
+            'streak'    => $currentStreak,
+            'days_read' => ReadingLogEntity::countTotalDaysRead($db, $userId),
+        ];
+
+        if ($reaction !== null) {
+            $reactionCounts = ReadingLogEntity::countReactionsGrouped($db, $userId);
+            foreach ($reactionCounts as $row) {
+                $badgeValues["reaction:{$row['reaction']}"] = (int)$row['total'];
+            }
+            $badgeValues['reactions_all'] = count($reactionCounts);
+        }
+
+        return BadgeEntity::checkAndAward($db, $userId, $badgeValues);
     }
 }

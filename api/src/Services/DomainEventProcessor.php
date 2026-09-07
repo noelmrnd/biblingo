@@ -67,6 +67,8 @@ class DomainEventProcessor {
         if ($receiverId !== null && self::prefEnabled($receiverId, 'new_follower')) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
+
+        BadgeEventHandler::onFriendAdded($payload);
     }
 
     private static function handleFriendNudged(array $payload): void {
@@ -78,6 +80,8 @@ class DomainEventProcessor {
         if ($receiverId !== null && self::prefEnabled($receiverId, 'nudge')) {
             FCMService::sendPushNotificationToUser($receiverId, $title, $body, $data);
         }
+
+        BadgeEventHandler::onFriendNudged($payload);
     }
 
     private static function prefEnabled(string $userId, string $key): bool {
