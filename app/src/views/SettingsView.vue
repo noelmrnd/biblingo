@@ -190,7 +190,6 @@
       <SettingsActionButton
         :icon="LogOut"
         variant="danger"
-        haptic="warning"
         class="[&_svg]:text-rose-400"
         @click="isLogoutModalOpen = true"
       >
@@ -200,7 +199,6 @@
       <SettingsActionButton
         :icon="Trash2"
         variant="danger-subtle"
-        haptic="warning"
         @click="isDeleteAccountModalOpen = true"
       >
         Eliminar cuenta

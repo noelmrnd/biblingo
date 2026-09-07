@@ -25,6 +25,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  haptic: {
+    type: Boolean,
+    default: true
   }
 });
 
@@ -34,7 +38,7 @@ const sizeClass = computed(() => (props.size === 'sm' ? 'p-1.5' : 'p-2'));
 
 const handleClick = (e) => {
   if (props.disabled) return;
-  HapticsService.light();
+  if (props.haptic) HapticsService.light();
   emit('click', e);
 };
 </script>

@@ -13,6 +13,7 @@
                 <h3 class="text-xl text-white font-black">{{ displayName }}</h3>
                 <IconButton
                   @click="onClose"
+                  :haptic="false"
                   class="-mr-1 -mt-1"
                   aria-label="Cerrar"
                 >
@@ -20,29 +21,7 @@
                 </IconButton>
               </div>
 
-              <!-- Segmented Control Seguidores / Seguidos -->
-              <div class="grid grid-cols-2 gap-2 bg-slate-950/80 p-1.5 rounded-2xl border-2 border-slate-800">
-                <button
-                  type="button"
-                  @click="emit('change-tab', 'followers')"
-                  :class="activeTab === 'followers'
-                    ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black'
-                    : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
-                  class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
-                >
-                  Seguidores
-                </button>
-                <button
-                  type="button"
-                  @click="emit('change-tab', 'following')"
-                  :class="activeTab === 'following'
-                    ? 'bg-brand-card text-brand-blue border-sky-500/50 shadow-md font-black'
-                    : 'text-slate-400 hover:text-slate-200 border-transparent font-extrabold'"
-                  class="py-2.5 px-3 rounded-xl text-base transition-all border cursor-pointer select-none active:scale-95"
-                >
-                  Seguidos
-                </button>
-              </div>
+              <SegmentedTabs :tabs="tabOptions" :model-value="activeTab" @update:model-value="changeTab" />
             </div>
 
             <div class="flex-1 overflow-y-auto min-h-0 space-y-2 pt-2 no-scrollbar overscroll-contain">
@@ -89,6 +68,13 @@ import { ref, computed, watch } from 'vue';
 import { X, UsersRound, Flame } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import IconButton from './IconButton.vue';
+import SegmentedTabs from './SegmentedTabs.vue';
+import { HapticsService } from '../services/haptics';
+
+const tabOptions = [
+  { id: 'followers', label: 'Seguidores', color: 'green' },
+  { id: 'following', label: 'Seguidos', color: 'blue' }
+];
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -142,8 +128,13 @@ watch(() => props.isOpen, (open) => {
 
 const onClose = () => emit('close');
 
+const changeTab = (tab) => {
+  emit('change-tab', tab);
+};
+
 const selectUser = (u) => {
   if (u.is_self) return;
+  HapticsService.light();
   emit('select-user', u.id);
 };
 </script>

@@ -21,7 +21,13 @@
           </AppButton>
         </div>
         <div class="flex-1">
-          <AppButton :color="confirmColor" block :disabled="loading" @click="$emit('confirm')">
+          <AppButton
+            :color="confirmColor"
+            :haptic="confirmColor === 'rose' ? 'warning' : 'light'"
+            block
+            :disabled="loading"
+            @click="$emit('confirm')"
+          >
             {{ loading ? loadingLabel : confirmLabel }}
           </AppButton>
         </div>

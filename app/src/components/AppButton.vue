@@ -51,12 +51,17 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  haptic: {
+    type: String,
+    default: 'light',
+    validator: (val) => ['light', 'medium', 'heavy', 'success', 'warning', 'error', 'none'].includes(val)
   }
 });
 
 const handleClick = () => {
   if (props.disabled || props.readonly || props.loading) return;
-  HapticsService.light();
+  if (props.haptic !== 'none') HapticsService[props.haptic]();
 };
 
 const sizeClasses = computed(() => {

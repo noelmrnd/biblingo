@@ -8,6 +8,7 @@
       <div class="flex items-center gap-1">
         <IconButton
           size="sm"
+          :haptic="false"
           @click="monthOffset--"
           aria-label="Mes anterior"
         >
@@ -15,6 +16,7 @@
         </IconButton>
         <IconButton
           size="sm"
+          :haptic="false"
           @click="monthOffset++"
           :disabled="monthOffset >= 0"
           aria-label="Mes siguiente"

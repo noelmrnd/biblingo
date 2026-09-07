@@ -34,7 +34,7 @@
       <template v-else>
         <button
           type="button"
-          @click="() => { HapticsService.light(); router.push(backTo); }"
+          @click="router.push(backTo)"
           class="w-8 h-8 -ml-1 flex items-center justify-center text-slate-300 hover:text-white rounded-full transition-colors cursor-pointer"
           aria-label="Volver"
         >

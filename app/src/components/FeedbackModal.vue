@@ -18,7 +18,7 @@
           v-for="option in FEEDBACK_TYPES"
           :key="option.id"
           type="button"
-          @click="type = option.id"
+          @click="selectType(option.id)"
           :class="type === option.id
             ? 'bg-brand-card text-brand-green border-brand-green/50 shadow-md font-black'
             : 'text-slate-400 hover:text-slate-200 border-slate-800 font-extrabold'"
@@ -57,6 +57,7 @@ import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
 import { ApiService } from '../services/api';
 import { useAsyncAction } from '../composables/useAsyncAction';
+import { HapticsService } from '../services/haptics';
 
 const FEEDBACK_TYPES = [
   { id: 'idea', label: 'Idea' },
@@ -73,6 +74,12 @@ const emit = defineEmits(['close']);
 const type = ref('idea');
 const message = ref('');
 const sendAction = useAsyncAction();
+
+const selectType = (id) => {
+  if (id === type.value) return;
+  HapticsService.light();
+  type.value = id;
+};
 
 const close = () => {
   if (sendAction.loading.value) return;

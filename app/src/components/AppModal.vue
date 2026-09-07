@@ -33,6 +33,7 @@
                     v-if="showClose"
                     @click="onClose"
                     :disabled="loading"
+                    :haptic="false"
                     class="-mr-1 -mt-1 flex-shrink-0"
                     aria-label="Cerrar"
                   >

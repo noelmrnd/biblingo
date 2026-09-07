@@ -83,10 +83,11 @@
             <ChevronRight class="w-4 h-4 stroke-[3]" />
           </AppButton>
 
-          <AppButton 
+          <AppButton
             v-else
             @click="finishTour"
             color="green"
+            haptic="heavy"
             block
           >
             <span>¡Empezar a leer!</span>
@@ -100,6 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import AppButton from './AppButton.vue';
 import { 
   ChevronRight, 
@@ -108,12 +110,14 @@ import {
 import confetti from 'canvas-confetti';
 import { StorageService } from '../services/storage';
 import { ToastService } from '../services/toast';
+import { HapticsService } from '../services/haptics';
 
 import tourStep1 from '../assets/tour/tour-step-1.png';
 import tourStep2 from '../assets/tour/tour-step-2.png';
 import tourStep3 from '../assets/tour/tour-step-3.png';
 import tourStep4 from '../assets/tour/tour-step-4.png';
 
+const router = useRouter();
 const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
 const isOpen = ref(false);
 const currentStep = ref(0);
@@ -160,6 +164,7 @@ const prevStep = () => {
 };
 
 const skipTour = async () => {
+  HapticsService.light();
   isOpen.value = false;
   currentStep.value = 0;
   await StorageService.set(TOUR_SEEN_KEY, true);
@@ -179,6 +184,7 @@ const finishTour = async () => {
   currentStep.value = 0;
   await StorageService.set(TOUR_SEEN_KEY, true);
   ToastService.success('¡Tour completado! Que disfrutes tu lectura diaria. 📖✨');
+  router.push({ name: 'dashboard' });
 };
 
 const open = () => {

@@ -23,7 +23,7 @@
         @action="promptRemoveFriend(friend)"
       >
         <div
-          @click="!friend.is_self && router.push({ name: 'friend-profile', params: { id: friend.id } })"
+          @click="openFriendProfile(friend)"
           :class="!friend.is_self && 'cursor-pointer'"
           class="card-duo flex items-center justify-between transition-colors gap-3"
         >
@@ -111,6 +111,12 @@ const props = defineProps({
 const emit = defineEmits(['friends-loaded']);
 
 const router = useRouter();
+
+const openFriendProfile = (friend) => {
+  if (friend.is_self) return;
+  HapticsService.light();
+  router.push({ name: 'friend-profile', params: { id: friend.id } });
+};
 
 const friends = ref([]);
 const nudge = useNudge();
