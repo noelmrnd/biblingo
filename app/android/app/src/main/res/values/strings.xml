@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Biblingo</string>
+    <string name="title_activity_main">Biblingo</string>
+    <string name="package_name">me.biblingo.app</string>
+    <string name="custom_url_scheme">me.biblingo.app</string>
+</resources>

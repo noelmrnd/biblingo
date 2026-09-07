@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "56637027170",
+    "project_id": "biblingo-mx",
+    "storage_bucket": "biblingo-mx.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56637027170:android:1236b2058f54738d08723b",
+        "android_client_info": {
+          "package_name": "me.biblingo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6TNUepC6qDrtePsTEKBKHCo4lbvu2mKo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "56637027170-5bckf6oali35ir6m2qisr9urm5qknncg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "me.biblingo.app",
+                "app_store_id": "6808283100"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
