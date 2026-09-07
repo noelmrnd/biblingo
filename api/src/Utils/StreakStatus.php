@@ -16,5 +16,7 @@ final readonly class StreakStatus {
         public bool $hasReadToday,
         public bool $isStreakLost,
         public string $lastReadLabel,
+        public bool $willUseFreezeToday,
+        public int $missedDays,
     ) {}
 }

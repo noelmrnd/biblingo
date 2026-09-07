@@ -99,10 +99,6 @@ const handleReactionConfirmed = async (reaction) => {
         NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
       }
 
-      if (res.used_freeze && props.user.notification_prefs?.freeze_used !== false) {
-        ToastService.info('¡Un protector de racha te salvó! 🧊🔥');
-      }
-
       emit('reading-logged', {
         res,
         reaction: res.reaction || reaction

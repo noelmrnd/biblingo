@@ -5,10 +5,10 @@
     <div class="inline-block relative my-3">
       <div
         class="inline-block filter"
-        :class="[user.is_streak_lost ? 'text-7xl' : `${tier.sizeClass} animate-flame-pulse`]"
-        :style="user.is_streak_lost ? '' : `filter: drop-shadow(0 0 20px ${tier.glow})`"
+        :class="[(user.is_streak_lost || user.will_use_freeze_today) ? 'text-7xl' : `${tier.sizeClass} animate-flame-pulse`]"
+        :style="(user.is_streak_lost || user.will_use_freeze_today) ? '' : `filter: drop-shadow(0 0 20px ${tier.glow})`"
       >
-        {{ user.is_streak_lost ? '🥶' : tier.emoji }}
+        {{ user.is_streak_lost ? '🥶' : (user.will_use_freeze_today ? '🧊' : tier.emoji) }}
       </div>
     </div>
 
@@ -17,7 +17,7 @@
         {{ user.is_streak_lost ? 0 : user.streak_count }} {{ (user.is_streak_lost ? 0 : user.streak_count) === 1 ? 'día' : 'días' }}
       </h2>
       <p class="text-amber-400 font-extrabold text-base uppercase tracking-wider">
-        {{ user.is_streak_lost ? 'Racha perdida' : 'Racha de lectura activa' }}
+        {{ user.is_streak_lost ? 'Racha perdida' : (user.will_use_freeze_today ? 'Racha congelada' : 'Racha de lectura activa') }}
       </p>
     </div>
 
@@ -25,40 +25,16 @@
       Se rompió tu racha.
     </p>
 
-    <!-- Aviso proactivo: racha activa, sin protectores, y todavia no leyo hoy.
-         Antes el usuario solo se enteraba de que se quedo sin protector DESPUES
-         de perder la racha (o al usar el ultimo). Esto avisa antes de que pase. -->
-    <button
-      v-if="showRiskBanner"
-      type="button"
-      @click="isRulesModalOpen = true"
-      class="text-sky-300 text-base font-bold mt-3 cursor-pointer"
-    >
-      🥶 No tienes protectores de racha
-    </button>
-
-    <AppRulesModal :is-open="isRulesModalOpen" @close="isRulesModalOpen = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { getStreakTier } from '../constants';
-import AppRulesModal from './AppRulesModal.vue';
 
 const props = defineProps({
-  user: { type: Object, required: true },
-  hasReadToday: { type: Boolean, default: false }
+  user: { type: Object, required: true }
 });
 
-const isRulesModalOpen = ref(false);
-
 const tier = computed(() => getStreakTier(props.user.streak_count ?? 0));
-
-const showRiskBanner = computed(() =>
-  !props.hasReadToday &&
-  !props.user.is_streak_lost &&
-  (props.user.streak_count || 0) > 0 &&
-  (props.user.streak_freezes || 0) === 0
-);
 </script>

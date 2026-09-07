@@ -25,6 +25,10 @@ class StreakUtils {
 
         $missedDays = $lastReadDate ? max(0, DateUtils::daysBetween($lastReadDate, $today) - 1) : 0;
         $isStreakLost = ($streakCount > 0 && !$hasReadToday && $lastReadDate !== $yesterday && $missedDays > $freezesAvailable);
+        // Si ya hay dias saltados pendientes (ayer no leyo) y la racha todavia no
+        // se dio por perdida, leer hoy va a consumir un protector para taparlos.
+        // Se usa para avisar ANTES de leer, no solo despues (ver StreakHero.vue).
+        $willUseFreezeToday = ($streakCount > 0 && !$hasReadToday && !$isStreakLost && $missedDays > 0);
 
         return new StreakStatus(
             $today,
@@ -32,6 +36,8 @@ class StreakUtils {
             $hasReadToday,
             $isStreakLost,
             DateUtils::formatReadDateLabel($lastReadDate, $today, $yesterday),
+            $willUseFreezeToday,
+            $missedDays,
         );
     }
 }

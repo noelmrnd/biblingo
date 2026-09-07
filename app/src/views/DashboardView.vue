@@ -10,7 +10,7 @@
     </div>
 
     <template v-else>
-      <StreakHero :user="user" :has-read-today="hasReadToday" />
+      <StreakHero :user="user" />
 
       <!-- Botón de Lectura de Hoy: readonly una vez que ya se registró -->
       <ReadingButton
@@ -77,11 +77,12 @@ const onReadingLogged = ({ res }) => {
       : currentBadges
   });
 
-  if (res.used_freeze) {
+  if (res.used_freeze && props.user.notification_prefs?.freeze_used !== false) {
+    const used = res.freezes_used_this_time || 1;
     const remaining = res.streak_freezes > 0
-      ? `Te quedan ${res.streak_freezes}.`
+      ? `Te ${res.streak_freezes === 1 ? 'queda' : 'quedan'} ${res.streak_freezes}.`
       : 'Ya no te quedan más.';
-    ToastService.info(`Se usó un protector de racha 🧊. ${remaining}`);
+    ToastService.info(`Se ${used === 1 ? 'usó un protector' : `usaron ${used} protectores`} de racha 🧊. ${remaining}`);
   }
 
   // Puede haber mas de una si el usuario ya estaba por encima de varios umbrales

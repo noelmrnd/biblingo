@@ -42,6 +42,8 @@ class ReadingController {
             'last_read_label'      => $status->lastReadLabel,
             'has_read_today'       => $status->hasReadToday,
             'is_streak_lost'       => $status->isStreakLost,
+            'will_use_freeze_today' => $status->willUseFreezeToday,
+            'missed_days'          => $status->missedDays,
             'notification_prefs'   => UserEntity::getNotificationPrefs($db, $userId),
             'badges'               => BadgeEntity::listForUser($db, $userId),
         ]);
@@ -106,6 +108,7 @@ class ReadingController {
 
             $alreadyLoggedToday = ($lastRead === $today);
             $usedFreeze = false;
+            $freezesUsedThisTime = 0;
             $newBadges = [];
 
             if (!$alreadyLoggedToday) {
@@ -122,6 +125,7 @@ class ReadingController {
                     $freezesAvailable -= $missedDays;
                     $freezesUsed += $missedDays;
                     $usedFreeze = true;
+                    $freezesUsedThisTime = $missedDays;
                 } else {
                     $currentStreak = 1;
                 }
@@ -160,6 +164,7 @@ class ReadingController {
             'streak_freezes'   => $freezesAvailable,
             'streak_freezes_used' => $freezesUsed,
             'used_freeze'      => $usedFreeze,
+            'freezes_used_this_time' => $freezesUsedThisTime,
             'last_read_date'   => $today,
             'last_read_label'  => 'Hoy',
             'reaction'         => $reaction,

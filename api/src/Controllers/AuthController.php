@@ -132,6 +132,8 @@ class AuthController {
             'last_read_label'  => $status->lastReadLabel,
             'has_read_today'   => $status->hasReadToday,
             'is_streak_lost'   => $status->isStreakLost,
+            'will_use_freeze_today' => $status->willUseFreezeToday,
+            'missed_days'      => $status->missedDays,
             'reminder_time'    => $user['reminder_time'] ?? '20:00',
             'timezone'         => $userTz,
             'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
