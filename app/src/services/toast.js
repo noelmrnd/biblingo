@@ -7,20 +7,33 @@ export const toastState = ref({
   timeoutId: null
 });
 
+// Cola interna: si se pide mostrar un toast mientras otro esta visible, se
+// encola en vez de pisarlo (antes cada llamada a show() reemplazaba el toast
+// actual sin importar si alcanzo a leerse, lo que hacia perder avisos cuando
+// dos disparaban casi juntos, ej. "se uso un protector" + medalla nueva).
+const queue = [];
+
+const showNext = () => {
+  const next = queue.shift();
+  if (!next) {
+    toastState.value = { ...toastState.value, visible: false, timeoutId: null };
+    return;
+  }
+
+  toastState.value = {
+    visible: true,
+    message: next.message,
+    type: next.type,
+    timeoutId: setTimeout(showNext, next.duration)
+  };
+};
+
 export const ToastService = {
   show(message, type = 'success', duration = 3500) {
-    if (toastState.value.timeoutId) {
-      clearTimeout(toastState.value.timeoutId);
+    queue.push({ message, type, duration });
+    if (!toastState.value.visible) {
+      showNext();
     }
-
-    toastState.value = {
-      visible: true,
-      message,
-      type,
-      timeoutId: setTimeout(() => {
-        toastState.value.visible = false;
-      }, duration)
-    };
   },
 
   success(message, duration = 3500) {
@@ -39,6 +52,6 @@ export const ToastService = {
     if (toastState.value.timeoutId) {
       clearTimeout(toastState.value.timeoutId);
     }
-    toastState.value.visible = false;
+    showNext();
   }
 };

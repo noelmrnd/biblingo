@@ -71,14 +71,12 @@ const onReadingLogged = ({ res }) => {
   }
 
   // Puede haber mas de una si el usuario ya estaba por encima de varios umbrales
-  // antes de que existiera este sistema (backfill): mostrar cada una escalonada
-  // para que no se pisen los toasts.
-  (res.new_badges || []).forEach((badgeId, index) => {
+  // antes de que existiera este sistema (backfill): ToastService las encola y
+  // las muestra una por una, no hace falta escalonarlas a mano aca.
+  (res.new_badges || []).forEach((badgeId) => {
     const badge = getBadgeById(badgeId);
     if (!badge) return;
-    setTimeout(() => {
-      ToastService.success(`${badge.emoji} ${badge.description}`, 5000);
-    }, index * 800);
+    ToastService.success(`${badge.emoji} ${badge.description}`, 5000);
   });
 
   refreshProfile({ force: true });
