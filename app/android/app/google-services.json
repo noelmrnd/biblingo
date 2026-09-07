@@ -14,6 +14,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "56637027170-anias6oofsa3dv4461q5cchiph95d2f1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.biblingo.app",
+            "certificate_hash": "342fec60a145db90754146795a4aaabfda3f00e1"
+          }
+        },
+        {
+          "client_id": "56637027170-ckj9a76t7ftg2ntdv9ep8sqp5ch33q18.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.biblingo.app",
+            "certificate_hash": "ff66697c548145325e63158cb3563196c2a86654"
+          }
+        },
+        {
+          "client_id": "56637027170-sl9igqq38o9sj0tu4ic9n21k5pt31c3d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.biblingo.app",
+            "certificate_hash": "3cd0f0940323de2860aaf54ffa38e43bb2ac9a90"
+          }
+        },
+        {
           "client_id": "56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com",
           "client_type": 3
         }
