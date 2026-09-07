@@ -56,26 +56,11 @@ if (lastLoadedUserId !== props.user?.id) {
 const initialLoading = ref(isFirstAppLoad);
 const hasReadToday = ref(props.user?.has_read_today ?? null);
 const monthlyTrackerRef = ref(null);
-const { user: currentUser, refreshProfile, mergeUser } = useCurrentUser();
+const { refreshProfile } = useCurrentUser();
 
 const onReadingLogged = ({ res }) => {
   hasReadToday.value = true;
   monthlyTrackerRef.value?.markTodayRead();
-  const newBadges = res.new_badges || [];
-  const currentBadges = currentUser.value?.badges || [];
-  mergeUser({
-    streak_count: res.streak_count,
-    max_streak_count: res.max_streak_count,
-    streak_freezes: res.streak_freezes,
-    streak_freezes_used: res.streak_freezes_used,
-    last_read_date: res.last_read_date,
-    last_read_label: res.last_read_label,
-    has_read_today: true,
-    is_streak_lost: false,
-    badges: newBadges.length > 0
-      ? [...currentBadges, ...newBadges.map((id) => ({ badge_id: id, earned_at: new Date().toISOString() }))]
-      : currentBadges
-  });
 
   if (res.used_freeze && props.user.notification_prefs?.freeze_used !== false) {
     const used = res.freezes_used_this_time || 1;
@@ -88,13 +73,15 @@ const onReadingLogged = ({ res }) => {
   // Puede haber mas de una si el usuario ya estaba por encima de varios umbrales
   // antes de que existiera este sistema (backfill): mostrar cada una escalonada
   // para que no se pisen los toasts.
-  newBadges.forEach((badgeId, index) => {
+  (res.new_badges || []).forEach((badgeId, index) => {
     const badge = getBadgeById(badgeId);
     if (!badge) return;
     setTimeout(() => {
       ToastService.success(`${badge.emoji} ${badge.description}`, 5000);
     }, index * 800);
   });
+
+  refreshProfile({ force: true });
 };
 
 // Usa el mismo singleton/TTL que Profile: si App o Profile ya pidieron el estado

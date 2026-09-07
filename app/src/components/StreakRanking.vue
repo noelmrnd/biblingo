@@ -61,13 +61,14 @@
             <!-- Badge de Racha Unificado -->
             <div
               :class="[
-                friend.is_streak_lost
+                (friend.is_streak_lost || friend.will_use_freeze_today)
                   ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
                   : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
               ]"
               class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
             >
               <span v-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
+              <span v-else-if="friend.will_use_freeze_today" class="text-base leading-none">🧊</span>
               <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
               <span>{{ friend.streak_count }}</span>
             </div>

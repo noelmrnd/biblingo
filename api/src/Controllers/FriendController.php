@@ -68,6 +68,7 @@ class FriendController {
                     'nudged_today'     => $nudgedToday,
                     'has_read_today'   => $status->hasReadToday,
                     'is_streak_lost'   => $status->isStreakLost,
+                    'will_use_freeze_today' => $status->willUseFreezeToday,
                     'is_self'          => (bool)$f['is_self'],
                     'is_mutual'        => (bool)$f['is_mutual'],
                 ];
@@ -292,6 +293,7 @@ class FriendController {
                 'last_read_label'     => $status->lastReadLabel,
                 'has_read_today'      => $status->hasReadToday,
                 'is_streak_lost'      => $status->isStreakLost,
+                'will_use_freeze_today' => $status->willUseFreezeToday,
                 'total_days_read'     => ReadingLogEntity::countTotalDaysRead($db, $friendId),
                 'reaction_counts'     => self::countReactions($db, $friendId),
                 'member_since'        => substr((string)$friend['created_at'], 0, 10),

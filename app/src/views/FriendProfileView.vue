@@ -63,10 +63,11 @@
         <StatCard
           :value="friend.is_streak_lost ? 0 : friend.streak_count"
           label="Racha actual"
-          color-class="text-amber-400"
+          :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
         >
           <template #icon>
             <span v-if="friend.is_streak_lost" class="text-xl leading-none">🥶</span>
+            <span v-else-if="friend.will_use_freeze_today" class="text-xl leading-none">🧊</span>
             <Flame v-else class="w-5 h-5 text-amber-400 stroke-[2.5]" />
           </template>
         </StatCard>
