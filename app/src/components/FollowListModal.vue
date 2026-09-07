@@ -71,7 +71,7 @@
                 </h4>
                 <p class="text-slate-400 text-sm font-medium flex items-center gap-1.5">
                   <Flame class="w-3.5 h-3.5 text-amber-400 stroke-[2.5]" />
-                  <span>{{ u.streak_count }} días de racha</span>
+                  <span>{{ u.streak_count }} {{ u.streak_count === 1 ? 'día' : 'días' }} de racha</span>
                 </p>
               </div>
               <span v-if="!u.is_self && u.is_following" class="text-xs text-slate-500 font-bold flex-none">Sigues</span>

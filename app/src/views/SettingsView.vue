@@ -235,7 +235,7 @@
       :is-open="isDeleteAccountModalOpen"
       :icon="Trash2"
       title="¿Eliminar tu cuenta?"
-      description="Se borra tu racha, amigos e historial de lectura. Esta acción no se puede deshacer."
+      description="Se borrará tu racha, amigos e historial de lectura. Esta acción no se puede deshacer."
       confirm-label="Eliminar"
       @close="isDeleteAccountModalOpen = false"
       @confirm="confirmDeleteAccount"
@@ -274,10 +274,10 @@ const appVersion = versionInfo.version;
 // todavia no tienen ningun disparador — quedan guardados listos para cuando se agregue.
 const NOTIFICATION_CATEGORIES = [
   { key: 'daily_reminder', label: 'Recordatorio de lectura', description: 'Aviso diario a la hora que elijas.' },
-  { key: 'streak_at_risk', label: 'Racha en peligro', description: 'Si se acerca la hora y todavía no leíste hoy.' },
-  { key: 'freeze_used', label: 'Uso del protector de racha', description: 'Cuando un protector salva tu racha automáticamente.' },
-  { key: 'new_follower', label: 'Nuevo seguidor', description: 'Cuando alguien te agrega como amigo.' },
-  { key: 'friend_activity', label: 'Actividad de amigos', description: 'Cuando un amigo lee o sube de racha.' },
+  { key: 'streak_at_risk', label: 'Racha en peligro', description: 'Si el día está por acabar sin haber leído.' },
+  { key: 'freeze_used', label: 'Uso del protector de racha', description: 'Cuando un protector salva tu racha.' },
+  { key: 'new_follower', label: 'Nuevo seguidor', description: 'Cuando alguien empieza a seguirte.' },
+  // { key: 'friend_activity', label: 'Actividad de amigos', description: 'Cuando un amigo lee o sube de racha.' },
   { key: 'nudge', label: 'Toques', description: 'Cuando un amigo te manda un recordatorio.' },
   { key: 'news', label: 'Novedades de Biblingo', description: 'Anuncios y nuevas funciones de la app.' },
 ];

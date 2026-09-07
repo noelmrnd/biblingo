@@ -21,7 +21,7 @@ class UserEntity {
         'streak_at_risk'  => true,
         'freeze_used'     => true,
         'new_follower'    => true,
-        'friend_activity' => true,
+        // 'friend_activity' => true,
         'nudge'           => true,
         'news'            => true,
     ];

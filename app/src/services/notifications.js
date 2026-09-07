@@ -126,13 +126,15 @@ export const NotificationService = {
       const startOffset = includeToday ? 0 : 1;
       const endOffset = startOffset + 6;
 
+      const streakText = currentStreak + ' ' + (currentStreak === 0 ? 'día' : 'días');
+
       const notifications = [];
       const messages = [
-        `¡No rompas tu racha de ${currentStreak} día(s)! 📖🔥 Tu libro te espera.`,
+        `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
         'Dedica 10 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
         '¡Un capítulo al día marca la diferencia! Entra a Biblingo. ✨',
         `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
-        'El conocimiento te espera. Lee 5 páginas hoy. 📕',
+        'El conocimiento te espera. Lee 5 minutos hoy. 📕',
         '¡Casi completas tu semana perfecta de lectura! 🎯',
         '¡Mantén viva tu llama de lectura! Registra tu progreso hoy. 🌟'
       ];
@@ -146,7 +148,7 @@ export const NotificationService = {
         if (isTodayReminder) {
           title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
           body = freezesAvailable === 0
-            ? `Hoy o pierdes tus ${currentStreak} días de racha. No tienes protectores. ¡Lee ahora!`
+            ? `No tienes protectores de racha. ¡Lee ahora para no perder tus ${streakText} de racha!`
             : `Todavía tienes un protector, pero no lo gastes por descuido: lee hoy y sigue en ${currentStreak + 1}.`;
         } else {
           const msgIndex = Math.abs(dayOffset) % messages.length;

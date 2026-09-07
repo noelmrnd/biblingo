@@ -18,15 +18,15 @@
           aria-label="Cómo funciona la racha"
         >
           <!-- Protectores de racha disponibles -->
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-sky-500/30 px-3 py-1 rounded-full shadow-inner">
-            <span class="text-base leading-none">🧊</span>
-            <span class="font-bold text-sky-300 text-lg">{{ streakFreezes }}</span>
+          <div class="flex items-center gap-2 bg-slate-900 border border-sky-500/30 px-3 py-1 rounded-full shadow-inner">
+            <span class="text-lg">🧊</span>
+            <span class="font-semibold text-sky-300 text-lg">{{ streakFreezes }}</span>
           </div>
 
           <!-- Racha activa en la barra superior -->
-          <div class="flex items-center gap-2 bg-slate-900 border border-amber-500/30 px-4 py-1 rounded-full shadow-inner">
-            <span class="text-lg animate-flame-pulse">🔥</span>
-            <span class="font-bold text-amber-400 text-xl">{{ streakCount }}</span>
+          <div class="flex items-center gap-2 bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full shadow-inner">
+            <span class="text-lg">🔥</span>
+            <span class="font-semibold text-amber-400 text-lg">{{ streakCount }}</span>
           </div>
         </button>
       </template>
