@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onActivated } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import IconButton from './IconButton.vue';
@@ -137,7 +137,9 @@ watch(monthOffset, () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(loadMonth, MONTH_CHANGE_DEBOUNCE_MS);
 });
-onMounted(loadMonth);
+// onActivated (no onMounted): MonthlyTracker vive dentro de DashboardView, que
+// queda en keep-alive (App.vue) — dispara el refresh de fondo al volver al tab.
+onActivated(loadMonth);
 
 // Actualizacion optimista al registrar lectura hoy: evita un round-trip solo para
 // marcar un check que ya sabemos que es cierto (si se esta viendo el mes actual).

@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onActivated } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AppPage from '../components/AppPage.vue';
 import BadgesCircles from '../components/BadgesCircles.vue';
@@ -102,7 +102,8 @@ const router = useRouter();
 // mismo guard anti-duplicados que Dashboard, asi que si Dashboard ya pidio el estado
 // hace poco, esto no vuelve a golpear la API.
 const { refreshProfile } = useCurrentUser();
-onMounted(() => refreshProfile());
+// onActivated (no onMounted): ProfileView queda en keep-alive (App.vue).
+onActivated(() => refreshProfile());
 
 const followList = useFollowListPanel(route, router);
 

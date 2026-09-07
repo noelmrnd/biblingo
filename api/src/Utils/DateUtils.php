@@ -47,8 +47,8 @@ class DateUtils {
     }
 
     /**
-     * Etiqueta amigable ('Hoy', 'Ayer', 'Sin racha' o DD/MM/YYYY) para una fecha 'Y-m-d',
-     * comparada contra el hoy/ayer del dueño de esa fecha (no del viewer).
+     * Etiqueta amigable ('Hoy', 'Ayer', 'Antier', 'Sin racha' o DD/MM/YYYY) para una
+     * fecha 'Y-m-d', comparada contra el hoy/ayer del dueño de esa fecha (no del viewer).
      */
     public static function formatReadDateLabel(?string $readDate, string $today, string $yesterday): string {
         if (empty($readDate)) {
@@ -59,6 +59,10 @@ class DateUtils {
         }
         if ($readDate === $yesterday) {
             return 'Ayer';
+        }
+        $dayBeforeYesterday = (new \DateTime($yesterday))->modify('-1 day')->format('Y-m-d');
+        if ($readDate === $dayBeforeYesterday) {
+            return 'Antier';
         }
         return implode('/', array_reverse(explode('-', $readDate)));
     }

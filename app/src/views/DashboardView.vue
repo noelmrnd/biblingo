@@ -32,7 +32,7 @@ let lastLoadedUserId = null;
 </script>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onActivated } from 'vue';
 import { BookOpen } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import ReadingButton from '../components/ReadingButton.vue';
@@ -100,7 +100,10 @@ const loadReadingStatus = async () => {
   }
 };
 
-onMounted(() => {
+// onActivated (no onMounted): DashboardView queda en keep-alive (App.vue), asi
+// que tras la primera vez esto es lo que dispara el refresh en segundo plano
+// cada vez que se vuelve a este tab.
+onActivated(() => {
   loadReadingStatus();
 });
 </script>

@@ -16,14 +16,23 @@
       <!-- Tour de Bienvenida Inicial Autónomo (Onboarding) -->
       <OnboardingTour ref="tourRef" />
 
-      <!-- Cada vista trae su propio AppPage, que ya incluye el header que le corresponde -->
-      <router-view
-        :user="currentUser"
-        @user-updated="onUserUpdated"
-        @logout="onLogout"
-        @delete-account="onDeleteAccount"
-        @open-tour="tourRef?.open"
-      />
+      <!-- Cada vista trae su propio AppPage, que ya incluye el header que le corresponde.
+           KeepAlive solo en los 3 tabs principales: evita destruir/recrear el DOM (con el
+           parpadeo del logo del header incluido) al ir y volver entre Racha/Amigos/Perfil.
+           Perfil de amigo y Ajustes quedan afuera a proposito, son pantallas de detalle que
+           no queremos acumular en memoria indefinidamente. -->
+      <router-view v-slot="{ Component }">
+        <keep-alive include="DashboardView,FriendsView,ProfileView">
+          <component
+            :is="Component"
+            :user="currentUser"
+            @user-updated="onUserUpdated"
+            @logout="onLogout"
+            @delete-account="onDeleteAccount"
+            @open-tour="tourRef?.open"
+          />
+        </keep-alive>
+      </router-view>
 
       <!-- Bottom Navigation Bar Gamificada (Flex Fixed Bottom) -->
       <BottomNav />

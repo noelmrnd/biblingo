@@ -41,7 +41,7 @@
         </div>
       </template>
       <p v-if="selected" class="text-slate-400 text-sm font-medium">
-        {{ selected.earnedAt ? `Ganado el ${selected.earnedAt.slice(0, 10)}` : 'Todavía no lo ganas' }}
+        {{ selected.earnedAt ? `Ganado el ${formatDateDMY(selected.earnedAt)}` : 'Todavía no lo ganas' }}
       </p>
     </AppModal>
   </ExpandableCard>
@@ -52,6 +52,7 @@ import { ref, computed } from 'vue';
 import { Medal } from '@lucide/vue';
 import ExpandableCard from './ExpandableCard.vue';
 import AppModal from './AppModal.vue';
+import { formatDateDMY } from '../utils/dateFormatter';
 import { BADGES } from '../constants';
 import { HapticsService } from '../services/haptics';
 

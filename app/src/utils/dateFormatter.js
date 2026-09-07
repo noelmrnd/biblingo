@@ -18,6 +18,19 @@ export function toLocalDateString(dateInput = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Formatea una fecha 'YYYY-MM-DD' (o con hora, ej. ISO) como 'DD/MM/YYYY'.
+ *
+ * @param {string|null} dateInput
+ * @returns {string} Fecha en formato 'DD/MM/YYYY' o '' si es invalida.
+ */
+export function formatDateDMY(dateInput) {
+  if (!dateInput) return '';
+  const [year, month, day] = dateInput.slice(0, 10).split('-');
+  if (!year || !month || !day) return '';
+  return `${day}/${month}/${year}`;
+}
+
 const MONTH_NAMES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
 /**

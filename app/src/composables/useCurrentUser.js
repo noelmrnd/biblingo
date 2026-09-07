@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { ApiService } from '../services/api';
+import { monthCache } from '../utils/monthlyCalendarCache';
 
 // Singleton a nivel de modulo: todas las vistas que llamen a useCurrentUser()
 // comparten la misma referencia, en vez de que cada una guarde su propia copia
@@ -27,10 +28,15 @@ export function useCurrentUser() {
     }
   };
 
+  // Cierra sesion o falla la restauracion: limpiar tambien monthCache
+  // (module-scope, sobrevive a unmounts a proposito — por eso no se limpia
+  // solo con desmontar MonthlyTracker) para que el siguiente login en el
+  // mismo dispositivo no arrastre el calendario del usuario anterior.
   const clearUser = () => {
     sessionEpoch++;
     user.value = null;
     lastFullRefresh = 0;
+    monthCache.clear();
   };
 
   /**

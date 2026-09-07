@@ -51,11 +51,11 @@
             <button
               v-if="!friend.is_self && friend.is_mutual && !friend.has_read_today"
               @click.stop="() => { HapticsService.light(); nudge.sendNudge(friend.id, friend.display_name); }"
-              :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
+              :disabled="friend.nudged_today || nudge.nudged[friend.id] || nudge.loading[friend.id]"
               class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
             >
               <BellRing class="w-4 h-4 stroke-[2.5]" />
-              <span>{{ nudge.nudged[friend.id] ? 'Enviado' : 'Toque' }}</span>
+              <span>{{ (friend.nudged_today || nudge.nudged[friend.id]) ? 'Enviado' : 'Toque' }}</span>
             </button>
 
             <!-- Badge de Racha Unificado -->
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import SwipeItem from './SwipeItem.vue';
 import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
@@ -174,7 +174,14 @@ const confirmRemoveFriend = async () => {
   }
 };
 
-onMounted(() => {
+// onActivated (no onMounted): StreakRanking vive dentro de FriendsView, que
+// queda en keep-alive (App.vue) — el componente nunca se destruye entre tabs,
+// asi que friends.value ya trae los datos de la visita anterior (pintado
+// instantaneo gratis) y esto solo dispara el refresh en segundo plano.
+onActivated(() => {
+  if (friends.value.length > 0) {
+    emit('friends-loaded', friends.value.filter(f => !f.is_self).length);
+  }
   loadFriends();
 });
 
