@@ -13,7 +13,7 @@
 
         <button
           type="button"
-          @click="isRulesModalOpen = true"
+          @click="() => { HapticsService.light(); isRulesModalOpen = true; }"
           class="flex items-center gap-2 cursor-pointer"
           aria-label="Cómo funciona la racha"
         >
@@ -34,7 +34,7 @@
       <template v-else>
         <button
           type="button"
-          @click="router.push(backTo)"
+          @click="() => { HapticsService.light(); router.push(backTo); }"
           class="w-8 h-8 -ml-1 flex items-center justify-center text-slate-300 hover:text-white rounded-full transition-colors cursor-pointer"
           aria-label="Volver"
         >
@@ -65,6 +65,7 @@ import { ArrowLeft } from '@lucide/vue';
 import { keyboardHeight } from '../utils/keyboard';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import AppRulesModal from './AppRulesModal.vue';
+import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
   // true: header global (logo + racha). false: header propio con title/backTo.

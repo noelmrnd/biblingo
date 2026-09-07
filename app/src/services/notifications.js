@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { ApiService } from './api';
 import { StorageService } from './storage';
 import { ToastService } from './toast';
+import { HapticsService } from './haptics';
 
 export const NotificationService = {
   /**
@@ -77,6 +78,7 @@ export const NotificationService = {
         const title = notification.title || '📖 Biblingo';
         const body = notification.body || '¡Tienes una nueva notificación!';
         ToastService.info(`${title}: ${body}`);
+        HapticsService.light();
       });
 
       // Escuchar al tocar una notificación Push desde la barra de estado
@@ -229,6 +231,7 @@ export const NotificationService = {
         const title = notification.title || '📖 Biblingo';
         const body = notification.body || '¡Recordatorio de lectura!';
         ToastService.info(`${title}: ${body}`);
+        HapticsService.light();
       });
 
       await LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {

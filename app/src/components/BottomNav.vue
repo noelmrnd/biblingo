@@ -5,7 +5,7 @@
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
-        @click="router.push(tab.to)"
+        @click="handleTabClick(tab)"
         :class="[
           isActive(tab)
             ? tab.activeColor
@@ -41,6 +41,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, UsersRound, UserRound } from '@lucide/vue';
+import { HapticsService } from '../services/haptics';
 
 const route = useRoute();
 const router = useRouter();
@@ -76,5 +77,10 @@ const tabs = [
 
 const isActive = (tab) => {
   return (tab.matchNames || [tab.id]).includes(route.name);
+};
+
+const handleTabClick = (tab) => {
+  if (!isActive(tab)) HapticsService.light();
+  router.push(tab.to);
 };
 </script>

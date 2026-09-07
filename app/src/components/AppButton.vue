@@ -2,6 +2,7 @@
   <button
     :type="type"
     :disabled="disabled || readonly || loading"
+    @click="handleClick"
     :class="[
       'font-extrabold rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 inline-flex items-center justify-center gap-2 cursor-pointer select-none box-border',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
@@ -18,6 +19,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
   color: {
@@ -51,6 +53,11 @@ const props = defineProps({
     default: false
   }
 });
+
+const handleClick = () => {
+  if (props.disabled || props.readonly || props.loading) return;
+  HapticsService.light();
+};
 
 const sizeClasses = computed(() => {
   switch (props.size) {

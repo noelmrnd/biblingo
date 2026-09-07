@@ -13,7 +13,7 @@
         v-for="badge in badges"
         :key="badge.id"
         type="button"
-        @click="selected = badge"
+        @click="selectBadge(badge)"
         class="flex flex-col items-center gap-1.5 cursor-pointer"
       >
         <div
@@ -53,6 +53,7 @@ import { Medal } from '@lucide/vue';
 import ExpandableCard from './ExpandableCard.vue';
 import AppModal from './AppModal.vue';
 import { BADGES } from '../constants';
+import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
   // Array {badge_id, earned_at} tal cual devuelve el backend.
@@ -60,6 +61,11 @@ const props = defineProps({
 });
 
 const selected = ref(null);
+
+const selectBadge = (badge) => {
+  HapticsService.light();
+  selected.value = badge;
+};
 
 const badges = computed(() => {
   const earnedMap = new Map(props.earnedBadges.map((b) => [b.badge_id, b.earned_at]));

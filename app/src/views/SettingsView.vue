@@ -171,37 +171,40 @@
 
     <!-- Botones de Acción -->
     <div class="space-y-3">
-      <button
+      <SettingsActionButton
+        :icon="Star"
+        class="hover:border-amber-400/50 [&_svg]:text-amber-400 [&_svg]:fill-amber-400"
         @click="rateApp"
-        class="w-full bg-slate-800/90 hover:bg-slate-700/80 text-slate-300 hover:text-white font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-amber-400/50 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
-        <Star class="w-5 h-5 text-amber-400 fill-amber-400 stroke-[2.5]" />
-        <span>Calificar la aplicación</span>
-      </button>
+        Calificar la aplicación
+      </SettingsActionButton>
 
-      <button
+      <SettingsActionButton
+        :icon="MessageSquarePlus"
+        class="hover:border-sky-400/50 [&_svg]:text-sky-400"
         @click="isFeedbackModalOpen = true"
-        class="w-full bg-slate-800/90 hover:bg-slate-700/80 text-slate-300 hover:text-white font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-sky-400/50 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
-        <MessageSquarePlus class="w-5 h-5 text-sky-400 stroke-[2.5]" />
-        <span>Enviar sugerencia</span>
-      </button>
+        Enviar sugerencia
+      </SettingsActionButton>
 
-      <button
+      <SettingsActionButton
+        :icon="LogOut"
+        variant="danger"
+        haptic="warning"
+        class="[&_svg]:text-rose-400"
         @click="isLogoutModalOpen = true"
-        class="w-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-700 hover:border-rose-800 transition-colors text-base flex items-center justify-center gap-3 cursor-pointer"
       >
-        <LogOut class="w-5 h-5 text-rose-400 stroke-[2.5]" />
-        <span>Cerrar sesión</span>
-      </button>
+        Cerrar sesión
+      </SettingsActionButton>
 
-      <button
+      <SettingsActionButton
+        :icon="Trash2"
+        variant="danger-subtle"
+        haptic="warning"
         @click="isDeleteAccountModalOpen = true"
-        class="w-full bg-transparent hover:bg-rose-950/20 text-rose-500/70 hover:text-rose-400 font-bold py-3 px-4 rounded-2xl border-2 border-transparent transition-colors text-sm flex items-center justify-center gap-2.5 cursor-pointer"
       >
-        <Trash2 class="w-4 h-4 stroke-[2.5]" />
-        <span>Eliminar cuenta</span>
-      </button>
+        Eliminar cuenta
+      </SettingsActionButton>
 
       <div>
         <a
@@ -256,6 +259,7 @@ import AppButton from '../components/AppButton.vue';
 import AppToggle from '../components/AppToggle.vue';
 import ConfirmActionModal from '../components/ConfirmActionModal.vue';
 import ExpandableCard from '../components/ExpandableCard.vue';
+import SettingsActionButton from '../components/SettingsActionButton.vue';
 import FeedbackModal from '../components/FeedbackModal.vue';
 import { NotificationService } from '../services/notifications';
 import { ApiService } from '../services/api';

@@ -6,23 +6,21 @@
         <span>{{ monthLabel }}</span>
       </h3>
       <div class="flex items-center gap-1">
-        <button
-          type="button"
+        <IconButton
+          size="sm"
           @click="monthOffset--"
-          class="p-1.5 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
           aria-label="Mes anterior"
         >
           <ChevronLeft class="w-5 h-5 stroke-[2.5]" />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
+          size="sm"
           @click="monthOffset++"
           :disabled="monthOffset >= 0"
-          class="p-1.5 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400"
           aria-label="Mes siguiente"
         >
           <ChevronRight class="w-5 h-5 stroke-[2.5]" />
-        </button>
+        </IconButton>
       </div>
     </div>
     <div class="grid grid-cols-7 gap-1.5 text-center">
@@ -56,6 +54,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { ApiService } from '../services/api';
+import IconButton from './IconButton.vue';
 import { toLocalDateString } from '../utils/dateFormatter';
 import { monthCache } from '../utils/monthlyCalendarCache';
 

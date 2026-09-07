@@ -11,14 +11,13 @@
       @open-following="followList.open('following')"
     >
       <template #corner>
-        <button
-          type="button"
+        <IconButton
           @click="router.push({ name: 'profile-settings' })"
-          class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+          class="absolute top-4 right-4"
           aria-label="Configuración"
         >
           <Settings class="w-6 h-6 stroke-[2.5]" />
-        </button>
+        </IconButton>
       </template>
     </ProfileHeader>
 
@@ -83,6 +82,7 @@ import AppPage from '../components/AppPage.vue';
 import BadgesCircles from '../components/BadgesCircles.vue';
 import FollowListModal from '../components/FollowListModal.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
+import IconButton from '../components/IconButton.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
 import { Flame, Zap, Settings, BookOpenCheck, Shield } from '@lucide/vue';
 import StatCard from '../components/StatCard.vue';

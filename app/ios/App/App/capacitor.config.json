@@ -48,6 +48,7 @@
 	"packageClassList": [
 		"InAppReviewPlugin",
 		"AppPlugin",
+		"HapticsPlugin",
 		"KeyboardPlugin",
 		"LocalNotificationsPlugin",
 		"PreferencesPlugin",

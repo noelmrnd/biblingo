@@ -11,13 +11,13 @@
             <div class="flex-shrink-0 pb-2 space-y-3">
               <div class="flex items-start justify-between gap-3">
                 <h3 class="text-xl text-white font-black">{{ displayName }}</h3>
-                <button
+                <IconButton
                   @click="onClose"
-                  class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+                  class="-mr-1 -mt-1"
                   aria-label="Cerrar"
                 >
                   <X class="w-5 h-5 stroke-[2.5]" />
-                </button>
+                </IconButton>
               </div>
 
               <!-- Segmented Control Seguidores / Seguidos -->
@@ -88,6 +88,7 @@
 import { ref, computed, watch } from 'vue';
 import { X, UsersRound, Flame } from '@lucide/vue';
 import { ApiService } from '../services/api';
+import IconButton from './IconButton.vue';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },

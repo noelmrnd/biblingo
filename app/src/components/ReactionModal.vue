@@ -21,14 +21,14 @@
                   Elige tu reacción sobre lo que leíste hoy:
                 </p>
               </div>
-              <button
+              <IconButton
                 @click="onClose"
                 :disabled="loading"
-                class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer disabled:opacity-50"
+                class="-mr-1 -mt-1"
                 aria-label="Cerrar"
               >
                 <X class="w-5 h-5 stroke-[2.5]" />
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -98,6 +98,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
+import IconButton from './IconButton.vue';
 import { X, Check, BookOpen } from '@lucide/vue';
 import { READING_REACTIONS } from '../constants';
 

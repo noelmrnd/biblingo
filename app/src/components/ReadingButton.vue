@@ -43,6 +43,7 @@ import { ApiService } from '../services/api';
 import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
 import { StorageService } from '../services/storage';
+import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -73,6 +74,7 @@ const handleReactionConfirmed = async (reaction) => {
       // Efecto Confeti 🎉 (mas grande y en varias rafagas si gano alguna medalla,
       // para que se sienta distinto a un dia cualquiera)
       if (res.new_badges?.length > 0) {
+        HapticsService.heavy();
         const burst = (particleCount, angle, originX) => confetti({
           particleCount,
           spread: 100,
@@ -84,6 +86,7 @@ const handleReactionConfirmed = async (reaction) => {
         burst(120, 120, 0.8);
         setTimeout(() => burst(140, 90, 0.5), 200);
       } else {
+        HapticsService.medium();
         confetti({
           particleCount: 100,
           spread: 70,

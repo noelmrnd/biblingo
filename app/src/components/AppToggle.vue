@@ -4,7 +4,7 @@
     role="switch"
     :aria-checked="modelValue"
     :disabled="disabled"
-    @click="$emit('update:modelValue', !modelValue)"
+    @click="handleClick"
     :class="modelValue ? 'bg-brand-green' : 'bg-slate-700'"
     class="relative w-12 h-7 rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
   >
@@ -16,10 +16,17 @@
 </template>
 
 <script setup>
-defineProps({
+import { HapticsService } from '../services/haptics';
+
+const props = defineProps({
   modelValue: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false }
 });
 
-defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);
+
+const handleClick = () => {
+  HapticsService.light();
+  emit('update:modelValue', !props.modelValue);
+};
 </script>

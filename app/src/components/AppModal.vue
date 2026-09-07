@@ -28,15 +28,15 @@
                       </p>
                     </div>
                   </div>
-                  <button
+                  <IconButton
                     v-if="showClose"
                     @click="onClose"
                     :disabled="loading"
-                    class="p-2 -mr-1 -mt-1 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
+                    class="-mr-1 -mt-1 flex-shrink-0"
                     aria-label="Cerrar"
                   >
                     <X class="w-5 h-5 stroke-[2.5]" />
-                  </button>
+                  </IconButton>
                 </div>
               </slot>
             </div>
@@ -60,6 +60,7 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { X } from '@lucide/vue';
+import IconButton from './IconButton.vue';
 
 const props = defineProps({
   isOpen: {

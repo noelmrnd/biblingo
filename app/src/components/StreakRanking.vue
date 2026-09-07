@@ -50,7 +50,7 @@
             <!-- Botón Dar un Toque (Solo visible para amigos que no han leído hoy) -->
             <button
               v-if="!friend.is_self && friend.is_mutual && !friend.has_read_today"
-              @click.stop="nudge.sendNudge(friend.id, friend.display_name)"
+              @click.stop="() => { HapticsService.light(); nudge.sendNudge(friend.id, friend.display_name); }"
               :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
               class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
             >
@@ -102,6 +102,7 @@ import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { useNudge } from '../composables/useNudge';
 import { useAsyncAction } from '../composables/useAsyncAction';
+import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
   user: { type: Object, required: true }
