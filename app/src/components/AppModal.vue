@@ -4,12 +4,13 @@
       <div
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4"
+        :style="keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined"
         @click.self="onBackdropClick"
       >
         <!-- Sheet / Modal Card -->
         <div
-          :class="[maxWidth]"
-          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full pb-safe-cond flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
+          :class="[maxWidth, keyboardHeight === 0 ? 'pb-safe-cond' : '']"
+          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
         >
           <div class="p-5 flex flex-col flex-1 min-h-0">
 
@@ -42,7 +43,11 @@
             </div>
 
             <!-- Body / Contenido Principal -->
-            <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 no-scrollbar overscroll-contain">
+            <!-- px-2 -mx-2 se cancelan visualmente (mismo elemento) pero abren un buffer
+                 de 8px dentro del contenedor con overflow-y-auto, para que un ring/scale
+                 de un hijo (ej. item seleccionado en ReactionModal) no se recorte contra
+                 el borde del scroll — overflow-x queda clippeado igual por el overflow-y. -->
+            <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 px-2 -mx-2 no-scrollbar overscroll-contain">
               <slot />
             </div>
 
@@ -61,6 +66,7 @@
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { X } from '@lucide/vue';
 import IconButton from './IconButton.vue';
+import { keyboardHeight } from '../utils/keyboard';
 
 const props = defineProps({
   isOpen: {

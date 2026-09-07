@@ -7,7 +7,7 @@
         @click.self="onClose"
       >
         <div class="modal-card bg-slate-900 sm:border border-slate-700/80 sm:rounded-3xl shadow-2xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[85vh] pt-safe-cond pb-safe-cond flex flex-col overflow-hidden">
-          <div class="px-5 flex flex-col flex-1 min-h-0">
+          <div class="p-5 flex flex-col flex-1 min-h-0">
             <div class="flex-shrink-0 pb-2 space-y-3">
               <div class="flex items-start justify-between gap-3">
                 <h3 class="text-xl text-white font-black">{{ displayName }}</h3>
