@@ -8,7 +8,7 @@
       >
         <!-- Sheet / Modal Card -->
         <div
-          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md p-5 pb-safe flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
+          class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md p-5 pb-safe-cond flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
         >
           <!-- Header (Fijo arriba) -->
           <div class="flex-shrink-0 pb-2">

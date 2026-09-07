@@ -11,7 +11,7 @@
           :class="[maxWidth]"
           class="modal-card bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full pb-safe-cond flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden"
         >
-          <div class="p-5">
+          <div class="p-5 flex flex-col flex-1 min-h-0">
 
             <!-- Header (Fijo arriba si hay título, icono o slot header) -->
             <div v-if="$slots.header || title || $slots.icon" class="flex-shrink-0 pb-6">
