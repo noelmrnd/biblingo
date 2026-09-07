@@ -13,7 +13,6 @@ use Biblingo\Events\FriendAddedEvent;
 use Biblingo\Events\FriendNudgedEvent;
 use Biblingo\Services\DomainEventStore;
 use Biblingo\Utils\DateUtils;
-use Biblingo\Utils\RateLimiter;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
 
@@ -176,13 +175,6 @@ class FriendController {
     }
 
     public static function nudgeFriend(string $userId) {
-        // El limite de "1 toque por amigo por dia" ya lo impone friend_nudges, pero
-        // no frena a alguien con muchos amigos mandando decenas en rafaga. Tope aparte
-        // por volumen total.
-        if (!RateLimiter::allow('nudge', $userId, 3600, 30)) {
-            sendJsonResponse(['error' => 'Enviaste demasiados toques. Espera un momento.'], 429);
-        }
-
         $input = getJsonInput();
         $friendId = $input['friend_id'] ?: null;
 

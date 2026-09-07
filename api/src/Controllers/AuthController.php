@@ -10,7 +10,6 @@ use Biblingo\Entities\UserEntity;
 use Biblingo\Utils\Auth;
 use Biblingo\Utils\DateUtils;
 use Biblingo\Utils\JwtVerifier;
-use Biblingo\Utils\RateLimiter;
 use Biblingo\Utils\SnowflakeId;
 use Biblingo\Utils\StreakUtils;
 
@@ -24,14 +23,6 @@ class AuthController {
     private const APPLE_AUDIENCES = ['me.biblingo.app', 'me.biblingo.app.service'];
 
     public static function handleSocialAuth() {
-        // Por IP, no por usuario: antes de verificar nada todavia no sabemos quien es.
-        // Frena fuerza bruta contra el login (incluido el panel "dev") sin bloquear
-        // a un usuario legitimo que solo tuvo un par de intentos fallidos.
-        $clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        if (!RateLimiter::allow('auth_social', $clientIp, 60, 20)) {
-            sendJsonResponse(['error' => 'Demasiados intentos. Espera un momento e intenta de nuevo.'], 429);
-        }
-
         $input = getJsonInput();
         $provider    = $input['provider'] ?? '';
         $idToken     = (string)($input['id_token'] ?? '');
