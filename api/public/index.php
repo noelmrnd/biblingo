@@ -6,11 +6,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 
-use Biblingo\Controllers\AuthController;
-use Biblingo\Controllers\FriendController;
-use Biblingo\Controllers\ReadingController;
-use Biblingo\Controllers\UserController;
-use Biblingo\Utils\Auth;
+use Libringo\Controllers\AuthController;
+use Libringo\Controllers\FriendController;
+use Libringo\Controllers\ReadingController;
+use Libringo\Controllers\UserController;
+use Libringo\Utils\Auth;
 
 // Cualquier error/excepcion no capturada devuelve JSON en vez del HTML por
 // defecto de PHP (que expone stack traces con rutas del servidor al cliente).
@@ -109,6 +109,6 @@ if (isset($routes[$routeKey])) {
     sendJsonResponse([
         'error' => 'Ruta no encontrada',
         'uri'   => $requestUri,
-        'app'   => 'Biblingo API v1.0'
+        'app'   => 'Libringo API v1.0'
     ], 404);
 }

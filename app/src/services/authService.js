@@ -107,7 +107,7 @@ export const AuthService = {
     return await ApiService.socialLogin({
       provider: 'dev',
       id_token: devId,
-      email: `${devId}@app.biblingo.me`,
+      email: `${devId}@app.libringo.com`,
       display_name: cleanName,
       platform: Capacitor.getPlatform() || 'web'
     });

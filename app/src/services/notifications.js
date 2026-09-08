@@ -75,7 +75,7 @@ export const NotificationService = {
       // Escuchar cuando llega una notificación Push estando la app en primer plano
       await PushNotifications.addListener('pushNotificationReceived', (notification) => {
         console.log('[PushReceived]', notification);
-        const title = notification.title || '📖 Biblingo';
+        const title = notification.title || '📖 Libringo';
         const body = notification.body || '¡Tienes una nueva notificación!';
         ToastService.info(`${title}: ${body}`);
         HapticsService.light();
@@ -134,7 +134,7 @@ export const NotificationService = {
       const messages = [
         `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
         'Dedica 10 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
-        '¡Un capítulo al día marca la diferencia! Entra a Biblingo. ✨',
+        '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
         `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
         'El conocimiento te espera. Lee 5 minutos hoy. 📕',
         '¡Casi completas tu semana perfecta de lectura! 🎯',
@@ -145,7 +145,7 @@ export const NotificationService = {
         const scheduleDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0);
         const isTodayReminder = includeToday && dayOffset === 0;
 
-        let title = '📖 Biblingo: Recordatorio diario';
+        let title = '📖 Libringo: Recordatorio diario';
         let body;
         if (isTodayReminder) {
           title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
@@ -228,7 +228,7 @@ export const NotificationService = {
     try {
       await LocalNotifications.addListener('localNotificationReceived', (notification) => {
         console.log('[LocalNotificationReceived]', notification);
-        const title = notification.title || '📖 Biblingo';
+        const title = notification.title || '📖 Libringo';
         const body = notification.body || '¡Recordatorio de lectura!';
         ToastService.info(`${title}: ${body}`);
         HapticsService.light();
@@ -266,7 +266,7 @@ export const NotificationService = {
         notifications: [
           {
             id: notifId,
-            title: '📖 Biblingo: Notificación de prueba',
+            title: '📖 Libringo: Notificación de prueba',
             body: '¡Las notificaciones funcionan perfectamente! 🎉 Tu libro te espera hoy.',
             schedule: { at: scheduleDate },
             sound: 'beep.wav',

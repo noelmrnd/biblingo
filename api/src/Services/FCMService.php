@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Services;
+namespace Libringo\Services;
 
-use Biblingo\Entities\PushTokenEntity;
+use Libringo\Entities\PushTokenEntity;
 
 class FCMService {
     private static ?string $cachedAccessToken = null;
@@ -44,7 +44,7 @@ class FCMService {
      */
     private static function getAccessToken(array $serviceAccount): ?string {
         $now = time();
-        $cacheFile = sys_get_temp_dir() . '/biblingo_fcm_token.json';
+        $cacheFile = sys_get_temp_dir() . '/libringo_fcm_token.json';
 
         // 1. Reutilizar token en memoria si aún es válido
         if (self::$cachedAccessToken !== null && $now < (self::$tokenExpiresAt - 60)) {

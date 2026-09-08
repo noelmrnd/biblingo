@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "35KW5KGTS6.me.biblingo.app",
+        "appID": "35KW5KGTS6.com.libringo.app",
         "paths": [ "/invite/*", "/*" ]
       }
     ]

@@ -19,12 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links: replica dominios asociados de iOS (applinks:app.biblingo.me) -->
+            <!-- App Links: replica dominios asociados de iOS (applinks:app.libringo.com) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="app.biblingo.me" />
+                <data android:scheme="https" android:host="app.libringo.com" />
             </intent-filter>
 
             <!-- Custom URL scheme: replica CFBundleURLSchemes de iOS -->
@@ -32,7 +32,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="me.biblingo.app" />
+                <data android:scheme="com.libringo.app" />
             </intent-filter>
         </activity>
 

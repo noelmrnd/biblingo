@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Services;
+namespace Libringo\Services;
 
-use Biblingo\Entities\UserEntity;
+use Libringo\Entities\UserEntity;
 
 class DomainEventProcessor {
     /**
@@ -60,7 +60,7 @@ class DomainEventProcessor {
 
     private static function handleFriendAdded(array $payload): void {
         $receiverId = $payload['receiver_id'] ?? null;
-        $title      = $payload['notification_title'] ?? '¡Nuevo Amigo en Biblingo! 🎉';
+        $title      = $payload['notification_title'] ?? '¡Nuevo Amigo en Libringo! 🎉';
         $body       = $payload['notification_body'] ?? 'Alguien te ha agregado a sus amigos.';
         $data       = $payload['notification_data'] ?? ['type' => 'new_follower'];
 

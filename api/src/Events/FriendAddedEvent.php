@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Events;
+namespace Libringo\Events;
 
 class FriendAddedEvent extends DomainEvent {
     private string $userId;
@@ -51,7 +51,7 @@ class FriendAddedEvent extends DomainEvent {
             'sender_id'          => $this->userId,
             'receiver_id'        => $this->friendId,
             'sender_name'        => $this->userDisplayName,
-            'notification_title' => '¡Nuevo seguidor en Biblingo! 🎉',
+            'notification_title' => '¡Nuevo seguidor en Libringo! 🎉',
             'notification_body'  => "{$this->userDisplayName} empezó a seguirte. ¡Compite por la mejor racha!",
             'notification_data'  => [
                 'type'    => 'new_follower',

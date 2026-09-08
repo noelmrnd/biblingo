@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Services;
+namespace Libringo\Services;
 
-use Biblingo\Events\DomainEvent;
+use Libringo\Events\DomainEvent;
 
 class DomainEventStore {
     /**

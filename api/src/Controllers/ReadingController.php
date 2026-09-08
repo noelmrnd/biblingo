@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Controllers;
+namespace Libringo\Controllers;
 
-use Biblingo\Entities\BadgeEntity;
-use Biblingo\Entities\ReadingLogEntity;
-use Biblingo\Entities\UserEntity;
-use Biblingo\Utils\DateUtils;
-use Biblingo\Utils\SnowflakeId;
-use Biblingo\Utils\StreakUtils;
+use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\ReadingLogEntity;
+use Libringo\Entities\UserEntity;
+use Libringo\Utils\DateUtils;
+use Libringo\Utils\SnowflakeId;
+use Libringo\Utils\StreakUtils;
 
 class ReadingController {
     public static function getStatus(string $userId) {

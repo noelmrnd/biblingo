@@ -7,10 +7,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 
-use Biblingo\Services\FCMService;
+use Libringo\Services\FCMService;
 
 echo "=================================================\n";
-echo "🔔 Biblingo - Diagnóstico y Prueba de Notificaciones Push\n";
+echo "🔔 Libringo - Diagnóstico y Prueba de Notificaciones Push\n";
 echo "=================================================\n\n";
 
 // 1. Verificar credenciales de Firebase
@@ -77,7 +77,7 @@ if (!$targetUserId) {
 echo "🚀 Enviando notificación Push de prueba al usuario ID: {$targetUserId}...\n";
 $success = FCMService::sendPushNotificationToUser(
     (string)$targetUserId,
-    '📖 Biblingo: Notificación de prueba',
+    '📖 Libringo: Notificación de prueba',
     '¡La conexión Push del servidor está funcionando al 100%! 🔥 Tu hábito de lectura sigue firme.',
     [
         'type' => 'test_notification',

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Services;
+namespace Libringo\Services;
 
-use Biblingo\Entities\BadgeEntity;
-use Biblingo\Entities\FollowEntity;
-use Biblingo\Entities\FriendNudgeEntity;
+use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\FollowEntity;
+use Libringo\Entities\FriendNudgeEntity;
 
 /**
  * Reacciona a eventos de dominio para otorgar medallas. Desacoplado a

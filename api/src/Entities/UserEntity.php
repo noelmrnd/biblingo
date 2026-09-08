@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Entities;
+namespace Libringo\Entities;
 
 /** Acceso a datos de la tabla `users`. Toda query SQL sobre usuarios vive aqui. */
 class UserEntity {

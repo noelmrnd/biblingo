@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Controllers;
+namespace Libringo\Controllers;
 
-use Biblingo\Entities\FeedbackEntity;
-use Biblingo\Entities\PushTokenEntity;
-use Biblingo\Entities\UserEntity;
-use Biblingo\Utils\DateUtils;
-use Biblingo\Utils\SnowflakeId;
-use Biblingo\Utils\StreakUtils;
+use Libringo\Entities\FeedbackEntity;
+use Libringo\Entities\PushTokenEntity;
+use Libringo\Entities\UserEntity;
+use Libringo\Utils\DateUtils;
+use Libringo\Utils\SnowflakeId;
+use Libringo\Utils\StreakUtils;
 
 class UserController {
     /**

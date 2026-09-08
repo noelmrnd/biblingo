@@ -7,13 +7,13 @@
     <div class="max-w-md w-full flex flex-col items-center z-10 space-y-8">
       <!-- Logo y Mascota -->
       <div class="w-32 h-32 flex items-center justify-center">
-        <img src="/assets/logo-256.png" alt="Biblingo Logo" class="w-full h-full object-contain select-none animate-bounce-short drop-shadow-2xl" />
+        <img src="/assets/logo-256.png" alt="Libringo Logo" class="w-full h-full object-contain select-none animate-bounce-short drop-shadow-2xl" />
       </div>
 
       <!-- Título y Eslogan -->
       <div class="space-y-2">
         <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-          Biblingo
+          Libringo
         </h1>
         <p class="text-slate-300 text-lg font-semibold tracking-wide">
           Lectura entre amigos

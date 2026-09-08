@@ -4,25 +4,25 @@ export const IS_DEV = import.meta.env.DEV === true;
 
 export const API_BASE_URL = IS_DEV
   ? `http://${window.location.hostname}:8084/api`
-  : 'https://app.biblingo.me/api';
+  : 'https://app.libringo.com/api';
 
-export const GOOGLE_CLIENT_ID = '56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = '18709132885-b03ocies3hbsl9rffeutm4rjjmvl9sna.apps.googleusercontent.com';
 
-export const GOOGLE_IOS_CLIENT_ID = '56637027170-5bckf6oali35ir6m2qisr9urm5qknncg.apps.googleusercontent.com';
+export const GOOGLE_IOS_CLIENT_ID = '18709132885-mpnr2j14sejtat54rknuecv5b7hnpm8j.apps.googleusercontent.com';
 
 export const getAppleConfig = (platform) => {
   const isNativeIOS = platform === 'ios';
 
   return {
-    clientId: isNativeIOS ? 'me.biblingo.app' : 'me.biblingo.app.service',
+    clientId: isNativeIOS ? 'com.libringo.app' : 'com.libringo.app.service',
     redirectUrl: isNativeIOS ? '' : `${API_BASE_URL}/auth/apple/callback`,
   };
 };
 
 export const APP_CONFIG = {
-  name: 'Biblingo',
-  prodWebUrl: 'https://biblingo.me',
-  prodAppUrl: 'https://app.biblingo.me',
+  name: 'Libringo',
+  prodWebUrl: 'https://libringo.com',
+  prodAppUrl: 'https://app.libringo.com',
   isDev: IS_DEV,
   isNativeIOS: Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios',
   apiBaseUrl: API_BASE_URL,
@@ -46,14 +46,14 @@ export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id
 // label: corto, para chips/circulos. description: se muestra solo al abrir el
 // detalle (modal), puede ser mas largo/explicativo.
 export const BADGES = [
-  { id: 'streak_1', category: 'streak', threshold: 1, emoji: '📖', label: 'Primera lectura', description: '¡Registraste tu primera lectura en Biblingo!' },
+  { id: 'streak_1', category: 'streak', threshold: 1, emoji: '📖', label: 'Primera lectura', description: '¡Registraste tu primera lectura en Libringo!' },
   { id: 'streak_7', category: 'streak', threshold: 7, emoji: '🥉', label: 'Semana completa', description: 'Completaste 7 días seguidos de racha.' },
   { id: 'streak_30', category: 'streak', threshold: 30, emoji: '🥈', label: 'Un mes de racha', description: '30 días seguidos leyendo. ¡Constancia total!' },
   { id: 'streak_100', category: 'streak', threshold: 100, emoji: '🥇', label: 'Imparable', description: '100 días de racha. Pocos llegan tan lejos.' },
   { id: 'streak_365', category: 'streak', threshold: 365, emoji: '👑', label: 'Leyenda', description: 'Un año entero leyendo todos los días.' },
-  { id: 'following_1', category: 'following', threshold: 1, emoji: '👋', label: 'Primer amigo', description: 'Seguiste a tu primera persona en Biblingo.' },
-  { id: 'following_5', category: 'following', threshold: 5, emoji: '🤝', label: 'Sigues a 5', description: 'Ya sigues a 5 personas en Biblingo.' },
-  { id: 'following_20', category: 'following', threshold: 20, emoji: '🧭', label: 'Explorador social', description: 'Sigues a 20 personas en Biblingo.' },
+  { id: 'following_1', category: 'following', threshold: 1, emoji: '👋', label: 'Primer amigo', description: 'Seguiste a tu primera persona en Libringo.' },
+  { id: 'following_5', category: 'following', threshold: 5, emoji: '🤝', label: 'Sigues a 5', description: 'Ya sigues a 5 personas en Libringo.' },
+  { id: 'following_20', category: 'following', threshold: 20, emoji: '🧭', label: 'Explorador social', description: 'Sigues a 20 personas en Libringo.' },
   { id: 'followers_5', category: 'followers', threshold: 5, emoji: '⭐', label: '5 seguidores', description: '5 personas te siguen.' },
   { id: 'followers_20', category: 'followers', threshold: 20, emoji: '🎉', label: 'Comunidad', description: '20 personas te siguen.' },
   { id: 'reaction_loved_10', category: 'reaction', threshold: 10, reaction: 'loved', emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que marcaste como "Me encantó".' },

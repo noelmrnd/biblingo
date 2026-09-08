@@ -1,10 +1,10 @@
 services:
-  biblingo:
+  libringo:
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: dev
-    container_name: biblingo
+    container_name: libringo
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file:
@@ -26,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.app
-    container_name: biblingo_app
+    container_name: libringo_app
     ports:
       - "8083:3000"  # Frontend Vue + Vite Dev Server con Hot Reload
       - "5173:3000"  # Puerto alternativo Vite

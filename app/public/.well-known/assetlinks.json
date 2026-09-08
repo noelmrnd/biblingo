@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "me.biblingo.app",
+      "package_name": "com.libringo.app",
       "sha256_cert_fingerprints": [
         "05:18:83:19:D7:E0:D6:27:F5:25:A2:50:B1:26:1F:AE:F0:8C:55:DD:18:26:1B:CA:D0:F0:25:45:CF:5A:27:97",
         "5D:95:55:22:BC:F0:AB:51:C6:9B:41:07:14:E4:BC:5A:07:04:E8:CE:6C:C7:BF:3B:1D:2A:3D:AD:9F:B2:8A:E0"

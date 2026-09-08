@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Events;
+namespace Libringo\Events;
 
 abstract class DomainEvent {
     protected string $id;

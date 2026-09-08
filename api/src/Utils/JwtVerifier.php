@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Utils;
+namespace Libringo\Utils;
 
 /**
  * Verifica id_tokens de Apple (JWKS + firma RS256) y Google (endpoint tokeninfo).

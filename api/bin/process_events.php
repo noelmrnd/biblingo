@@ -7,8 +7,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 
-use Biblingo\Services\DomainEventProcessor;
-use Biblingo\Services\EventWakeup;
+use Libringo\Services\DomainEventProcessor;
+use Libringo\Services\EventWakeup;
 
 $isDaemon = in_array('--daemon', $argv, true) || in_array('-d', $argv, true) || in_array('--watch', $argv, true);
 $sleepSeconds = 10;

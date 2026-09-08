@@ -10,7 +10,7 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:app.biblingo.me</string>
+		<string>applinks:app.libringo.com</string>
 	</array>
 </dict>
 </plist>

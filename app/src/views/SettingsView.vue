@@ -206,7 +206,7 @@
 
       <div>
         <a
-          href="https://www.biblingo.me/privacidad"
+          href="https://www.libringo.com/privacidad"
           target="_blank"
           rel="noopener noreferrer"
           class="block text-center text-sm font-semibold text-slate-500 hover:text-slate-300 py-2"
@@ -281,7 +281,7 @@ const NOTIFICATION_CATEGORIES = [
   { key: 'new_follower', label: 'Nuevo seguidor', description: 'Cuando alguien empieza a seguirte.' },
   // { key: 'friend_activity', label: 'Actividad de amigos', description: 'Cuando un amigo lee o sube de racha.' },
   { key: 'nudge', label: 'Toques', description: 'Cuando un amigo te manda un recordatorio.' },
-  { key: 'news', label: 'Novedades de Biblingo', description: 'Anuncios y nuevas funciones de la app.' },
+  { key: 'news', label: 'Novedades de Libringo', description: 'Anuncios y nuevas funciones de la app.' },
 ];
 
 const props = defineProps({

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Utils;
+namespace Libringo\Utils;
 
 /**
  * Generador de IDs tipo Snowflake (64 bits: 41 timestamp + 5 datacenter + 5 worker + 12 sequence).
@@ -67,7 +67,7 @@ class SnowflakeId
 
         self::$datacenter = isset($_ENV['SNOWFLAKE_DATACENTER'])
             ? abs((int)$_ENV['SNOWFLAKE_DATACENTER']) % 32
-            : (crc32(gethostname() ?: 'biblingo') % 32);
+            : (crc32(gethostname() ?: 'libringo') % 32);
         self::$worker = isset($_ENV['SNOWFLAKE_WORKER'])
             ? abs((int)$_ENV['SNOWFLAKE_WORKER']) % 32
             : (getmypid() % 32);

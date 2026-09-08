@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Utils;
+namespace Libringo\Utils;
 
-use Biblingo\Entities\AuthTokenEntity;
+use Libringo\Entities\AuthTokenEntity;
 
 /**
  * Sesion por token Bearer. Antes del login se emite un token opaco (issueToken);

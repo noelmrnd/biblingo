@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**Biblingo** (`biblingo.me`) — gamified reading-with-friends app. Daily reading streaks, friend rankings, reminders. Vue 3 mobile/web app + PHP REST API + static promo landing page.
+**Libringo** (`libringo.com`) — gamified reading-with-friends app. Daily reading streaks, friend rankings, reminders. Vue 3 mobile/web app + PHP REST API + static promo landing page.
 
 - **App**: Vue 3 + Vite + Tailwind CSS + Capacitor (iOS & Android) — `app/`
 - **API**: Native PHP (no framework) + MariaDB/MySQL — `api/`
 - **Landing**: static HTML/CSS — `web/`
 - **Auth**: Sign in with Apple (iOS), Google Sign-In (Android/Web), plus a local dev-only panel (no real credentials needed)
 - **Push**: Firebase Cloud Messaging (FCM HTTP v1) for friend-related notifications; local notifications for daily reminders (`@capacitor/local-notifications`)
-- **Deep links**: `biblingo.me/invite/CODIGO` for friend invites, handled via `@capacitor/share` + `app/src/services/deepLinks.js`
+- **Deep links**: `libringo.com/invite/CODIGO` for friend invites, handled via `@capacitor/share` + `app/src/services/deepLinks.js`
 
 ## Running locally
 
@@ -25,7 +25,7 @@ pnpm dev:down
 pnpm dev:build  # rebuild image after Dockerfile/dependency changes
 ```
 
-Services: web landing on `:8082`, API on `:8084/api`, app (Vite dev server, HMR) on `:8083` / `:5173`. The domain-events worker runs inside the `biblingo` container under supervisord (`process_events.php --daemon`).
+Services: web landing on `:8082`, API on `:8084/api`, app (Vite dev server, HMR) on `:8083` / `:5173`. The domain-events worker runs inside the `libringo` container under supervisord (`process_events.php --daemon`).
 
 Non-Docker alternative (`bin/*.sh`): `bin/dev.sh` runs API (`php -S 0.0.0.0:8000`), Vite app, and web landing (`0.0.0.0:8080`) together; `bin/api.sh`, `bin/app.sh`, `bin/web.sh` run them individually. Note the ports differ from the Docker setup (8000/8080 vs 8084/8082).
 

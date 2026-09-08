@@ -6,9 +6,9 @@
       <template v-if="appHeader">
         <div class="flex items-center gap-3 flex-1">
           <div class="w-8 h-8">
-            <img src="/assets/logo-256.png" alt="Biblingo Logo" class="w-full h-full object-contain" />
+            <img src="/assets/logo-256.png" alt="Libringo Logo" class="w-full h-full object-contain" />
           </div>
-          <span class="font-extrabold text-xl tracking-tight text-white">Biblingo</span>
+          <span class="font-extrabold text-xl tracking-tight text-white">Libringo</span>
         </div>
 
         <button

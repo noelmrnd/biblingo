@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Entities;
+namespace Libringo\Entities;
 
-use Biblingo\Utils\SnowflakeId;
+use Libringo\Utils\SnowflakeId;
 
 /**
  * Motor generico de medallas: no sabe nada de "racha" ni "amigos" en

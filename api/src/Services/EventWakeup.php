@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Services;
+namespace Libringo\Services;
 
 /**
  * Aviso "hay trabajo nuevo" al worker de domain_events via un socket Unix de
@@ -13,7 +13,7 @@ namespace Biblingo\Services;
  * no esta escuchando (por eso notify() nunca lanza, solo intenta y sigue).
  */
 class EventWakeup {
-    public const SOCKET_PATH = '/tmp/biblingo_domain_events.sock';
+    public const SOCKET_PATH = '/tmp/libringo_domain_events.sock';
 
     public static function notify(): void {
         // El handler global de errores (ver public/index.php) convierte cualquier

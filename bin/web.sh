@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Biblingo - Servidor local de desarrollo para la carpeta web (Landing Page)
+# Libringo - Servidor local de desarrollo para la carpeta web (Landing Page)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

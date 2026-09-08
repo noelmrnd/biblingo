@@ -49,7 +49,7 @@ const qrDataUrl = ref('');
 
 const generateQrCode = async () => {
   if (!props.username) return;
-  const inviteUrl = `https://app.biblingo.me/invite/${props.username}`;
+  const inviteUrl = `https://app.libringo.com/invite/${props.username}`;
   try {
     qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
       width: 300,

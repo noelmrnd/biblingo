@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Utils;
+namespace Libringo\Utils;
 
 class DateUtils {
     /**

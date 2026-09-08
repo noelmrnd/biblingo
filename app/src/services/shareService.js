@@ -40,15 +40,15 @@ async function copyText(text) {
 
 export const ShareService = {
   async copyProfileLink(username) {
-    const inviteUrl = `https://app.biblingo.me/invite/${username}`;
+    const inviteUrl = `https://app.libringo.com/invite/${username}`;
     const copied = await copyText(inviteUrl);
     return { success: copied };
   },
 
   async shareUsername(username) {
-    const inviteUrl = `https://app.biblingo.me/invite/${username}`;
-    const title = 'Biblingo • Lectura entre amigos 📖🔥';
-    const text = `¡Hola! Te invito a Biblingo, lectura entre amigos. Sígueme: @${username}`;
+    const inviteUrl = `https://app.libringo.com/invite/${username}`;
+    const title = 'Libringo • Lectura entre amigos 📖🔥';
+    const text = `¡Hola! Te invito a Libringo, lectura entre amigos. Sígueme: @${username}`;
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -56,7 +56,7 @@ export const ShareService = {
           title,
           text,
           url: inviteUrl,
-          dialogTitle: 'Compartir invitación de Biblingo'
+          dialogTitle: 'Compartir invitación de Libringo'
         });
         return { success: true, method: 'native', canceled: false };
       } catch (e) {

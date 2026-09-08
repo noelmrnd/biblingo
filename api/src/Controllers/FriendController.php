@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Controllers;
+namespace Libringo\Controllers;
 
-use Biblingo\Entities\BadgeEntity;
-use Biblingo\Entities\FollowEntity;
-use Biblingo\Entities\FriendNudgeEntity;
-use Biblingo\Entities\ReadingLogEntity;
-use Biblingo\Entities\UserEntity;
-use Biblingo\Events\FriendAddedEvent;
-use Biblingo\Events\FriendNudgedEvent;
-use Biblingo\Services\DomainEventStore;
-use Biblingo\Utils\DateUtils;
-use Biblingo\Utils\SnowflakeId;
-use Biblingo\Utils\StreakUtils;
+use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\FollowEntity;
+use Libringo\Entities\FriendNudgeEntity;
+use Libringo\Entities\ReadingLogEntity;
+use Libringo\Entities\UserEntity;
+use Libringo\Events\FriendAddedEvent;
+use Libringo\Events\FriendNudgedEvent;
+use Libringo\Services\DomainEventStore;
+use Libringo\Utils\DateUtils;
+use Libringo\Utils\SnowflakeId;
+use Libringo\Utils\StreakUtils;
 
 /**
  * Modelo de autorizacion de este controller (todo requiere sesion valida via

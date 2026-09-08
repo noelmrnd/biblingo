@@ -1,4 +1,4 @@
-package me.biblingo.app;
+package com.libringo.app;
 
 import android.content.Intent;
 import com.getcapacitor.BridgeActivity;

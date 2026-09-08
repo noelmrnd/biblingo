@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Controllers;
+namespace Libringo\Controllers;
 
-use Biblingo\Entities\BadgeEntity;
-use Biblingo\Entities\ReadingLogEntity;
-use Biblingo\Entities\UserEntity;
-use Biblingo\Utils\Auth;
-use Biblingo\Utils\DateUtils;
-use Biblingo\Utils\JwtVerifier;
-use Biblingo\Utils\SnowflakeId;
-use Biblingo\Utils\StreakUtils;
+use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\ReadingLogEntity;
+use Libringo\Entities\UserEntity;
+use Libringo\Utils\Auth;
+use Libringo\Utils\DateUtils;
+use Libringo\Utils\JwtVerifier;
+use Libringo\Utils\SnowflakeId;
+use Libringo\Utils\StreakUtils;
 
 class AuthController {
     // Identificadores publicos de la app (no son secretos), usados como audiencia
     // esperada al verificar los id_tokens de Apple/Google.
     private const GOOGLE_AUDIENCES = [
-        '56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com',
-        '56637027170-5bckf6oali35ir6m2qisr9urm5qknncg.apps.googleusercontent.com',
+        '18709132885-b03ocies3hbsl9rffeutm4rjjmvl9sna.apps.googleusercontent.com', // Web/Android (GOOGLE_CLIENT_ID)
+        '18709132885-mpnr2j14sejtat54rknuecv5b7hnpm8j.apps.googleusercontent.com', // iOS (GOOGLE_IOS_CLIENT_ID)
     ];
-    private const APPLE_AUDIENCES = ['me.biblingo.app', 'me.biblingo.app.service'];
+    private const APPLE_AUDIENCES = ['com.libringo.app', 'com.libringo.app.service'];
 
     public static function handleSocialAuth() {
         $input = getJsonInput();
         $provider    = $input['provider'] ?? '';
         $idToken     = (string)($input['id_token'] ?? '');
-        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Biblingo';
+        $displayName = !empty($input['display_name']) ? trim($input['display_name']) : 'Lector Libringo';
         $platform    = $input['platform'] ?? 'ios';
         $rawTz       = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');
         $timezone    = DateUtils::getSafeDateTimeZone($rawTz)->getName();

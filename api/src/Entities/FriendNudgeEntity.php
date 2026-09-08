@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Entities;
+namespace Libringo\Entities;
 
 /** Acceso a datos de la tabla `friend_nudges`. */
 class FriendNudgeEntity {

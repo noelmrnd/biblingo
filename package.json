@@ -1,5 +1,5 @@
 {
-  "name": "biblingo-root",
+  "name": "libringo-root",
   "private": true,
   "scripts": {
     "dev": "docker compose up",
@@ -7,6 +7,6 @@
     "dev:down": "docker compose down",
     "dev:logs": "docker compose logs -f",
     "dev:build": "docker compose build",
-    "dev:worker": "docker compose exec biblingo php /var/www/api/bin/process_events.php"
+    "dev:worker": "docker compose exec libringo php /var/www/api/bin/process_events.php"
   }
 }

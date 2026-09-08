@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Biblingo\Utils;
+namespace Libringo\Utils;
 
 /**
  * Estado de racha calculado en vivo a partir de columnas guardadas (streak_count,

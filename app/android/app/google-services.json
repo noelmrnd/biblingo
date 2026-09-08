@@ -1,65 +1,49 @@
 {
   "project_info": {
-    "project_number": "56637027170",
-    "project_id": "biblingo-mx",
-    "storage_bucket": "biblingo-mx.firebasestorage.app"
+    "project_number": "18709132885",
+    "project_id": "libringo",
+    "storage_bucket": "libringo.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:56637027170:android:1236b2058f54738d08723b",
+        "mobilesdk_app_id": "1:18709132885:android:d222a28859ea6f1b3606dc",
         "android_client_info": {
-          "package_name": "me.biblingo.app"
+          "package_name": "com.libringo.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "56637027170-anias6oofsa3dv4461q5cchiph95d2f1.apps.googleusercontent.com",
+          "client_id": "18709132885-bgsmgk5csrnooqvmm3ebq33a08f7n8og.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "me.biblingo.app",
-            "certificate_hash": "342fec60a145db90754146795a4aaabfda3f00e1"
-          }
-        },
-        {
-          "client_id": "56637027170-ckj9a76t7ftg2ntdv9ep8sqp5ch33q18.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "me.biblingo.app",
+            "package_name": "com.libringo.app",
             "certificate_hash": "ff66697c548145325e63158cb3563196c2a86654"
           }
         },
         {
-          "client_id": "56637027170-sl9igqq38o9sj0tu4ic9n21k5pt31c3d.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "me.biblingo.app",
-            "certificate_hash": "3cd0f0940323de2860aaf54ffa38e43bb2ac9a90"
-          }
-        },
-        {
-          "client_id": "56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com",
+          "client_id": "18709132885-b03ocies3hbsl9rffeutm4rjjmvl9sna.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB6TNUepC6qDrtePsTEKBKHCo4lbvu2mKo"
+          "current_key": "AIzaSyA4BGTaMOHnBMU7oEzMnN3hLI2REmuB2Is"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "56637027170-3k9bfjk1rh4vtfs3lm3ev8sp0tgv3aoi.apps.googleusercontent.com",
+              "client_id": "18709132885-b03ocies3hbsl9rffeutm4rjjmvl9sna.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "56637027170-5bckf6oali35ir6m2qisr9urm5qknncg.apps.googleusercontent.com",
+              "client_id": "18709132885-mpnr2j14sejtat54rknuecv5b7hnpm8j.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "me.biblingo.app",
-                "app_store_id": "6808283100"
+                "bundle_id": "com.libringo.app",
+                "app_store_id": "6808078003"
               }
             }
           ]
