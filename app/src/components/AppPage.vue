@@ -33,8 +33,9 @@
 
       <template v-else>
         <button
+          v-if="backRoute"
           type="button"
-          @click="router.push(backTo)"
+          @click="goBack"
           class="w-8 h-8 -ml-1 flex items-center justify-center text-slate-300 hover:text-white rounded-full transition-colors cursor-pointer"
           aria-label="Volver"
         >
@@ -68,15 +69,27 @@ import AppRulesModal from './AppRulesModal.vue';
 import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
-  // true: header global (logo + racha). false: header propio con title/backTo.
+  // true: header global (logo + racha). false: header propio con title/backRoute.
   appHeader: { type: Boolean, default: false },
   title: { type: String, default: '' },
-  backTo: { type: [String, Object], default: null }
+  // null: sin boton de volver. object: ruta fija (tambien fallback si backWhenAvailable
+  // no encuentra historial al que volver, ej. entrada directa por deep link).
+  backRoute: { type: [String, Object], default: null },
+  // true: si hay historial real dentro de la app, usar router.back() en vez de backRoute.
+  backWhenAvailable: { type: Boolean, default: false }
 });
 
 const router = useRouter();
 const { user } = useCurrentUser();
 const isRulesModalOpen = ref(false);
+
+const goBack = () => {
+  if (props.backWhenAvailable && window.history.state?.back) {
+    router.back();
+  } else {
+    router.push(props.backRoute);
+  }
+};
 
 const streakCount = computed(() => user.value?.is_streak_lost ? 0 : (user.value?.streak_count || 0));
 const streakFreezes = computed(() => user.value?.streak_freezes || 0);

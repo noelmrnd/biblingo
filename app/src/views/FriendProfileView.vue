@@ -1,5 +1,9 @@
 <template>
-  <AppPage :title="friend?.display_name || 'Perfil'" :back-to="{ name: 'friends' }">
+  <AppPage
+    :title="friend?.display_name || 'Perfil'"
+    :back-route="{ name: 'friends' }"
+    back-when-available
+  >
     <div v-if="loading" class="py-16 text-center text-slate-400">Cargando perfil...</div>
 
     <div v-else-if="!friend" class="card-duo text-center py-8 text-slate-400 space-y-2">

@@ -1,5 +1,8 @@
 <template>
-  <AppPage title="Ajustes" :back-to="{ name: 'profile' }">
+  <AppPage
+    title="Ajustes"
+    :back-route="{ name: 'profile' }"
+  >
     <div class="space-y-4">
       <!-- Título de Sección: Configuración -->
       <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
