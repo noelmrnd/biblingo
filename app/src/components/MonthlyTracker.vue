@@ -38,12 +38,15 @@
         v-for="day in monthDays"
         :key="day.dateStr"
         :class="[
-          day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-800 text-slate-600 border-slate-700',
+          day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : '',
+          day.isFrozen ? 'bg-sky-500/10 text-sky-300 border-sky-500/20' : '',
+          !day.isRead && !day.isFrozen ? 'bg-slate-800 text-slate-600 border-slate-700' : '',
           day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
         ]"
         class="aspect-square rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
       >
         <span v-if="day.isRead">✓</span>
+        <span v-else-if="day.isFrozen" class="text-lg leading-none">🧊</span>
         <span v-else>{{ day.dateNum }}</span>
       </div>
     </div>
@@ -64,7 +67,8 @@ const monthOffset = ref(0);
 const displayedMonth = computed(() => new Date(today.getFullYear(), today.getMonth() + monthOffset.value, 1));
 
 const weekdayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const readDates = ref([]);
+// Mapa dateStr -> frozen (true/false), para lookup O(1) en monthDays.
+const daysByDate = ref(new Map());
 
 const monthLabel = computed(() => {
   const label = displayedMonth.value.toLocaleDateString('es', { month: 'long', year: 'numeric' });
@@ -87,7 +91,13 @@ const monthDays = computed(() => {
     const d = new Date(year, month, i + 1);
     const dateStr = toLocalDateString(d);
 
-    return { dateNum: i + 1, dateStr, isToday: dateStr === todayStr, isRead: readDates.value.includes(dateStr) };
+    return {
+      dateNum: i + 1,
+      dateStr,
+      isToday: dateStr === todayStr,
+      isRead: daysByDate.value.has(dateStr) && !daysByDate.value.get(dateStr),
+      isFrozen: daysByDate.value.get(dateStr) === true
+    };
   });
 });
 
@@ -114,7 +124,7 @@ const loadMonth = async () => {
   if (cached) {
     const isStale = cacheKey === currentMonthKey && (Date.now() - cached.cachedAt > CURRENT_MONTH_TTL_MS);
     if (!isStale) {
-      readDates.value = cached.dates;
+      daysByDate.value = cached.daysByDate;
       return;
     }
   }
@@ -122,9 +132,10 @@ const loadMonth = async () => {
   try {
     const res = await ApiService.getReadingCalendar(year, month);
     if (seq !== requestSeq) return;
-    const dates = res.success ? (res.dates || []) : [];
-    readDates.value = dates;
-    monthCache.set(cacheKey, { dates, cachedAt: Date.now() });
+    const days = res.success ? (res.days || []) : [];
+    const map = new Map(days.map(d => [d.read_date, d.is_frozen_day]));
+    daysByDate.value = map;
+    monthCache.set(cacheKey, { daysByDate: map, cachedAt: Date.now() });
   } catch (e) {
     if (seq !== requestSeq) return;
     console.warn('No se pudo cargar el calendario mensual:', e.message);
@@ -147,9 +158,9 @@ onActivated(loadMonth);
 // marcar un check que ya sabemos que es cierto (si se esta viendo el mes actual).
 const markTodayRead = () => {
   const todayStr = toLocalDateString(today);
-  if (monthOffset.value === 0 && !readDates.value.includes(todayStr)) {
-    readDates.value = [...readDates.value, todayStr];
-    monthCache.set(currentMonthKey, { dates: readDates.value, cachedAt: Date.now() });
+  if (monthOffset.value === 0 && !daysByDate.value.has(todayStr)) {
+    daysByDate.value = new Map(daysByDate.value).set(todayStr, false);
+    monthCache.set(currentMonthKey, { daysByDate: daysByDate.value, cachedAt: Date.now() });
   }
 };
 

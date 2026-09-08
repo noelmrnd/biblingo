@@ -64,11 +64,11 @@ class ReadingController {
         $db = getDbConnection();
         $monthStart = sprintf('%04d-%02d-01', $year, $month);
 
-        $dates = ReadingLogEntity::fetchCalendarDates($db, $userId, $monthStart);
+        $days = ReadingLogEntity::fetchCalendarDates($db, $userId, $monthStart);
 
         sendJsonResponse([
             'success' => true,
-            'dates'   => $dates,
+            'days'    => $days,
         ]);
     }
 
@@ -109,6 +109,7 @@ class ReadingController {
             $alreadyLoggedToday = ($lastRead === $today);
             $usedFreeze = false;
             $freezesUsedThisTime = 0;
+            $frozenDates = [];
             $newBadges = [];
 
             if (!$alreadyLoggedToday) {
@@ -126,6 +127,7 @@ class ReadingController {
                     $freezesUsed += $missedDays;
                     $usedFreeze = true;
                     $freezesUsedThisTime = $missedDays;
+                    $frozenDates = self::datesBetweenExclusive($lastRead, $today);
                 } else {
                     $currentStreak = 1;
                 }
@@ -143,6 +145,10 @@ class ReadingController {
 
                 $logId = (string)SnowflakeId::nextId();
                 ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
+
+                if (!empty($frozenDates)) {
+                    ReadingLogEntity::insertFrozenDays($db, $userId, $frozenDates);
+                }
 
                 $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction);
             }
@@ -194,5 +200,17 @@ class ReadingController {
         }
 
         return BadgeEntity::checkAndAward($db, $userId, $badgeValues);
+    }
+
+    /** Fechas 'Y-m-d' estrictamente entre dos fechas dadas (sin incluir ninguno de los extremos). */
+    private static function datesBetweenExclusive(string $fromDate, string $toDate): array {
+        $dates = [];
+        $cursor = (new \DateTime($fromDate))->modify('+1 day');
+        $end = new \DateTime($toDate);
+        while ($cursor < $end) {
+            $dates[] = $cursor->format('Y-m-d');
+            $cursor->modify('+1 day');
+        }
+        return $dates;
     }
 }

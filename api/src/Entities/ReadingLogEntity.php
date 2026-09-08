@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Libringo\Entities;
 
+use Libringo\Utils\SnowflakeId;
+
 /** Acceso a datos de la tabla `reading_logs`. */
 class ReadingLogEntity {
     public static function countTotalDaysRead(\PDO $db, string $userId): int {
-        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ?");
+        $stmt = $db->prepare("SELECT COUNT(*) AS total FROM reading_logs WHERE user_id = ? AND is_frozen_day = 0");
         $stmt->execute([$userId]);
         return (int)($stmt->fetch()['total'] ?? 0);
     }
@@ -28,22 +30,28 @@ class ReadingLogEntity {
     public static function fetchHistoryDates(\PDO $db, string $userId, string $today, int $days): array {
         $stmt = $db->prepare("
             SELECT read_date FROM reading_logs
-            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL {$days} DAY)
+            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL {$days} DAY) AND is_frozen_day = 0
             ORDER BY read_date DESC
         ");
         $stmt->execute([$userId, $today]);
         return array_column($stmt->fetchAll(), 'read_date');
     }
 
+    /** Dias del mes con su fecha y si fueron cubiertos por un protector de racha, listos para la API. */
     public static function fetchCalendarDates(\PDO $db, string $userId, string $monthStart): array {
         $stmt = $db->prepare("
-            SELECT read_date FROM reading_logs
+            SELECT read_date, is_frozen_day FROM reading_logs
             WHERE user_id = ?
               AND read_date >= ?
               AND read_date < DATE_ADD(?, INTERVAL 1 MONTH)
         ");
         $stmt->execute([$userId, $monthStart, $monthStart]);
-        return array_column($stmt->fetchAll(), 'read_date');
+
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$row) {
+            $row['is_frozen_day'] = (bool)$row['is_frozen_day'];
+        }
+        return $rows;
     }
 
     public static function upsertLog(\PDO $db, string $logId, string $userId, string $readDate, ?string $reaction): void {
@@ -53,5 +61,17 @@ class ReadingLogEntity {
             ON DUPLICATE KEY UPDATE reaction = VALUES(reaction), created_at = CURRENT_TIMESTAMP
         ");
         $stmt->execute([$logId, $userId, $readDate, $reaction]);
+    }
+
+    /** Registra los dias salteados que un protector de racha cubrio, para pintarlos en el calendario. */
+    public static function insertFrozenDays(\PDO $db, string $userId, array $dates): void {
+        $stmt = $db->prepare("
+            INSERT INTO reading_logs (id, user_id, read_date, is_frozen_day)
+            VALUES (?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE is_frozen_day = 1
+        ");
+        foreach ($dates as $date) {
+            $stmt->execute([(string)SnowflakeId::nextId(), $userId, $date]);
+        }
     }
 }
