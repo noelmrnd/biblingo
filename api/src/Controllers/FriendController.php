@@ -267,7 +267,7 @@ class FriendController {
 
     /**
      * Perfil completo de un usuario (o el propio, si friendId === userId) en una sola
-     * llamada: stats + historial de 30 dias para el tracker semanal + contadores de
+     * llamada: stats + historial de 7 dias para el tracker semanal + contadores de
      * seguidores/seguidos + amigos en comun.
      */
     public static function getFriendProfile(string $userId, string $friendId) {
@@ -310,7 +310,7 @@ class FriendController {
                 'is_mutual'           => $isMutual,
                 'badges'              => BadgeEntity::listForUser($db, $friendId),
             ],
-            'history'              => $isSelf ? ReadingLogEntity::fetchHistoryDates($db, $friendId, $status->today, 30) : null,
+            'history'              => ReadingLogEntity::fetchHistoryDates($db, $friendId, $status->today, 7),
             'nudged_today'         => ($isSelf || !$isMutual) ? false : FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $status->today),
             'mutual_friends_count' => $isSelf ? 0 : FollowEntity::countMutualFriends($db, $userId, $friendId),
         ]);

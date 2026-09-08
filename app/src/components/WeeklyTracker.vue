@@ -2,7 +2,7 @@
   <div class="card-duo space-y-4">
     <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
       <Calendar class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-      <span>Esta semana</span>
+      <span>Últimos 7 días</span>
     </h3>
     <div class="grid grid-cols-7 gap-1.5 text-center">
       <div
@@ -13,12 +13,15 @@
         <span class="text-base font-extrabold text-slate-300">{{ day.label }}</span>
         <div
           :class="[
-            day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-800 text-slate-600 border-slate-700',
+            day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : '',
+            day.isFrozen ? 'bg-sky-500/10 text-sky-300 border-sky-500/20' : '',
+            !day.isRead && !day.isFrozen ? 'bg-slate-800 text-slate-600 border-slate-700' : '',
             day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
           ]"
           class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
         >
           <span v-if="day.isRead">✓</span>
+          <span v-else-if="day.isFrozen" class="text-lg leading-none">🧊</span>
           <span v-else>{{ day.dateNum }}</span>
         </div>
       </div>
@@ -27,55 +30,41 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Calendar } from '@lucide/vue';
-import { ApiService } from '../services/api';
 import { toLocalDateString } from '../utils/dateFormatter';
 
 const props = defineProps({
-  // Id del usuario cuyo historial se muestra: el propio, o el de un amigo. Solo
-  // necesario si no se pasan preloadedHistory/preloadedHasReadToday.
-  targetId: { type: String, default: null },
-  // Si el padre ya pidio esta info como parte de otra respuesta (ej. el perfil
-  // completo de un amigo), se pasa aqui para no repetir la peticion.
-  preloadedHistory: { type: Array, default: null },
-  preloadedHasReadToday: { type: Boolean, default: null }
+  // El padre (ej. FriendProfileView) ya trae esta info como parte del perfil completo.
+  history: { type: Array, required: true }
 });
 
-const hasReadToday = ref(props.preloadedHasReadToday);
-const historyDates = ref(props.preloadedHistory || []);
+// Mapa dateStr -> is_frozen_day, para lookup O(1) en weekDays.
+const historyByDate = ref(new Map(props.history.map(d => [d.read_date, d.is_frozen_day])));
+
+// El padre (ej. FriendProfileView) puede reutilizar esta misma instancia al
+// navegar entre perfiles (misma ruta, distinto id) — sin esto, el tracker se
+// quedaria pegado con los datos del primer amigo visto.
+watch(() => props.history, (history) => {
+  historyByDate.value = new Map(history.map(d => [d.read_date, d.is_frozen_day]));
+});
 
 const weekDays = computed(() => {
-  const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const labels = ['D', 'L', 'M', 'X', 'J', 'V', 'S']; // indexado por Date#getDay() (0 = Domingo)
   const today = new Date();
-  const currentDayOfWeek = (today.getDay() + 6) % 7; // 0 = Lunes, 6 = Domingo
+  const todayStr = toLocalDateString(today);
 
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - currentDayOfWeek);
-
-  return labels.map((label, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+  // Ultimos 7 dias terminando hoy, no la semana calendario: evita celdas de
+  // dias futuros vacias cuando hoy es lunes/martes.
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
     const dateStr = toLocalDateString(d);
-    const isToday = (i === currentDayOfWeek);
-    const isRead = historyDates.value.includes(dateStr) || (isToday && hasReadToday.value);
+    const isToday = (dateStr === todayStr);
+    const isFrozen = historyByDate.value.get(dateStr) === true;
+    const isRead = historyByDate.value.has(dateStr) && !isFrozen;
 
-    return { label, dateNum: d.getDate(), dateStr, isToday, isRead };
+    return { label: labels[d.getDay()], dateNum: d.getDate(), dateStr, isToday, isRead, isFrozen };
   });
-});
-
-onMounted(async () => {
-  // Ya viene precargado desde el padre, no hay nada que pedir.
-  if (props.preloadedHistory !== null) return;
-
-  try {
-    const res = await ApiService.getFriendProfile(props.targetId);
-    if (res.success) {
-      hasReadToday.value = res.has_read_today;
-      historyDates.value = res.history || [];
-    }
-  } catch (e) {
-    console.warn('No se pudo cargar el historial semanal:', e.message);
-  }
 });
 </script>

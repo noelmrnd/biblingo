@@ -26,15 +26,20 @@ class ReadingLogEntity {
         return $stmt->fetchAll();
     }
 
-    /** Historial de lectura, usado para el tracker semanal/mensual. */
+    /** Historial de lectura (con protectores de racha usados), para el tracker semanal. */
     public static function fetchHistoryDates(\PDO $db, string $userId, string $today, int $days): array {
         $stmt = $db->prepare("
-            SELECT read_date FROM reading_logs
-            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL {$days} DAY) AND is_frozen_day = 0
+            SELECT read_date, is_frozen_day FROM reading_logs
+            WHERE user_id = ? AND read_date >= DATE_SUB(?, INTERVAL $days DAY)
             ORDER BY read_date DESC
         ");
         $stmt->execute([$userId, $today]);
-        return array_column($stmt->fetchAll(), 'read_date');
+
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$row) {
+            $row['is_frozen_day'] = (bool)$row['is_frozen_day'];
+        }
+        return $rows;
     }
 
     /** Dias del mes con su fecha y si fueron cubiertos por un protector de racha, listos para la API. */

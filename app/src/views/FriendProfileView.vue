@@ -82,6 +82,8 @@
         </StatCard>
       </div>
 
+      <WeeklyTracker :history="history" />
+
       <ReactionBreakdown :reaction-counts="friend.reaction_counts" />
 
       <BadgesCircles :earned-badges="friend.badges || []" />
@@ -121,6 +123,7 @@ import BadgesCircles from '../components/BadgesCircles.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
 import StatCard from '../components/StatCard.vue';
+import WeeklyTracker from '../components/WeeklyTracker.vue';
 import AppButton from '../components/AppButton.vue';
 import UnfollowConfirmModal from '../components/UnfollowConfirmModal.vue';
 import FollowListModal from '../components/FollowListModal.vue';
@@ -141,6 +144,7 @@ const router = useRouter();
 
 const loading = ref(true);
 const friend = ref(null);
+const history = ref(null);
 const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
 const remove = useAsyncAction();
@@ -153,6 +157,7 @@ const followList = useFollowListPanel(route, router);
 const loadFriendProfile = async (friendId) => {
   loading.value = true;
   friend.value = null;
+  history.value = null;
   try {
     const res = await ApiService.getFriendProfile(friendId);
     if (res.success) {
@@ -160,6 +165,7 @@ const loadFriendProfile = async (friendId) => {
         ...res.user,
         mutual_friends_count: res.mutual_friends_count
       };
+      history.value = res.history || [];
       if (res.nudged_today) {
         nudge.markNudged(res.user.id);
       }
