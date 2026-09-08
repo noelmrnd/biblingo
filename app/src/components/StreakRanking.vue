@@ -1,9 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
-      <Trophy class="w-6 h-6 text-amber-400 stroke-[2.5]" />
-      <span>Ranking de rachas</span>
-    </h3>
+    <SectionTitle title="Ranking de rachas" :icon="Trophy" icon-color-class="text-amber-400" />
 
     <div v-if="friends.filter(f => !f.is_self).length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
       <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
@@ -97,6 +94,7 @@ import { ref, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import SwipeItem from './SwipeItem.vue';
 import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
+import SectionTitle from './SectionTitle.vue';
 import { Trophy, UsersRound, Flame, BellRing } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';

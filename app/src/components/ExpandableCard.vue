@@ -7,7 +7,7 @@
     >
       <div class="flex items-center gap-3 min-w-0">
         <div :class="iconBgClass" class="w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0">
-          <slot name="icon" />
+          <component :is="icon" class="w-5 h-5 stroke-[2.5]" :class="iconColorClass" />
         </div>
         <div class="min-w-0">
           <h3 class="font-extrabold text-white text-lg truncate">{{ title }}</h3>
@@ -37,10 +37,12 @@ import { ChevronDown, ChevronUp } from '@lucide/vue';
 const props = defineProps({
   title: { type: String, required: true },
   description: { type: String, default: '' },
-  // Clases completas de Tailwind para el fondo/borde del contenedor del icono,
-  // ej. "bg-amber-500/10 border-amber-500/30". Se piden literales (no armar el
-  // string dinamicamente) para que Tailwind las detecte al escanear el codigo.
+  // Componente de icono importado, ej. import { UserCheck } from '@lucide/vue'.
+  icon: { type: [Object, Function], required: true },
+  // Clases completas de Tailwind, literales (no armadas dinamicamente) para que
+  // Tailwind las detecte al escanear el codigo.
   iconBgClass: { type: String, default: 'bg-slate-500/10 border-slate-500/30' },
+  iconColorClass: { type: String, default: 'text-slate-300' },
   // Clases extra para el contenedor de la card, ej. un fondo con gradiente y borde
   // de color propio (ver "Invitar amigos"). Se suman a "card-duo".
   cardClass: { type: String, default: '' },

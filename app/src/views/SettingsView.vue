@@ -4,11 +4,7 @@
     :back-route="{ name: 'profile' }"
   >
     <div class="space-y-4">
-      <!-- Título de Sección: Configuración -->
-      <h3 class="font-extrabold text-white text-lg flex items-center gap-3">
-        <Settings class="w-6 h-6 text-sky-400 stroke-[2.5]" />
-        <span>Configuración</span>
-      </h3>
+      <SectionTitle title="Configuración" :icon="Settings" icon-color-class="text-sky-400" />
 
       <!-- Datos de Perfil -->
       <ExpandableCard
@@ -16,11 +12,9 @@
         title="Datos de perfil"
         description="Ve o edita los datos de cuenta"
         icon-bg-class="bg-brand-green/10 border-brand-green/30"
+        icon-color-class="text-brand-green"
+        :icon="UserCheck"
       >
-        <template #icon>
-          <UserCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
-        </template>
-
         <div class="space-y-3">
           <!-- Nombre de Usuario (Editable) -->
           <div class="space-y-1.5">
@@ -105,11 +99,9 @@
         title="Notificaciones"
         description="Elige qué avisos quieres recibir"
         icon-bg-class="bg-sky-500/10 border-sky-500/30"
+        icon-color-class="text-sky-400"
+        :icon="BellRing"
       >
-        <template #icon>
-          <BellRing class="w-5 h-5 text-sky-400 stroke-[2.5]" />
-        </template>
-
         <div class="space-y-1">
           <div v-for="cat in NOTIFICATION_CATEGORIES" :key="cat.key" class="border-b border-slate-800/70 last:border-0">
             <div class="flex items-center justify-between gap-3 py-2.5">
@@ -160,10 +152,9 @@
         title="Guía de inicio"
         description="Aprende cómo funciona la racha y los amigos"
         icon-bg-class="bg-indigo-500/10 border-indigo-500/30"
+        icon-color-class="text-indigo-400"
+        :icon="Compass"
       >
-        <template #icon>
-          <Compass class="w-5 h-5 text-indigo-400 stroke-[2.5]" />
-        </template>
         <template #action>
           <AppButton color="blue" @click="openTour">
             Ver tour
@@ -256,6 +247,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { UserRound, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
+import SectionTitle from '../components/SectionTitle.vue';
 import AppButton from '../components/AppButton.vue';
 import AppToggle from '../components/AppToggle.vue';
 import ConfirmActionModal from '../components/ConfirmActionModal.vue';

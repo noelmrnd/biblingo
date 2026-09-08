@@ -68,18 +68,11 @@
           :value="friend.is_streak_lost ? 0 : friend.streak_count"
           label="Racha actual"
           :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
-        >
-          <template #icon>
-            <span v-if="friend.is_streak_lost" class="text-xl leading-none">🥶</span>
-            <span v-else-if="friend.will_use_freeze_today" class="text-xl leading-none">🧊</span>
-            <Flame v-else class="w-5 h-5 text-amber-400 stroke-[2.5]" />
-          </template>
-        </StatCard>
-        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green">
-          <template #icon>
-            <BookOpenCheck class="w-5 h-5 text-brand-green stroke-[2.5]" />
-          </template>
-        </StatCard>
+          :emoji="friend.is_streak_lost ? '🥶' : friend.will_use_freeze_today ? '🧊' : null"
+          :icon="(friend.is_streak_lost || friend.will_use_freeze_today) ? null : Flame"
+          icon-color-class="text-amber-400"
+        />
+        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green" :icon="BookOpenCheck" icon-color-class="text-brand-green" />
       </div>
 
       <WeeklyTracker :history="history" />

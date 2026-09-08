@@ -5,12 +5,10 @@
       title="Invitar amigos"
       description="Comparte tu perfil o agrega a tus amigos"
       icon-bg-class="bg-brand-green/10 border-brand-green/30"
+      icon-color-class="text-brand-green"
+      :icon="UserRoundPlus"
       card-class="bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30"
     >
-      <template #icon>
-        <UserRoundPlus class="w-5 h-5 text-brand-green stroke-[2.5]" />
-      </template>
-
       <div class="space-y-3">
         <AppButton color="green" block @click="isShareModalOpen = true">
           <Share2 class="w-5 h-5 stroke-[2.5]" />
