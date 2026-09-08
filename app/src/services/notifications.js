@@ -72,12 +72,13 @@ export const NotificationService = {
         console.warn('Error en registro de Push Notifications:', error);
       });
 
-      // Escuchar cuando llega una notificación Push estando la app en primer plano
+      // Escuchar cuando llega una notificación Push estando la app en primer plano.
+      // No se muestra Toast aca: el payload de FCMService incluye un bloque
+      // 'notification' (no es data-only), asi que Android ya la muestra solo en
+      // la barra de estado aunque la app este abierta — un Toast manual aca
+      // duplicaba el aviso.
       await PushNotifications.addListener('pushNotificationReceived', (notification) => {
         console.log('[PushReceived]', notification);
-        const title = notification.title || '📖 Libringo';
-        const body = notification.body || '¡Tienes una nueva notificación!';
-        ToastService.info(`${title}: ${body}`);
         HapticsService.light();
       });
 

@@ -80,7 +80,7 @@ const isActive = (tab) => {
 };
 
 const handleTabClick = (tab) => {
-  if (!isActive(tab)) HapticsService.light();
+  HapticsService.light();
   router.push(tab.to);
 };
 </script>
