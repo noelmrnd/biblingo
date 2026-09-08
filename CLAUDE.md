@@ -33,6 +33,18 @@ Initial setup: `pnpm install` in `app/`, import `api/schema.sql` into MySQL/Mari
 
 In dev (`localhost`), the login screen exposes a **"🛠️ Entorno de Desarrollo"** panel: type any display name and click "Entrar Dev" to sign in instantly without Google/Apple credentials — the standard way to test locally, including multi-tab friend/streak interactions.
 
+### Native builds load remote, not bundled, web assets
+
+`app/capacitor.config.json` (and `.dev.json`/`.prod.json`) set `server.url` to a
+remote origin (`https://app.libringo.com` in prod, a LAN dev-server IP in dev).
+When `server.url` is set, the native WebView always loads that URL directly —
+`webDir`/`dist-capacitor` is bundled into the APK/IPA but never actually used.
+So `pnpm build` + `npx cap sync` does NOT change what a native build shows;
+to test frontend changes on a native build you must deploy the new frontend
+to the URL in the active `capacitor.config.json` first. This also means a
+release APK/AAB's proguard/minify behavior only affects native/plugin Java
+code — it has zero effect on the web bundle actually rendered.
+
 ## App commands (`app/`)
 
 ```bash
