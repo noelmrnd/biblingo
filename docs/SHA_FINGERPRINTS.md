@@ -39,6 +39,18 @@ y `BadParcelableException` justo despues del `GoogleProvider: Google login: ... 
 
 Google Sign-In solo valida SHA-1, no hace falta agregar SHA-256 para esto.
 
+### Cuarta SHA-1 (auto-generada por Google, no de un keystore local)
+`28:EE:6A:F1:2C:98:25:BF:6A:4E:B2:3F:02:FE:7A:62:91:22:3D:3A`
+
+No corresponde a ningun keystore del proyecto ni de esta maquina (se descarto
+comparando contra `debug.keystore` compartido, `biblingo-release.keystore`,
+`~/.android/debug.keystore` y otros debug.keystore viejos encontrados en disco).
+Encontrada en Google Cloud Console como client OAuth Android para
+`com.libringo.app`, "auto created by Google Service", asociada al client id
+`18709132885-blj5qe5sgpf6qhrqg95modbrbkmqtvao.apps.googleusercontent.com`.
+Google la genera sola en ciertos flujos (Play Integrity / Play App Signing
+setup); no hace falta rastrear el origen exacto, solo saber que es legitima.
+
 ## Debug — viejo (proyecto biblingo, `~/.android/debug.keystore` de alguna máquina)
 - SHA-1: `34:2F:EC:60:A1:45:DB:90:75:41:46:79:5A:4A:AA:BF:DA:3F:00:E1`
 - Estado: no migrado al proyecto libringo (se reemplaza por el debug.keystore compartido de abajo)
