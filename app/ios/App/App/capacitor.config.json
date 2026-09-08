@@ -1,61 +1,62 @@
 {
-    "appId": "com.libringo.app",
-    "appName": "Libringo",
-    "webDir": "dist-capacitor",
-    "server": {
-        "url": "https://app.libringo.com",
-        "cleartext": false,
-        "allowNavigation": [
-            "app.libringo.com",
-            "*.libringo.com"
-        ],
-        "errorPath": "offline.html"
-    },
-    "backgroundColor": "#1F293D",
-    "plugins": {
-        "Preferences": {
-            "group": "app"
-        },
-        "PushNotifications": {
-            "presentationOptions": [
-                "badge",
-                "sound",
-                "alert"
-            ]
-        },
-        "LocalNotifications": {
-            "presentationOptions": [
-                "badge",
-                "sound",
-                "banner",
-                "list"
-            ]
-        },
-        "SplashScreen": {
-            "launchAutoHide": true,
-            "launchShowDuration": 3000,
-            "backgroundColor": "#1F293D"
-        },
-        "StatusBar": {
-            "overlaysWebView": true,
-            "style": "DARK"
-        },
-        "Keyboard": {
-            "resize": "none",
-            "style": "dark"
-        }
-    },
-    "packageClassList": [
-        "InAppReviewPlugin",
-        "AppPlugin",
-        "HapticsPlugin",
-        "KeyboardPlugin",
-        "LocalNotificationsPlugin",
-        "PreferencesPlugin",
-        "PushNotificationsPlugin",
-        "SharePlugin",
-        "SplashScreenPlugin",
-        "StatusBarPlugin",
-        "SocialLoginPlugin"
-    ]
+	"appId": "com.libringo.app",
+	"appName": "Libringo",
+	"webDir": "dist-capacitor",
+	"server": {
+		"url": "https://app.libringo.com",
+		"cleartext": false,
+		"allowNavigation": [
+			"app.libringo.com",
+			"*.libringo.com"
+		],
+		"errorPath": "offline.html"
+	},
+	"backgroundColor": "#1F293D",
+	"plugins": {
+		"Preferences": {
+			"group": "app"
+		},
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		},
+		"LocalNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"banner",
+				"list"
+			]
+		},
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"launchShowDuration": 3000,
+			"backgroundColor": "#1F293D"
+		},
+		"StatusBar": {
+			"overlaysWebView": true,
+			"style": "DARK"
+		},
+		"Keyboard": {
+			"resize": "none",
+			"style": "dark"
+		}
+	},
+	"packageClassList": [
+		"InAppReviewPlugin",
+		"FirebaseAnalyticsPlugin",
+		"AppPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"LocalNotificationsPlugin",
+		"PreferencesPlugin",
+		"PushNotificationsPlugin",
+		"SharePlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"SocialLoginPlugin"
+	]
 }
