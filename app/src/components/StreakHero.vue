@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative text-center p-5 -mx-5 -mt-5 pb-8 overflow-hidden"
+    class="relative text-center p-5 -mx-5 -mt-5 overflow-hidden"
     :style="(user.is_streak_lost || user.will_use_freeze_today)
       ? 'background: radial-gradient(ellipse at top, rgba(56,189,248,0.18), transparent 65%)'
       : 'background: radial-gradient(ellipse at top, rgba(255,150,0,0.18), transparent 65%)'"
