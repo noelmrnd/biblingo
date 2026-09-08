@@ -5,9 +5,8 @@
         <Calendar class="w-5 h-5 text-amber-400 stroke-[2.5]" />
         <span>{{ monthLabel }}</span>
       </h3>
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 -mr-1">
         <IconButton
-          size="sm"
           :haptic="false"
           @click="monthOffset--"
           aria-label="Mes anterior"
@@ -15,7 +14,6 @@
           <ChevronLeft class="w-5 h-5 stroke-[2.5]" />
         </IconButton>
         <IconButton
-          size="sm"
           :haptic="false"
           @click="monthOffset++"
           :disabled="monthOffset >= 0"
@@ -25,7 +23,7 @@
         </IconButton>
       </div>
     </div>
-    <div class="grid grid-cols-7 gap-1.5 text-center">
+    <div class="grid grid-cols-7 gap-2 text-center">
       <span
         v-for="label in weekdayLabels"
         :key="label"
@@ -33,8 +31,8 @@
       >{{ label }}</span>
     </div>
 
-    <div class="grid grid-cols-7 gap-1.5 justify-items-center">
-      <div v-for="n in leadingBlanks" :key="`blank-${n}`" class="w-10 h-10" />
+    <div class="grid grid-cols-7 gap-2">
+      <div v-for="n in leadingBlanks" :key="`blank-${n}`" class="aspect-square" />
 
       <div
         v-for="day in monthDays"
@@ -43,7 +41,7 @@
           day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-800 text-slate-600 border-slate-700',
           day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
         ]"
-        class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
+        class="aspect-square rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
       >
         <span v-if="day.isRead">✓</span>
         <span v-else>{{ day.dateNum }}</span>
@@ -53,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onActivated } from 'vue';
+import { ref, computed, watch, onMounted, onActivated } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import IconButton from './IconButton.vue';
@@ -137,8 +135,12 @@ watch(monthOffset, () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(loadMonth, MONTH_CHANGE_DEBOUNCE_MS);
 });
-// onActivated (no onMounted): MonthlyTracker vive dentro de DashboardView, que
-// queda en keep-alive (App.vue) — dispara el refresh de fondo al volver al tab.
+// onMounted + onActivated: MonthlyTracker nace detras de un v-if (initialLoading)
+// dentro de DashboardView, que ya esta en keep-alive (App.vue) cuando ese v-if
+// se activa por primera vez — Vue no dispara onActivated para un hijo que recien
+// nace mientras su ancestro keep-alive ya estaba activo, solo en reactivaciones
+// reales (volver de otro tab). Sin onMounted, la primera carga nunca pedia el calendario.
+onMounted(loadMonth);
 onActivated(loadMonth);
 
 // Actualizacion optimista al registrar lectura hoy: evita un round-trip solo para
