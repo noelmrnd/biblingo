@@ -94,7 +94,9 @@ export const AuthService = {
       });
     } catch (e) {
       console.warn('Falló Google Sign-In:', e);
-      throw new Error(e.message || 'No se pudo iniciar sesión con Google.');
+      const err = new Error(e.message || 'No se pudo iniciar sesión con Google.');
+      err.code = e.code;
+      throw err;
     }
   },
 

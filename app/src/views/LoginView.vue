@@ -93,6 +93,18 @@ const loading = ref(false);
 const errorMsg = ref('');
 const devName = ref('Lector Dev');
 
+// Cada SDK nativo reporta la cancelación del usuario distinto: Apple con el
+// código 1001 de ASAuthorizationController, Google Android con USER_CANCELLED
+// (@capgo/capacitor-social-login) y Google iOS con el texto propio de GIDSignIn.
+// Ninguno es un error real, así que no debe mostrarse nada al usuario.
+const isUserCancelledLogin = (err) => {
+  const message = (err?.message || '').toLowerCase();
+  return err?.code === 'USER_CANCELLED'
+    || message.includes('1001')
+    || message.includes('cancelled by user')
+    || message.includes('canceled the sign-in flow');
+};
+
 const handleAuth = async (authPromise) => {
   loading.value = true;
   errorMsg.value = '';
@@ -102,7 +114,9 @@ const handleAuth = async (authPromise) => {
       emit('login-success', res.user, res.token);
     }
   } catch (err) {
-    errorMsg.value = err.message || 'Error al iniciar sesión. Inténtalo de nuevo.';
+    if (!isUserCancelledLogin(err)) {
+      errorMsg.value = 'Error al iniciar sesión. Inténtalo de nuevo.';
+    }
   } finally {
     loading.value = false;
   }

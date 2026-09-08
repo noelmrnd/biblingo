@@ -52,6 +52,7 @@ import { UserService } from './services/userService';
 import { NotificationService } from './services/notifications';
 import { StorageService } from './services/storage';
 import { ApiService, setUnauthorizedHandler } from './services/api';
+import { AnalyticsService } from './services/analytics';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
@@ -88,6 +89,7 @@ const onLoginSuccess = async (user, token) => {
   markFreshLoad();
   ToastService.success(`¡Hola, ${user.display_name}! 👋`);
   scheduleReminderForUser(user);
+  AnalyticsService.logEvent('login');
 
   // Procesar invitación pendiente si existía
   await resolvePendingInvite(user);
@@ -103,6 +105,7 @@ watch(currentUserId, (id) => {
     }).catch((e) => {
       console.warn('No se pudo inicializar notificaciones push:', e.message);
     });
+    AnalyticsService.setUser(id).catch(() => {});
   }
 });
 
@@ -121,6 +124,7 @@ const onLogout = async () => {
   }
   clearUser();
   await UserService.clearSession();
+  AnalyticsService.setUser(null).catch(() => {});
   router.push({ name: 'dashboard' });
   // ToastService.info('Sesión cerrada correctamente.');
 };
@@ -162,6 +166,7 @@ const forceLogout = async () => {
 
 onMounted(async () => {
   setUnauthorizedHandler(forceLogout);
+  AnalyticsService.init().catch(() => {});
 
   // Si hay token guardado, reconstruye el usuario completo pidiendolo al servidor
   // (no se cachea el objeto user en disco) y sincroniza timezone si cambió.
