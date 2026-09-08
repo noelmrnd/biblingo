@@ -34,7 +34,7 @@ export function useInviteFlow({ getCurrentUser, onFriendAdded }) {
       const res = await ApiService.followUser(username);
       if (res.success) {
         ToastService.success(res.message || `¡Ahora sigues a ${res.friend?.display_name}! 👥🎉`);
-        onFriendAdded?.();
+        onFriendAdded?.(res.friend);
       }
     } catch (e) {
       ToastService.error(e.message || 'Error al procesar la invitación.');

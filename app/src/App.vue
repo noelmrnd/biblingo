@@ -64,7 +64,13 @@ const isInitializing = ref(true);
 
 const { processInvite, resolvePendingInvite } = useInviteFlow({
   getCurrentUser: () => currentUser.value,
-  onFriendAdded: () => { router.push({ name: 'friends' }); }
+  onFriendAdded: (friend) => {
+    if (friend?.id) {
+      router.push({ name: 'friend-profile', params: { id: friend.id } });
+    } else {
+      router.push({ name: 'friends' });
+    }
+  }
 });
 
 const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle({
