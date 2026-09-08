@@ -81,7 +81,7 @@ const colorClass = computed(() => {
     case 'blue':
       return 'bg-brand-blue hover:bg-sky-500 text-white';
     case 'dark':
-      return 'bg-brand-card hover:bg-slate-800 text-slate-200';
+      return 'bg-brand-card hover:bg-slate-800 text-slate-200 border border-brand-border';
     case 'orange':
       return 'bg-brand-flame hover:bg-brand-flame-dark text-white';
     case 'rose':
