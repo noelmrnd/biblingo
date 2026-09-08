@@ -59,11 +59,11 @@ class FollowEntity {
     /** Oculta seguidores banned/deleted. */
     public static function fetchFollowers(\PDO $db, string $targetId): array {
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count
+            SELECT u.id, u.display_name, u.username
             FROM follows f
             JOIN users u ON f.follower_id = u.id
             WHERE f.followed_id = ? AND u.status = 'active'
-            ORDER BY u.streak_count DESC, u.display_name ASC
+            ORDER BY u.display_name ASC
         ");
         $stmt->execute([$targetId]);
         return $stmt->fetchAll();
@@ -72,11 +72,11 @@ class FollowEntity {
     /** Oculta seguidos banned/deleted. */
     public static function fetchFollowing(\PDO $db, string $targetId): array {
         $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.streak_count
+            SELECT u.id, u.display_name, u.username
             FROM follows f
             JOIN users u ON f.followed_id = u.id
             WHERE f.follower_id = ? AND u.status = 'active'
-            ORDER BY u.streak_count DESC, u.display_name ASC
+            ORDER BY u.display_name ASC
         ");
         $stmt->execute([$targetId]);
         return $stmt->fetchAll();

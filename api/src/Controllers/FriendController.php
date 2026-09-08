@@ -46,33 +46,39 @@ class FriendController {
             $nudgeMap[(string)$n['receiver_id']] = $n['last_nudge_date'];
         }
 
+        $friends = array_map(function ($f) use ($nudgeMap) {
+            $friendId = (string)$f['id'];
+            $streakCount = (int)$f['streak_count'];
+            $lastRead = $f['last_read_date'];
+            $status = StreakUtils::computeStatus($lastRead, $streakCount, $f['timezone'], (int)$f['streak_freezes']);
+
+            $lastNudgeDate = $nudgeMap[$friendId] ?? null;
+            $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $status->today);
+
+            return [
+                'id'               => $friendId,
+                'display_name'     => $f['display_name'],
+                'streak_count'     => $streakCount,
+                'max_streak_count' => (int)$f['max_streak_count'],
+                'last_read_date'   => $lastRead,
+                'last_read_label'  => $status->lastReadLabel,
+                'username'         => $f['username'],
+                'nudged_today'     => $nudgedToday,
+                'has_read_today'   => $status->hasReadToday,
+                'is_streak_lost'   => $status->isStreakLost,
+                'will_use_freeze_today' => $status->willUseFreezeToday,
+                'is_self'          => (bool)$f['is_self'],
+                'is_mutual'        => (bool)$f['is_mutual'],
+            ];
+        }, $following);
+
+        // La query ordena por streak_count crudo, pero esa columna no se corrige
+        // sola cuando se pierde una racha (solo al volver a leer, ver StreakUtils).
+        // Reordenar aqui tratando racha perdida como 0 para que el ranking refleje
+        // el estado real en vivo, no el valor stale en BD.
         sendJsonResponse([
             'success' => true,
-            'friends' => array_map(function ($f) use ($nudgeMap) {
-                $friendId = (string)$f['id'];
-                $streakCount = (int)$f['streak_count'];
-                $lastRead = $f['last_read_date'];
-                $status = StreakUtils::computeStatus($lastRead, $streakCount, $f['timezone'], (int)$f['streak_freezes']);
-
-                $lastNudgeDate = $nudgeMap[$friendId] ?? null;
-                $nudgedToday = (!empty($lastNudgeDate) && $lastNudgeDate === $status->today);
-
-                return [
-                    'id'               => $friendId,
-                    'display_name'     => $f['display_name'],
-                    'streak_count'     => $streakCount,
-                    'max_streak_count' => (int)$f['max_streak_count'],
-                    'last_read_date'   => $lastRead,
-                    'last_read_label'  => $status->lastReadLabel,
-                    'username'         => $f['username'],
-                    'nudged_today'     => $nudgedToday,
-                    'has_read_today'   => $status->hasReadToday,
-                    'is_streak_lost'   => $status->isStreakLost,
-                    'will_use_freeze_today' => $status->willUseFreezeToday,
-                    'is_self'          => (bool)$f['is_self'],
-                    'is_mutual'        => (bool)$f['is_mutual'],
-                ];
-            }, $following)
+            'friends' => StreakUtils::sortByEffectiveStreak($friends)
         ]);
     }
 
@@ -340,7 +346,7 @@ class FriendController {
                 return [
                     'id'           => $id,
                     'display_name' => $r['display_name'],
-                    'streak_count' => (int)$r['streak_count'],
+                    'username'     => $r['username'],
                     'is_self'      => $isSelf,
                     'is_following' => $isSelf || isset($followingIds[$id]),
                 ];

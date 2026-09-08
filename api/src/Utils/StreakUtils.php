@@ -40,4 +40,21 @@ class StreakUtils {
             $missedDays,
         );
     }
+
+    /**
+     * Ordena filas ya mapeadas (con 'streak_count', 'is_streak_lost' y 'display_name')
+     * por racha efectiva: una racha perdida cuenta como 0, sin importar el valor
+     * crudo aun guardado en la columna (ver nota en computeStatus/getFriends).
+     */
+    public static function sortByEffectiveStreak(array $rows): array {
+        usort($rows, function ($a, $b) {
+            $streakA = $a['is_streak_lost'] ? 0 : $a['streak_count'];
+            $streakB = $b['is_streak_lost'] ? 0 : $b['streak_count'];
+            if ($streakA !== $streakB) {
+                return $streakB <=> $streakA;
+            }
+            return $a['display_name'] <=> $b['display_name'];
+        });
+        return $rows;
+    }
 }
