@@ -187,9 +187,20 @@ const finishTour = async () => {
   router.push({ name: 'dashboard' });
 };
 
+// Precarga las imagenes de todos los steps al abrir, no solo la del primero:
+// sin esto, cada @click en "Siguiente" dispara la descarga de la imagen del
+// step nuevo recien en ese momento, y se nota el salto/carga en el <img>.
+const preloadStepImages = () => {
+  steps.forEach((step) => {
+    const img = new Image();
+    img.src = step.image;
+  });
+};
+
 const open = () => {
   currentStep.value = 0;
   isOpen.value = true;
+  preloadStepImages();
 };
 
 const checkTourStatus = async () => {
@@ -197,6 +208,7 @@ const checkTourStatus = async () => {
   if (!hasSeenTour) {
     setTimeout(() => {
       isOpen.value = true;
+      preloadStepImages();
     }, 500);
   }
 };
