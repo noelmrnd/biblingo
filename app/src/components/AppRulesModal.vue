@@ -15,28 +15,36 @@
       <div class="flex gap-3">
         <Flame class="w-5 h-5 text-amber-400 stroke-[2.5] shrink-0 mt-0.5" />
         <p class="text-slate-300 text-base font-medium">
-          <strong class="text-white font-bold">Racha:</strong> lee al menos una vez al día para mantenerla. Si dejas pasar un día completo sin registrar lectura (y no tienes protectores), la racha se reinicia a 0.
+          <strong class="text-white font-bold">Racha:</strong>
+          es la cantidad de días seguidos en los que has registrado una lectura.
+          Si termina el día y no la registras, tu racha se pierde y vuelve a 0.
         </p>
       </div>
 
       <div class="flex gap-3">
         <span class="text-xl leading-none shrink-0">🧊</span>
         <p class="text-slate-300 text-base font-medium">
-          <strong class="text-white font-bold">Protectores de racha:</strong> ganas uno automáticamente cada 7 días consecutivos de racha activa (máximo 2 acumulados). Si te saltas exactamente un día, un protector lo cubre solo y tu racha sigue intacta.
+          <strong class="text-white font-bold">Protectores de racha:</strong>
+          te ayudan a mantener tu racha si un día no lees.
+          Se usan automáticamente cuando termina el día sin registrar tu lectura.
+          Ganas 1 por cada 7 días de lectura y puedes tener hasta 2.
         </p>
       </div>
 
       <div class="flex gap-3">
         <Heart class="w-5 h-5 text-rose-400 stroke-[2.5] shrink-0 mt-0.5" />
         <p class="text-slate-300 text-base font-medium">
-          <strong class="text-white font-bold">Reacciones:</strong> al registrar tu lectura puedes elegir cómo te sentiste. Se acumulan en tu perfil para que veas cuáles se repiten más.
+          <strong class="text-white font-bold">Reacciones:</strong>
+          podrás indicar cómo te hizo sentir tu lectura.
+          Desde tu perfil podrás ver qué emociones experimentas con más frecuencia.
         </p>
       </div>
 
       <div class="flex gap-3">
         <BellRing class="w-5 h-5 text-sky-400 stroke-[2.5] shrink-0 mt-0.5" />
         <p class="text-slate-300 text-base font-medium">
-          <strong class="text-white font-bold">Toques:</strong> solo puedes darle un toque a amigos que te siguen y sigues de vuelta (mutuo), y que aún no hayan leído hoy. Máximo uno por persona por día.
+          <strong class="text-white font-bold">Toques:</strong>
+          son recordatorios que puedes enviar a las personas que sigues (y también te siguen) para que no olviden su lectura del día.
         </p>
       </div>
     </div>
