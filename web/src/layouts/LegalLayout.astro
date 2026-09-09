@@ -1,0 +1,39 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  updated?: string;
+}
+const { title, description, heading, updated } = Astro.props;
+---
+<Layout title={title} description={description}>
+  <header class="navbar">
+    <div class="container flex-between">
+      <a href="/" class="logo" style="text-decoration: none;">
+        <img src="/assets/logo-256.png" alt="Libringo Logo" class="logo-img" />
+        <span class="logo-text">Libringo</span>
+      </a>
+      <a href="/#descargar" class="btn btn-primary">Descargar App</a>
+    </div>
+  </header>
+
+  <main class="legal-wrapper">
+    <div class="container">
+      <a href="/" class="back-link">← Volver al inicio</a>
+
+      <article class="legal-card">
+        <header class="legal-header">
+          <h1>{heading}</h1>
+          {updated && <p class="legal-date">Última actualización: {updated}</p>}
+        </header>
+
+        <div class="legal-content">
+          <slot />
+        </div>
+      </article>
+    </div>
+  </main>
+</Layout>

@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **App**: Vue 3 + Vite + Tailwind CSS + Capacitor (iOS & Android) — `app/`
 - **API**: Native PHP (no framework) + MariaDB/MySQL — `api/`
-- **Landing**: static HTML/CSS — `web/`
+- **Landing**: Astro (static output, no runtime JS framework) — `web/`
 - **Auth**: Sign in with Apple (iOS), Google Sign-In (Android/Web), plus a local dev-only panel (no real credentials needed)
 - **Push**: Firebase Cloud Messaging (FCM HTTP v1) for friend-related notifications; local notifications for daily reminders (`@capacitor/local-notifications`)
 - **Deep links**: `libringo.com/invite/CODIGO` for friend invites, handled via `@capacitor/share` + `app/src/services/deepLinks.js`
@@ -25,11 +25,11 @@ pnpm dev:down
 pnpm dev:build  # rebuild image after Dockerfile/dependency changes
 ```
 
-Services: web landing on `:8082`, API on `:8084/api`, app (Vite dev server, HMR) on `:8083` / `:5173`. The domain-events worker runs inside the `libringo` container under supervisord (`process_events.php --daemon`).
+Services: web landing (Astro dev server, HMR) on `:8082`, API on `:8084/api`, app (Vite dev server, HMR) on `:8083` / `:5173`. The domain-events worker runs inside the `libringo` container under supervisord (`process_events.php --daemon`).
 
-Non-Docker alternative (`bin/*.sh`): `bin/dev.sh` runs API (`php -S 0.0.0.0:8000`), Vite app, and web landing (`0.0.0.0:8080`) together; `bin/api.sh`, `bin/app.sh`, `bin/web.sh` run them individually. Note the ports differ from the Docker setup (8000/8080 vs 8084/8082).
+Non-Docker alternative (`bin/*.sh`): `bin/dev.sh` runs API (`php -S 0.0.0.0:8000`), Vite app, and web landing (Astro dev server, `0.0.0.0:8080`) together; `bin/api.sh`, `bin/app.sh`, `bin/web.sh` run them individually. Note the ports differ from the Docker setup (8000/8080 vs 8084/8082).
 
-Initial setup: `pnpm install` in `app/`, import `api/schema.sql` into MySQL/MariaDB, configure `api/.env` and `app/.env` (see README for the required keys — `MAIN_DB_*`, `VITE_API_BASE_URL`).
+Initial setup: `pnpm install` in `app/` and in `web/`, import `api/schema.sql` into MySQL/MariaDB, configure `api/.env` and `app/.env` (see README for the required keys — `MAIN_DB_*`, `VITE_API_BASE_URL`).
 
 In dev (`localhost`), the login screen exposes a **"🛠️ Entorno de Desarrollo"** panel: type any display name and click "Entrar Dev" to sign in instantly without Google/Apple credentials — the standard way to test locally, including multi-tab friend/streak interactions.
 
@@ -76,7 +76,7 @@ Capacitor config is split by environment: `capacitor.config.dev.json` / `.prod.j
 
 ### Web (`web/`)
 
-Static, no build step — plain HTML/CSS files served directly (landing page, `privacidad.html`, `terminos.html`, `contacto.html`, `eliminar-cuenta.html`).
+Astro, static output (`build.format: 'file'` in `astro.config.mjs` → generates flat `.html` files, e.g. `/privacidad.html`, matching the old URLs). Pages in `src/pages/*.astro` (`index`, `privacidad`, `terminos`, `contacto`, `eliminar-cuenta`); shared chrome in `src/layouts/Layout.astro` (head/footer) and `src/layouts/LegalLayout.astro` (navbar + legal-page wrapper, used by the legal pages). Static assets (`logo-256.png`, `mascot-teaser.png`, `style.css`) live in `public/` and are served as-is. `pnpm build` outputs to `dist/`, which is what gets deployed — no runtime JS framework, just static HTML/CSS.
 
 ## Releases
 

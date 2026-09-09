@@ -4,5 +4,5 @@
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "🌐 Iniciando Landing Page Web en http://0.0.0.0:8080 ..."
-php -S 0.0.0.0:8080 -t "$ROOT_DIR/web"
+echo "🌐 Iniciando Landing Page Web (Astro dev server) en http://0.0.0.0:8080 ..."
+pnpm --prefix "$ROOT_DIR/web" exec astro dev --host 0.0.0.0 --port 8080

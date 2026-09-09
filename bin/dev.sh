@@ -32,9 +32,9 @@ echo -e "${BLUE}⚡ Iniciando Frontend App (pnpm dev)...${NC}"
 pnpm --prefix "$ROOT_DIR/app" dev &
 VITE_PID=$!
 
-# 3. Iniciar Servidor Landing Page Web
+# 3. Iniciar Servidor Landing Page Web (Astro dev server)
 echo -e "${YELLOW}🌐 Iniciando Landing Page Web en http://0.0.0.0:8080 ...${NC}"
-php -S 0.0.0.0:8080 -t "$ROOT_DIR/web" &
+pnpm --prefix "$ROOT_DIR/web" exec astro dev --host 0.0.0.0 --port 8080 &
 WEB_PID=$!
 
 # Esperar a que los procesos terminen

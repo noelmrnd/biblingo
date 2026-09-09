@@ -5,15 +5,23 @@ WORKDIR /app
 COPY api/ ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# --- Etapa de build: genera el HTML estático de la landing page con Astro ---
+FROM node:22-slim AS web-build
+RUN corepack enable
+WORKDIR /web
+COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY web/ ./
+RUN pnpm build
+
 FROM php:8.3-fpm-alpine AS base
 
-# Instalar Nginx, Supervisor, curl y la extensión pdo_mysql
-RUN apk add --no-cache nginx supervisor curl && \
+# Instalar Nginx, Supervisor y la extensión pdo_mysql; crear directorios necesarios
+# en una sola capa para minimizar el tamaño de la imagen
+RUN apk add --no-cache nginx supervisor && \
     docker-php-ext-install pdo pdo_mysql && \
-    echo "clear_env = no" >> /usr/local/etc/php-fpm.d/zz-docker.conf
-
-# Crear directorios para Nginx, Supervisor y las aplicaciones
-RUN mkdir -p /run/nginx /var/log/supervisor /var/www/web /var/www/app /var/www/api
+    echo "clear_env = no" >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    mkdir -p /run/nginx /var/log/supervisor /var/www/web /var/www/app /var/www/api
 
 # Copiar configuraciones base de Nginx y Supervisor
 COPY docker/nginx.conf /etc/nginx/nginx.conf
@@ -31,7 +39,7 @@ FROM base AS dev
 
 # --- Entorno de producción (copia los archivos empaquetados para la imagen autónoma) ---
 FROM base AS prod
-COPY web /var/www/web
+COPY --from=web-build /web/dist /var/www/web
 COPY app/dist /var/www/app
 COPY --from=composer-build /app /var/www/api
 

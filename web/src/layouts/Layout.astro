@@ -1,0 +1,46 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+}
+const { title, description, ogTitle = title, ogDescription = description } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/assets/logo-256.png" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={ogDescription} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://libringo.com" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content={ogTitle} />
+  <meta name="twitter:description" content={ogDescription} />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <slot name="head" />
+</head>
+<body>
+  <slot />
+  <footer class="footer">
+    <div class="container flex-between">
+      <p>© 2026 Libringo</p>
+      <div class="footer-links">
+        <a href="/privacidad">Privacidad</a>
+        <a href="/terminos">Términos</a>
+        <a href="/contacto">Contacto</a>
+        <a href="https://www.instagram.com/libringoapp" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.tiktok.com/@libringo" target="_blank" rel="noopener noreferrer">TikTok</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

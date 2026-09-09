@@ -1,87 +1,76 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="/assets/logo-256.png" />
-  <title>Libringo - Muy pronto</title>
-  <meta name="description" content="Libringo: lectura entre amigos. Muy pronto disponible. Síguenos en Instagram y TikTok para no perderte el lanzamiento." />
-  <meta property="og:title" content="Libringo - Muy pronto" />
-  <meta property="og:description" content="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://libringo.com" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Libringo - Muy pronto" />
-  <meta name="twitter:description" content="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento." />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    .teaser {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 70px 0 60px;
-    }
-    .teaser-inner {
-      max-width: 560px;
-      margin: 0 auto;
-    }
-    .teaser-logo {
-      justify-content: center;
-      margin-bottom: 28px;
-    }
-    .teaser-mascot {
-      width: 200px;
-      height: auto;
-      margin: 0 auto 20px;
-      display: block;
-    }
-    .teaser-badge {
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-    .teaser-social {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-top: 36px;
-      flex-wrap: wrap;
-    }
-    .teaser-social a {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 24px;
-      border-radius: 999px;
-      background: #182030;
-      border: 1px solid #2b384e;
-      color: #fff;
-      font-weight: 600;
-      text-decoration: none;
-      transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-    .teaser-social a:hover {
-      border-color: #58cc02;
-      transform: translateY(-2px);
-    }
-    .teaser-social svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-    .features-closing {
-      margin-top: 40px;
-      font-size: 18px;
-      font-style: italic;
-      color: #cbd5e1;
-    }
-  </style>
-</head>
-<body>
-  <!-- Teaser de Próximo Lanzamiento -->
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout
+  title="Libringo - Muy pronto"
+  description="Libringo: lectura entre amigos. Muy pronto disponible. Síguenos en Instagram y TikTok para no perderte el lanzamiento."
+  ogDescription="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento."
+>
+  <Fragment slot="head">
+    <style>
+      .teaser {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 70px 0 60px;
+      }
+      .teaser-inner {
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .teaser-logo {
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+      .teaser-mascot {
+        width: 200px;
+        height: auto;
+        margin: 0 auto 20px;
+        display: block;
+      }
+      .teaser-badge {
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+      .teaser-social {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 36px;
+        flex-wrap: wrap;
+      }
+      .teaser-social a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 24px;
+        border-radius: 999px;
+        background: #182030;
+        border: 1px solid #2b384e;
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+      }
+      .teaser-social a:hover {
+        border-color: #58cc02;
+        transform: translateY(-2px);
+      }
+      .teaser-social svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+      .features-closing {
+        margin-top: 40px;
+        font-size: 18px;
+        font-style: italic;
+        color: #cbd5e1;
+      }
+    </style>
+  </Fragment>
+
   <section class="teaser">
     <div class="container">
       <div class="teaser-inner">
@@ -116,19 +105,4 @@
       </div>
     </div>
   </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container flex-between">
-      <p>© 2026 Libringo</p>
-      <div class="footer-links">
-        <a href="/privacidad">Privacidad</a>
-        <a href="/terminos">Términos</a>
-        <a href="/contacto">Contacto</a>
-        <a href="https://www.instagram.com/libringoapp" target="_blank" rel="noopener noreferrer">Instagram</a>
-        <a href="https://www.tiktok.com/@libringo" target="_blank" rel="noopener noreferrer">TikTok</a>
-      </div>
-    </div>
-  </footer>
-</body>
-</html>
+</Layout>
