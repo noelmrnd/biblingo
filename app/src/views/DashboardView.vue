@@ -42,6 +42,7 @@ import { NotificationService } from '../services/notifications';
 import { ToastService } from '../services/toast';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { getBadgeById } from '../constants';
+import { BadgeCelebrationService } from '../services/badgeCelebration';
 
 const props = defineProps({
   user: { type: Object, required: true }
@@ -71,12 +72,12 @@ const onReadingLogged = ({ res }) => {
   }
 
   // Puede haber mas de una si el usuario ya estaba por encima de varios umbrales
-  // antes de que existiera este sistema (backfill): ToastService las encola y
-  // las muestra una por una, no hace falta escalonarlas a mano aca.
+  // antes de que existiera este sistema (backfill): BadgeCelebrationService las
+  // encola y las muestra una por una, no hace falta escalonarlas a mano aca.
   (res.new_badges || []).forEach((badgeId) => {
     const badge = getBadgeById(badgeId);
     if (!badge) return;
-    ToastService.success(`${badge.emoji} ${badge.description}`, 5000);
+    BadgeCelebrationService.celebrate(badge);
   });
 
   refreshProfile({ force: true });
