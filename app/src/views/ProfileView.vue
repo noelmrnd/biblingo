@@ -4,7 +4,6 @@
     <ProfileHeader
       :display-name="user.display_name"
       :username="user.username"
-      :member-since-label="memberSinceLabel"
       :followers-count="user.followers_count"
       :following-count="user.following_count"
       @open-followers="followList.open('followers')"
@@ -22,8 +21,8 @@
     </ProfileHeader>
 
     <!-- Resumen: racha actual, maxima, constancia total y protectores usados (mismo peso visual) -->
-    <div class="grid grid-cols-2 gap-3">
-      <StatCard
+    <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
+      <StatCell
         :value="user.is_streak_lost ? 0 : user.streak_count"
         label="Racha actual"
         :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
@@ -31,20 +30,21 @@
         :icon="(user.is_streak_lost || user.will_use_freeze_today) ? null : Flame"
         icon-color-class="text-amber-400"
       />
-      <StatCard :value="user.total_days_read || 0" label="Días leídos" color-class="text-brand-green" :icon="BookOpenCheck" icon-color-class="text-brand-green" />
-      <StatCard :value="user.max_streak_count" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-      <StatCard :value="user.streak_freezes_used || 0" label="Protectores usados" color-class="text-slate-300" :icon="Shield" icon-color-class="text-slate-300" />
+      <StatCell :value="user.total_days_read || 0" label="Días leídos" color-class="text-brand-green" :icon="BookOpenCheck" icon-color-class="text-brand-green" />
+      <StatCell :value="user.max_streak_count" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
+      <StatCell :value="user.streak_freezes_used || 0" label="Protectores usados" color-class="text-sky-300" :icon="Shield" icon-color-class="text-sky-300" />
     </div>
 
     <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
     <ReactionBreakdown
       :reaction-counts="user.reaction_counts"
-      title="Tus reacciones"
       empty-label="Elige una reacción al registrar tu lectura y aquí verás cuáles se repiten más."
     />
 
     <!-- Medallas ganadas por racha, amigos, reacciones, etc -->
     <BadgesCircles :earned-badges="user.badges || []" />
+
+    <p v-if="memberSinceLabel" class="text-center text-slate-500 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
 
     <!-- Lista de Seguidores / Seguidos -->
     <FollowListModal
@@ -70,7 +70,7 @@ import ProfileHeader from '../components/ProfileHeader.vue';
 import IconButton from '../components/IconButton.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
 import { Flame, Zap, Settings, BookOpenCheck, Shield } from '@lucide/vue';
-import StatCard from '../components/StatCard.vue';
+import StatCell from '../components/StatCell.vue';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { useFollowListPanel } from '../composables/useFollowListPanel';

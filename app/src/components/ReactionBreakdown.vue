@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-3">
-    <SectionTitle :title="title" :icon="Heart" icon-color-class="text-rose-400" />
+    <SectionTitle title="Reacciones" :icon="Heart" icon-color-class="text-rose-400" />
 
     <AppCard>
       <div v-if="breakdown.length > 0" class="flex flex-wrap gap-2">
         <div
           v-for="r in breakdown"
           :key="r.id"
-          class="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-1.5"
+          class="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-2"
         >
           <span class="text-lg leading-none">{{ r.emoji }}</span>
           <span class="text-slate-200 text-sm font-bold">{{ r.count }}</span>
@@ -28,7 +28,6 @@ import { READING_REACTIONS } from '../constants';
 
 const props = defineProps({
   reactionCounts: { type: Object, default: () => ({}) },
-  title: { type: String, default: 'Reacciones' },
   emptyLabel: { type: String, default: 'Aún no ha registrado reacciones.' }
 });
 

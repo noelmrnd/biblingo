@@ -12,11 +12,10 @@
     </div>
 
     <template v-else>
-      <ProfileHeader
+      <FriendProfileHeader
         :display-name="friend.display_name"
         :username="friend.username"
         :avatar-initial="(friend.display_name || '?').charAt(0).toUpperCase()"
-        :member-since-label="memberSinceLabel"
         :followers-count="friend.followers_count"
         :following-count="friend.following_count"
         @open-followers="followList.open('followers')"
@@ -27,7 +26,7 @@
           <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
           <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
         </template>
-      </ProfileHeader>
+      </FriendProfileHeader>
 
       <div class="flex gap-3">
         <AppButton
@@ -63,8 +62,9 @@
         </AppButton>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <StatCard
+      <!-- Resumen: prueba con celdas centradas dentro de un solo card -->
+      <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
+        <StatCell
           :value="friend.is_streak_lost ? 0 : friend.streak_count"
           label="Racha actual"
           :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
@@ -72,7 +72,13 @@
           :icon="(friend.is_streak_lost || friend.will_use_freeze_today) ? null : Flame"
           icon-color-class="text-amber-400"
         />
-        <StatCard :value="friend.total_days_read || 0" label="Días leídos" color-class="text-brand-green" :icon="BookOpenCheck" icon-color-class="text-brand-green" />
+        <StatCell
+          :value="friend.total_days_read || 0"
+          label="Días leídos"
+          color-class="text-brand-green"
+          :icon="BookOpenCheck"
+          icon-color-class="text-brand-green"
+        />
       </div>
 
       <WeeklyTracker :history="history" />
@@ -85,6 +91,8 @@
         <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
         <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
       </div>
+
+      <p v-if="memberSinceLabel" class="text-center text-slate-500 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
     </template>
 
     <UnfollowConfirmModal
@@ -113,9 +121,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import BadgesCircles from '../components/BadgesCircles.vue';
-import ProfileHeader from '../components/ProfileHeader.vue';
+import FriendProfileHeader from '../components/FriendProfileHeader.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
-import StatCard from '../components/StatCard.vue';
+import StatCell from '../components/StatCell.vue';
 import WeeklyTracker from '../components/WeeklyTracker.vue';
 import AppButton from '../components/AppButton.vue';
 import UnfollowConfirmModal from '../components/UnfollowConfirmModal.vue';

@@ -190,25 +190,24 @@
         Cerrar sesión
       </SettingsActionButton>
 
-      <SettingsActionButton
-        :icon="Trash2"
-        variant="danger-subtle"
-        @click="isDeleteAccountModalOpen = true"
-      >
-        Eliminar cuenta
-      </SettingsActionButton>
-
-      <div>
+      <div class="flex flex-col pt-8">
         <a
           href="https://www.libringo.com/privacidad"
           target="_blank"
           rel="noopener noreferrer"
-          class="block text-center text-sm font-semibold text-slate-500 hover:text-slate-300 py-2"
+          class="text-center text-sm font-semibold text-slate-500 hover:text-slate-300 p-2 mx-auto"
         >
           Política de privacidad
         </a>
 
-        <p class="text-center text-sm font-medium text-slate-600">
+        <a
+          @click="isDeleteAccountModalOpen = true"
+          class="text-center text-sm font-semibold text-slate-500 hover:text-slate-300 p-2 mx-auto cursor-pointer"
+        >
+          Eliminar cuenta
+        </a>
+
+        <p class="text-center text-sm font-medium text-slate-600 py-2">
           Versión {{ appVersion }}
         </p>
       </div>
