@@ -21,7 +21,7 @@
                   <div class="flex items-start gap-3 min-w-0">
                     <slot name="icon" />
                     <div class="space-y-1 min-w-0">
-                      <h3 v-if="title" class="text-xl text-white font-black leading-tight">
+                      <h3 v-if="title" class="text-xl text-white font-bold leading-tight">
                         {{ title }}
                       </h3>
                       <p v-if="description" class="text-base text-slate-300 font-medium">

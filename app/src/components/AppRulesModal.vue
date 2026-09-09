@@ -28,8 +28,13 @@
           te ayudan a mantener tu racha si un día no lees.
           Se usan automáticamente cuando termina el día sin registrar tu lectura.
           Ganas 1 por cada 7 días de lectura y puedes tener hasta 2.
-          <span v-if="nextFreezeText" class="block text-sky-300 text-sm font-semibold mt-1">
-            Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
+          <span class="text-sky-300">
+            <template v-if="nextFreezeText">
+              Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
+            </template>
+            <template v-else>
+              Sigue leyendo para conseguir uno.
+            </template>
           </span>
         </p>
       </div>

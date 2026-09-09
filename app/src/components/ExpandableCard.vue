@@ -10,7 +10,7 @@
           <component :is="icon" class="w-5 h-5 stroke-[2.5]" :class="iconColorClass" />
         </div>
         <div class="min-w-0">
-          <h3 class="font-extrabold text-white text-lg truncate">{{ title }}</h3>
+          <h3 class="font-bold text-white text-lg truncate">{{ title }}</h3>
           <p v-if="description" class="text-slate-300 text-base font-medium">{{ description }}</p>
         </div>
       </div>

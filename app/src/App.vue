@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white relative">
+  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white relative max-w-lg mx-auto shadow-xl">
     <!-- Componente Toast Flotante Global -->
     <ToastNotification />
 
