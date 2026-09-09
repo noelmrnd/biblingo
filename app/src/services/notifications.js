@@ -151,8 +151,8 @@ export const NotificationService = {
         if (isTodayReminder) {
           title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
           body = freezesAvailable === 0
-            ? `No tienes protectores de racha. ¡Lee ahora para no perder tus ${streakText} de racha!`
-            : `Todavía tienes un protector, pero no lo gastes por descuido: lee hoy y sigue en ${currentStreak + 1}.`;
+            ? `No tienes protectores de racha. ¡Lee ahora para no perder tu racha de ${streakText}!`
+            : `¡Lee ahora para no perder tu racha de ${streakText}!`;
         } else {
           const msgIndex = Math.abs(dayOffset) % messages.length;
           body = messages[msgIndex];
