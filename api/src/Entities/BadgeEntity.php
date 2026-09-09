@@ -30,10 +30,10 @@ class BadgeEntity {
         ['id' => 'reaction_challenged_10', 'category' => 'reaction', 'threshold' => 10, 'reaction' => 'challenged'],
         ['id' => 'days_read_50',      'category' => 'days_read',     'threshold' => 50],
         ['id' => 'days_read_365',     'category' => 'days_read',     'threshold' => 365],
-        ['id' => 'reactions_all_4',   'category' => 'reactions_all', 'threshold' => 4],
         ['id' => 'mutual_5',          'category' => 'mutual',        'threshold' => 5],
         ['id' => 'nudge_sent_10',     'category' => 'nudge_sent',     'threshold' => 10],
         ['id' => 'nudge_received_10', 'category' => 'nudge_received', 'threshold' => 10],
+        ['id' => 'founder',           'category' => 'founder',        'threshold' => 1],
     ];
 
     /**

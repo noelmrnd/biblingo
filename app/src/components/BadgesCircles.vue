@@ -36,7 +36,7 @@
           </div>
         </template>
         <p v-if="selected" class="text-slate-400 text-sm font-medium">
-          {{ selected.earnedAt ? `Ganado el ${formatDateDMY(selected.earnedAt)}` : 'Todavía no lo ganas' }}
+          {{ selected.earnedAt ? `Obtenido el ${formatDateDMY(selected.earnedAt)}` : 'Todavía no lo ganas' }}
         </p>
       </AppModal>
     </AppCard>

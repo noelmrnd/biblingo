@@ -138,7 +138,7 @@ class UserEntity {
      * y ve el estado ya actualizado por la primera).
      */
     public static function getStreakRowForUpdate(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone FROM users WHERE id = ? FOR UPDATE");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ? FOR UPDATE");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }

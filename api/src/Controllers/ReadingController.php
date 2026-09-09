@@ -150,7 +150,7 @@ class ReadingController {
                     ReadingLogEntity::insertFrozenDays($db, $userId, $frozenDates);
                 }
 
-                $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction);
+                $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction, $user['created_at']);
             }
 
             $db->commit();
@@ -181,11 +181,15 @@ class ReadingController {
     /**
      * Chequeo de medallas ligado a la respuesta HTTP de logReading (no via
      * domain event) porque el frontend necesita 'new_badges' en la MISMA
-     * response para el confetti/toast instantaneo — ver BadgeEventHandler
+     * response para el confetti/modal instantaneo — ver BadgeEventHandler
      * para el resto de las medallas (following/nudge), que si se disparan
      * de forma desacoplada porque su UI no depende de la response inmediata.
+     *
+     * "Fundador" tambien se chequea aca (no en el registro): asi el usuario
+     * la ve celebrada como cualquier otra medalla en su primera lectura, sin
+     * necesitar un mecanismo aparte para medallas otorgadas fuera de este flujo.
      */
-    private static function checkBadgesAfterLog(\PDO $db, string $userId, int $currentStreak, ?string $reaction): array {
+    private static function checkBadgesAfterLog(\PDO $db, string $userId, int $currentStreak, ?string $reaction, string $userCreatedAt): array {
         $badgeValues = [
             'streak'    => $currentStreak,
             'days_read' => ReadingLogEntity::countTotalDaysRead($db, $userId),
@@ -196,7 +200,11 @@ class ReadingController {
             foreach ($reactionCounts as $row) {
                 $badgeValues["reaction:{$row['reaction']}"] = (int)$row['total'];
             }
-            $badgeValues['reactions_all'] = count($reactionCounts);
+        }
+
+        $founderCutoff = getEnvVar('FOUNDER_BADGE_CUTOFF');
+        if ($founderCutoff !== '' && new \DateTimeImmutable($userCreatedAt) < new \DateTimeImmutable($founderCutoff)) {
+            $badgeValues['founder'] = 1;
         }
 
         return BadgeEntity::checkAndAward($db, $userId, $badgeValues);

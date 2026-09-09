@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Libringo\Services;
 
 use Libringo\Entities\UserEntity;
+use Libringo\EventHandlers\BadgeEventHandler;
 
 class DomainEventProcessor {
     /**

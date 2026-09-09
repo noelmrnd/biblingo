@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Libringo\Services;
+namespace Libringo\EventHandlers;
 
 use Libringo\Entities\BadgeEntity;
 use Libringo\Entities\FollowEntity;

@@ -60,23 +60,19 @@ class AuthController {
 
         $user = self::findByProvider($db, $provider, $providerId, $verifiedEmail);
 
-        $isNewUser = !$user;
-        if ($isNewUser) {
-            $user = self::createUser($db, $provider, $providerId, $verifiedEmail, $displayName, $platform, $timezone);
-        }
-        $userId = (string)$user['id'];
+        if ($user) {
+            if ($user['status'] === UserEntity::STATUS_BANNED) {
+                sendJsonResponse(['error' => 'Esta cuenta ha sido bloqueada.'], 403);
+            }
+            if ($user['status'] === UserEntity::STATUS_DELETED) {
+                sendJsonResponse(['error' => 'Esta cuenta fue eliminada.'], 403);
+            }
 
-        if ($user['status'] === UserEntity::STATUS_BANNED) {
-            sendJsonResponse(['error' => 'Esta cuenta ha sido bloqueada.'], 403);
-        }
-        if ($user['status'] === UserEntity::STATUS_DELETED) {
-            sendJsonResponse(['error' => 'Esta cuenta fue eliminada.'], 403);
-        }
-
-        if (!$isNewUser) {
+            $userId = (string)$user['id'];
             UserEntity::updateLoginInfo($db, $userId, $platform, $timezone);
-            $user['platform'] = $platform;
-            $user['timezone'] = $timezone;
+        } else {
+            $username = self::generateUsername($db, $displayName);
+            $userId = self::createUser($db, $provider, $providerId, $verifiedEmail, $displayName, $username, $platform, $timezone);
         }
 
         $authToken = Auth::issueToken($userId);
@@ -115,7 +111,7 @@ class AuthController {
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz, (int)$user['streak_freezes']);
 
         return [
-            'id'               => (string)$userId,
+            'id'               => $userId,
             'display_name'     => $user['display_name'],
             'email'            => $user['email'],
             'username'         => $user['username'],
@@ -143,11 +139,31 @@ class AuthController {
     }
 
     /**
-     * Crea el usuario nuevo. El check-then-insert de username y de apple_id/google_id
-     * no es atomico, asi que dos requests concurrentes con el mismo provider id nuevo
-     * pueden chocar en el INSERT (ambos UNIQUE en schema). Si eso pasa: si choco por
-     * provider id/email, alguien mas ya gano la carrera y devolvemos ese usuario en vez
-     * de fallar; si choco por username, reintentamos una vez con otro sufijo.
+     * Genera un username disponible a partir del display name: base + sufijo
+     * numerico random de 3 digitos si la base (o un intento previo) ya esta tomada.
+     */
+    private static function generateUsername(\PDO $db, string $displayName): string {
+        $baseUsername = slugifyUsername($displayName);
+        $username = $baseUsername;
+
+        $attempts = 0;
+        while (UserEntity::usernameTaken($db, $username)) {
+            $attempts++;
+            if ($attempts > 10) {
+                throw new \RuntimeException('No se pudo generar un username disponible.');
+            }
+            $suffix = random_int(100, 999);
+            $username = $baseUsername . $suffix;
+        }
+
+        return $username;
+    }
+
+    /**
+     * Crea el usuario nuevo. El check-then-insert de apple_id/google_id no es atomico,
+     * asi que dos requests concurrentes con el mismo provider id nuevo pueden chocar en
+     * el INSERT (UNIQUE en schema). Si eso pasa, alguien mas ya gano la carrera:
+     * devolvemos ese usuario en vez de fallar.
      */
     private static function createUser(
         \PDO $db,
@@ -155,40 +171,17 @@ class AuthController {
         string $providerId,
         ?string $verifiedEmail,
         string $displayName,
+        string $username,
         string $platform,
         string $timezone
-    ): array {
-        $baseUsername = slugifyUsername($displayName);
-        $username = $baseUsername;
-        $suffix = 1;
-        while (UserEntity::usernameTaken($db, $username)) {
-            $suffix++;
-            $username = $baseUsername . $suffix;
-        }
-
+    ): string {
         $appleId = ($provider === 'apple') ? $providerId : null;
         $googleId = ($provider === 'google') ? $providerId : null;
         $userId = (string)SnowflakeId::nextId();
 
-        try {
-            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone);
-        } catch (\PDOException $e) {
-            if ($e->getCode() !== '23000') {
-                throw $e;
-            }
+        UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $username, $platform, $timezone);
 
-            $existing = self::findByProvider($db, $provider, $providerId, $verifiedEmail);
-            if ($existing) {
-                return $existing;
-            }
-
-            // No fue el provider id/email: choco el username contra una carrera. Un reintento basta.
-            $suffix++;
-            $userId = (string)SnowflakeId::nextId();
-            UserEntity::insert($db, $userId, $appleId, $googleId, $verifiedEmail, $displayName, $baseUsername . $suffix, $platform, $timezone);
-        }
-
-        return UserEntity::findById($db, $userId);
+        return $userId;
     }
 
     private static function findByProvider(\PDO $db, string $provider, string $providerId, ?string $verifiedEmail): array|false {
