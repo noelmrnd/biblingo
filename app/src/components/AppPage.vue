@@ -55,7 +55,12 @@
       </div>
     </main>
 
-    <AppRulesModal :is-open="isRulesModalOpen" @close="isRulesModalOpen = false" />
+    <AppRulesModal
+      :is-open="isRulesModalOpen"
+      :streak-count="streakCount"
+      :streak-freezes="streakFreezes"
+      @close="isRulesModalOpen = false"
+    />
   </div>
 </template>
 

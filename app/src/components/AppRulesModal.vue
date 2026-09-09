@@ -28,6 +28,9 @@
           te ayudan a mantener tu racha si un día no lees.
           Se usan automáticamente cuando termina el día sin registrar tu lectura.
           Ganas 1 por cada 7 días de lectura y puedes tener hasta 2.
+          <span v-if="nextFreezeText" class="block text-sky-300 text-sm font-semibold mt-1">
+            Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
+          </span>
         </p>
       </div>
 
@@ -52,12 +55,24 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { HelpCircle, Flame, Heart, BellRing } from '@lucide/vue';
 import AppModal from './AppModal.vue';
 
-defineProps({
-  isOpen: { type: Boolean, default: false }
+const props = defineProps({
+  isOpen: { type: Boolean, default: false },
+  streakCount: { type: Number, default: 0 },
+  streakFreezes: { type: Number, default: 0 }
 });
 
 defineEmits(['close']);
+
+// Mismo cadencia/tope que el backend (ver ReadingController::FREEZE_EVERY_DAYS
+// y ::MAX_STREAK_FREEZES) para mostrar cuánto falta para el próximo protector.
+const FREEZE_EVERY_DAYS = 7;
+const MAX_STREAK_FREEZES = 2;
+const nextFreezeText = computed(() => {
+  if (!props.streakCount || props.streakFreezes >= MAX_STREAK_FREEZES) return null;
+  return FREEZE_EVERY_DAYS - (props.streakCount % FREEZE_EVERY_DAYS);
+});
 </script>
