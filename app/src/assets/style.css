@@ -50,7 +50,11 @@ html {
 }
 
 .card-duo {
-  @apply bg-brand-card border-2 border-brand-border rounded-3xl p-4 shadow-xl;
+  @apply bg-brand-card border border-brand-border rounded-3xl p-4 shadow-xl;
+}
+
+.button-duo {
+  @apply bg-brand-card border border-brand-border rounded-2xl px-4 shadow-lg;
 }
 
 /* Glassmorphism */

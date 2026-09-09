@@ -12,7 +12,7 @@
 
       <!-- Tarjeta Principal del Tour -->
       <div 
-        class="relative w-full max-w-sm bg-brand-card border-2 border-brand-border rounded-3xl p-6 shadow-2xl flex flex-col justify-between max-h-[90vh] overflow-y-auto no-scrollbar"
+        class="relative w-full max-w-sm bg-brand-card border border-brand-border rounded-3xl p-6 shadow-2xl flex flex-col justify-between max-h-[90vh] overflow-y-auto no-scrollbar"
       >
         <!-- Header: Barra de Progreso y Botón Saltar -->
         <div class="space-y-3 flex-none">

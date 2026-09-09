@@ -38,7 +38,7 @@
               type="button"
               :disabled="u.is_self"
               @click="selectUser(u)"
-              class="w-full text-left p-3 rounded-2xl border-2 border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-slate-700 transition-all flex items-center gap-3 cursor-pointer disabled:cursor-default disabled:hover:bg-slate-950/60 disabled:hover:border-slate-800"
+              class="w-full text-left p-3 rounded-2xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-slate-700 transition-all flex items-center gap-3 cursor-pointer disabled:cursor-default disabled:hover:bg-slate-950/60 disabled:hover:border-slate-800"
             >
               <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-blue to-sky-400 flex items-center justify-center shrink-0 text-white font-black text-base">
                 {{ (u.display_name || '?').charAt(0).toUpperCase() }}

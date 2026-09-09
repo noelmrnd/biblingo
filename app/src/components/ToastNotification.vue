@@ -20,7 +20,7 @@
             ? 'bg-slate-900/95 border-sky-500/50 text-sky-200 shadow-sky-950/50'
             : 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200 shadow-emerald-950/50'
         ]"
-        class="pointer-events-auto max-w-sm w-full border-2 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3"
+        class="pointer-events-auto max-w-sm w-full border-1 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3"
       >
         <div class="flex items-center gap-3">
           <span class="text-2xl flex-shrink-0">

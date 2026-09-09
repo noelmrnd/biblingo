@@ -6,17 +6,17 @@
         <div
           v-for="(day, index) in weekDays"
           :key="index"
-          class="flex flex-col items-center space-y-2"
+          class="flex flex-col items-center space-y-3"
         >
-          <span class="text-base font-extrabold text-slate-300">{{ day.label }}</span>
+          <span class="text-sm font-bold text-slate-500">{{ day.label }}</span>
           <div
             :class="[
-              day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : '',
+              day.isRead ? 'bg-brand-green text-white border-emerald-600' : '',
               day.isFrozen ? 'bg-sky-500/10 text-sky-300 border-sky-500/20' : '',
               !day.isRead && !day.isFrozen ? 'bg-slate-800 text-slate-600 border-slate-700' : '',
               day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
             ]"
-            class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
+            class="w-10 h-10 rounded-2xl border flex items-center justify-center text-base font-bold transition-all"
           >
             <span v-if="day.isRead">✓</span>
             <span v-else-if="day.isFrozen" class="text-lg leading-none">🧊</span>

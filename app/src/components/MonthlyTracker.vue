@@ -24,7 +24,7 @@
       <span
         v-for="label in weekdayLabels"
         :key="label"
-        class="text-xs font-extrabold text-slate-500"
+        class="text-sm font-bold text-slate-500"
       >{{ label }}</span>
     </div>
 
@@ -40,7 +40,7 @@
           !day.isRead && !day.isFrozen ? 'bg-slate-800 text-slate-600 border-slate-700' : '',
           day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
         ]"
-        class="aspect-square rounded-2xl border-2 flex items-center justify-center text-base font-black shadow-md transition-all"
+        class="aspect-square rounded-2xl border flex items-center justify-center text-base font-bold transition-all"
       >
         <span v-if="day.isRead">✓</span>
         <span v-else-if="day.isFrozen" class="text-lg leading-none">🧊</span>

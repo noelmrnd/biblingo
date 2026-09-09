@@ -18,7 +18,7 @@
             ? 'border-brand-green bg-emerald-500/15 ring-2 ring-inset ring-brand-green/50 shadow-lg shadow-emerald-950/40 scale-[1.01]'
             : 'border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-slate-700 active:scale-[0.99]'
         ]"
-        class="w-full text-left p-3.5 rounded-2xl border-2 transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none group"
+        class="w-full text-left p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none group"
       >
         <div class="flex items-center gap-3.5 min-w-0">
           <span class="text-2xl filter drop-shadow-sm flex-shrink-0 transition-transform duration-200 group-hover:scale-110 group-active:scale-95">
@@ -39,9 +39,9 @@
           :class="[
             selectedReaction === item.id
               ? 'bg-brand-green border-brand-green text-white scale-105'
-              : 'border-slate-700 bg-slate-900/80 text-transparent'
+              : 'border-slate-800 bg-slate-900/80 text-transparent'
           ]"
-          class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 shadow-inner"
+          class="w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-200 shadow-inner"
         >
           <Check class="w-3.5 h-3.5 stroke-[3]" />
         </div>

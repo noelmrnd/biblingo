@@ -2,7 +2,7 @@
   <button
     @click="handleClick"
     :class="variantClass"
-    class="w-full font-bold rounded-2xl border-2 transition-colors flex items-center justify-center cursor-pointer"
+    class="button-duo w-full font-bold transition-colors flex items-center justify-center cursor-pointer"
   >
     <component :is="icon" :class="iconClass" class="stroke-[2.5]" />
     <span><slot /></span>
