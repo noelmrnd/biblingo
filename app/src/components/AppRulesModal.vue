@@ -2,7 +2,7 @@
   <AppModal
     :is-open="isOpen"
     title="Cómo funciona"
-    description="Racha, protectores, reacciones y toques"
+    description="Disfruta al máximo tu experiencia"
     @close="$emit('close')"
   >
     <template #icon>
