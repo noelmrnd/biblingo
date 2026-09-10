@@ -88,6 +88,9 @@ $routes = [
         }
         FriendController::getFollowList($userId, $targetId, $type);
     },
+    'GET /api/friends/search' => function () use ($userId) {
+        FriendController::searchUsers($userId, (string)($_GET['q'] ?? ''));
+    },
     'POST /api/friends/follow' => fn() => FriendController::follow($userId),
     'POST /api/friends/unfollow' => fn() => FriendController::unfollow($userId),
     'POST /api/friends/nudge' => fn() => FriendController::nudgeFriend($userId),

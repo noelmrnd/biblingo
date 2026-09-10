@@ -123,6 +123,10 @@ export const ApiService = {
     return request(`/friends/list?user_id=${userId}&type=${type}`);
   },
 
+  async searchUsers(query) {
+    return request(`/friends/search?q=${encodeURIComponent(query)}`);
+  },
+
   async updateProfile(data) {
     return request('/user/update', {
       method: 'POST',

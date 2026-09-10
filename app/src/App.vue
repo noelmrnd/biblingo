@@ -15,7 +15,7 @@
 
     <!-- Splash mientras se resuelve la sesión guardada, evita el parpadeo hacia Login -->
     <div v-else-if="isInitializing" class="flex-1 flex items-center justify-center">
-      <div class="w-10 h-10 border-4 border-slate-700 border-t-brand-green rounded-full animate-spin"></div>
+      <AppSpinner size="lg" />
     </div>
 
     <!-- Si no está autenticado, mostrar Login -->
@@ -58,6 +58,7 @@ import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
 import LoginView from './views/LoginView.vue';
 import GetAppView from './views/GetAppView.vue';
+import AppSpinner from './components/AppSpinner.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import BadgeCelebrationModal from './components/BadgeCelebrationModal.vue';
 import { ToastService } from './services/toast';

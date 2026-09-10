@@ -84,6 +84,29 @@ class UserEntity {
     }
 
     /** Solo encuentra cuentas activas: no se puede seguir a un usuario banned/deleted. */
+    /**
+     * Busqueda parcial por nombre o username (case-insensitive), para el buscador
+     * de "Agregar amigos". Prioriza matches que empiezan con el query (mas
+     * relevantes) antes que matches en cualquier posicion.
+     */
+    public static function searchByNameOrUsername(\PDO $db, string $query, int $limit): array {
+        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $query) . '%';
+        $startsWith = str_replace(['%', '_'], ['\\%', '\\_'], $query) . '%';
+        $stmt = $db->prepare(
+            "SELECT id, display_name, username FROM users
+             WHERE status = 'active' AND (display_name LIKE ? OR username LIKE ?)
+             ORDER BY (username LIKE ? OR display_name LIKE ?) DESC, display_name ASC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $like);
+        $stmt->bindValue(2, $like);
+        $stmt->bindValue(3, $startsWith);
+        $stmt->bindValue(4, $startsWith);
+        $stmt->bindValue(5, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public static function findByUsername(\PDO $db, string $username): array|false {
         $stmt = $db->prepare("SELECT id, display_name FROM users WHERE username = ? AND status = 'active'");
         $stmt->execute([$username]);

@@ -354,6 +354,37 @@ class FriendController {
         ]);
     }
 
+    /**
+     * Busqueda para "Agregar amigos": por nombre o username, parcial. Requiere
+     * al menos 2 caracteres para evitar escanear toda la tabla con cada tecla.
+     */
+    public static function searchUsers(string $userId, string $query) {
+        $query = trim($query);
+        if (mb_strlen($query) < 2) {
+            sendJsonResponse(['success' => true, 'users' => []]);
+        }
+
+        $db = getDbConnection();
+        $rows = UserEntity::searchByNameOrUsername($db, $query, 20);
+
+        $followingIds = array_flip(FollowEntity::fetchFollowingIds($db, $userId));
+
+        sendJsonResponse([
+            'success' => true,
+            'users' => array_map(function ($r) use ($followingIds, $userId) {
+                $id = (string)$r['id'];
+                $isSelf = ($id === $userId);
+                return [
+                    'id'           => $id,
+                    'display_name' => $r['display_name'],
+                    'username'     => $r['username'],
+                    'is_self'      => $isSelf,
+                    'is_following' => $isSelf || isset($followingIds[$id]),
+                ];
+            }, $rows)
+        ]);
+    }
+
     public static function isFollowing(\PDO $db, string $followerId, string $followedId): bool {
         return FollowEntity::isFollowing($db, $followerId, $followedId);
     }
