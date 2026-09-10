@@ -10,15 +10,9 @@
       card-class="bg-slate-900 bg-[radial-gradient(ellipse_at_top_right,_rgba(88,204,2,0.18),_transparent_65%)] border-indigo-500/30"
     >
       <div class="space-y-3">
-        <AppButton color="green" block @click="isShareModalOpen = true">
-          <Share2 class="w-5 h-5 stroke-[2.5]" />
-          <span>Compartir mi perfil</span>
-        </AppButton>
+        <AppButton color="green" block :icon="Share2" text="Compartir mi perfil" @click="isShareModalOpen = true" />
 
-        <AppButton color="blue" block @click="isAddFriendModalOpen = true">
-          <UserRoundPlus class="w-5 h-5 stroke-[2.5]" />
-          <span>Agregar amigos</span>
-        </AppButton>
+        <AppButton color="blue" block :icon="UserRoundPlus" text="Agregar amigos" @click="isAddFriendModalOpen = true" />
       </div>
     </ExpandableCard>
 

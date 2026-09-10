@@ -13,7 +13,11 @@
       colorClass,
     ]"
   >
-    <slot />
+    <span v-if="loading" :class="iconSizeClass" class="border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+    <component v-else-if="icon && iconPosition === 'start'" :is="icon" :class="iconSizeClass" />
+    <span v-if="text">{{ loadingText && loading ? loadingText : text }}</span>
+    <slot/>
+    <component v-if="!loading && icon && iconPosition === 'end'" :is="icon" :class="iconSizeClass" />
   </button>
 </template>
 
@@ -25,7 +29,7 @@ const props = defineProps({
   color: {
     type: String,
     default: 'green',
-    validator: (val) => ['green', 'blue', 'card', 'nudge'].includes(val)
+    validator: (val) => ['green', 'blue', 'card', 'nudge', 'rose'].includes(val)
   },
   size: {
     type: String,
@@ -56,6 +60,18 @@ const props = defineProps({
     type: String,
     default: 'light',
     validator: (val) => ['light', 'medium', 'heavy', 'success', 'warning', 'error', 'none'].includes(val)
+  },
+  // Contenido estandar del boton (icon + texto). El <slot/> del template
+  // sigue disponible para casos que necesiten markup custom (no usado hoy
+  // por ningun caller).
+  icon: { type: [Object, Function], default: null },
+  text: { type: String, default: '' },
+  // Texto a mostrar en lugar de `text` mientras `loading` es true, ej. "Enviando...".
+  loadingText: { type: String, default: '' },
+  iconPosition: {
+    type: String,
+    default: 'start',
+    validator: (val) => ['start', 'end'].includes(val)
   }
 });
 
@@ -76,6 +92,10 @@ const sizeClasses = computed(() => {
   }
 });
 
+// Coincide con el tamaño que cada caller usaba manualmente antes de migrar al
+// fallback icon+text: w-6 h-6 en botones "lg", w-5 h-5 en el resto.
+const iconSizeClass = computed(() => props.size === 'lg' ? 'w-6 h-6 stroke-[2.5]' : 'w-5 h-5 stroke-[2.5]');
+
 const colorClass = computed(() => {
   switch (props.color) {
     case 'blue':
@@ -84,6 +104,8 @@ const colorClass = computed(() => {
       return 'bg-brand-card hover:bg-slate-800 text-slate-200 border border-brand-border';
     case 'nudge':
       return 'bg-brand-nudge hover:bg-brand-nudge-dark text-white';
+    case 'rose':
+      return 'bg-rose-600 hover:bg-rose-500 text-white';
     case 'green':
     default:
       return 'bg-brand-green hover:bg-brand-green-dark text-white';

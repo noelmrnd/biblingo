@@ -86,11 +86,9 @@
           color="green"
           block
           :disabled="saveProfileAction.loading.value || !hasProfileChanges || !isUsernameValid"
+          :text="saveProfileAction.loading.value ? 'Guardando...' : 'Guardar datos'"
           @click="saveProfile"
-        >
-          <span v-if="saveProfileAction.loading.value">Guardando...</span>
-          <span v-else>Guardar datos</span>
-        </AppButton>
+        />
       </ExpandableCard>
 
       <!-- Categorias de Notificacion -->
@@ -140,10 +138,9 @@
           color="green"
           block
           :disabled="savePrefsAction.loading.value || !prefsDirty"
+          :text="savePrefsAction.loading.value ? 'Guardando...' : 'Guardar notificaciones'"
           @click="saveNotificationPrefs"
-        >
-          {{ savePrefsAction.loading.value ? 'Guardando...' : 'Guardar notificaciones' }}
-        </AppButton>
+        />
       </ExpandableCard>
 
       <!-- Guía y Tutorial / Tour de Bienvenida -->
@@ -156,9 +153,7 @@
         :icon="Compass"
       >
         <template #action>
-          <AppButton color="blue" @click="openTour">
-            Ver tour
-          </AppButton>
+          <AppButton color="blue" text="Ver tour" @click="openTour" />
         </template>
       </ExpandableCard>
     </div>

@@ -22,10 +22,9 @@
         <AppButton
           color="blue"
           :disabled="loading || !username"
+          text="Agregar"
           @click="addFriend"
-        >
-          Agregar
-        </AppButton>
+        />
       </div>
       <p v-if="statusMsg" :class="statusError ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-bold">
         {{ statusMsg }}

@@ -54,12 +54,12 @@
         size="lg"
         block
         :disabled="!selectedReaction || loading"
+        :loading="loading"
+        loading-text="Registrando lectura..."
+        text="Registrar lectura"
+        :icon="BookOpen"
         @click="onConfirm"
-      >
-        <span v-if="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-        <BookOpen v-else class="w-5 h-5 stroke-[2.5]" />
-        <span>{{ loading ? 'Registrando lectura...' : 'Registrar lectura' }}</span>
-      </AppButton>
+      />
     </template>
   </AppModal>
 </template>

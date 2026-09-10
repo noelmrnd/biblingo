@@ -35,32 +35,29 @@
           color="green"
           block
           :disabled="follow.loading.value"
+          :icon="UserRoundPlus"
+          :text="follow.loading.value ? 'Siguiendo...' : 'Seguir'"
           @click="followFriend"
-        >
-          <UserRoundPlus class="w-5 h-5 stroke-[2.5]" />
-          <span>{{ follow.loading.value ? 'Siguiendo...' : 'Seguir' }}</span>
-        </AppButton>
+        />
 
         <AppButton
           v-else
           color="green"
           block
+          :icon="UserCheck"
+          text="Siguiendo"
           @click="isRemoveModalOpen = true"
-        >
-          <UserCheck class="w-5 h-5 stroke-[2.5]" />
-          <span>Siguiendo</span>
-        </AppButton>
+        />
 
         <AppButton
           v-if="friend.is_mutual && !friend.has_read_today"
           color="nudge"
           block
           :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
+          :icon="BellRing"
+          :text="nudge.nudged[friend.id] ? 'Toque enviado' : 'Dar un toque'"
           @click="nudge.sendNudge(friend.id, friend.display_name)"
-        >
-          <BellRing class="w-5 h-5 stroke-[2.5]" />
-          <span>{{ nudge.nudged[friend.id] ? 'Toque enviado' : 'Dar un toque' }}</span>
-        </AppButton>
+        />
       </div>
 
       <!-- Resumen: prueba con celdas centradas dentro de un solo card -->

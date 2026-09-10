@@ -2,14 +2,13 @@
   <div class="w-full">
     <AppButton
       v-if="hasReadToday"
-      color="card"
+      color="green"
       size="lg"
       block
-      readonly
-    >
-      <CheckCircle2 class="w-6 h-6 text-brand-green stroke-[2.5]" />
-      <span>¡Perfecto, ya leíste hoy!</span>
-    </AppButton>
+      disabled
+      :icon="CheckCircle2"
+      text="¡Perfecto, ya leíste hoy!"
+    />
 
     <AppButton
       v-else
@@ -17,11 +16,10 @@
       size="lg"
       block
       :disabled="loading"
+      :icon="BookOpen"
+      text="Marcar lectura de hoy"
       @click="openReactionModal"
-    >
-      <BookOpen class="w-6 h-6 stroke-[2.5]" />
-      <span>Marcar lectura de hoy</span>
-    </AppButton>
+    />
 
     <!-- Modal de Reacción al Marcar Lectura -->
     <ReactionModal

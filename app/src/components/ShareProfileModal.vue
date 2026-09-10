@@ -16,14 +16,8 @@
       <p class="text-xl font-black tracking-wide text-emerald-400 font-mono mt-2">@{{ username }}</p>
 
       <div class="flex gap-2.5 mt-8">
-        <AppButton color="green" block @click="share">
-          <Share2 class="w-5 h-5 stroke-[2.5]" />
-          <span>Compartir</span>
-        </AppButton>
-        <AppButton color="card" block @click="copyLink">
-          <Link class="w-5 h-5 stroke-[2.5]" />
-          <span>Copiar enlace</span>
-        </AppButton>
+        <AppButton color="green" block :icon="Share2" text="Compartir" @click="share" />
+        <AppButton color="card" block :icon="Link" text="Copiar enlace" @click="copyLink" />
       </div>
     </div>
   </AppModal>

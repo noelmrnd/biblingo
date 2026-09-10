@@ -42,10 +42,9 @@
         color="green"
         block
         :disabled="sendAction.loading.value || message.trim().length < 5"
+        :text="sendAction.loading.value ? 'Enviando...' : 'Enviar'"
         @click="send"
-      >
-        {{ sendAction.loading.value ? 'Enviando...' : 'Enviar' }}
-      </AppButton>
+      />
     </template>
   </AppModal>
 </template>

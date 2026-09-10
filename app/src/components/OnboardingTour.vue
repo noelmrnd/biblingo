@@ -65,23 +65,22 @@
 
         <!-- Footer: Botones de Acción -->
         <div class="pt-2 flex items-center gap-3 flex-none">
-          <AppButton 
+          <AppButton
             v-if="currentStep > 0"
             @click="prevStep"
             color="card"
-          >
-            <ChevronLeft class="w-4 h-4 stroke-[3]" />
-          </AppButton>
+            :icon="ChevronLeft"
+          />
 
-          <AppButton 
+          <AppButton
             v-if="currentStep < steps.length - 1"
             @click="nextStep"
             color="green"
             block
-          >
-            <span>Siguiente</span>
-            <ChevronRight class="w-4 h-4 stroke-[3]" />
-          </AppButton>
+            text="Siguiente"
+            :icon="ChevronRight"
+            icon-position="end"
+          />
 
           <AppButton
             v-else
@@ -89,10 +88,10 @@
             color="green"
             haptic="heavy"
             block
-          >
-            <span>¡Empezar a leer!</span>
-            <Rocket class="w-5 h-5 stroke-[2.5]" />
-          </AppButton>
+            text="¡Empezar a leer!"
+            :icon="Rocket"
+            icon-position="end"
+          />
         </div>
       </div>
     </div>

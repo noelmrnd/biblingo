@@ -33,10 +33,9 @@
             block
             class="mt-8 celebration-text-in"
             style="animation-delay: 0.34s"
+            text="Continuar"
             @click="dismiss"
-          >
-            Continuar
-          </AppButton>
+          />
         </div>
       </div>
     </Transition>

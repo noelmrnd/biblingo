@@ -16,9 +16,7 @@
     <template #footer>
       <div class="flex items-center gap-3 w-full">
         <div class="flex-1">
-          <AppButton color="card" block :disabled="loading" @click="$emit('close')">
-            {{ cancelLabel }}
-          </AppButton>
+          <AppButton color="card" block :disabled="loading" :text="cancelLabel" @click="$emit('close')" />
         </div>
         <div class="flex-1">
           <AppButton
@@ -26,10 +24,9 @@
             :haptic="confirmColor === 'rose' ? 'warning' : 'light'"
             block
             :disabled="loading"
+            :text="loading ? loadingLabel : confirmLabel"
             @click="$emit('confirm')"
-          >
-            {{ loading ? loadingLabel : confirmLabel }}
-          </AppButton>
+          />
         </div>
       </div>
     </template>
