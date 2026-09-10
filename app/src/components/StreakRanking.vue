@@ -9,21 +9,13 @@
     </div>
 
     <div v-else class="space-y-3">
-      <SwipeItem
+      <div
         v-for="(friend, index) in friends"
         :key="friend.id"
-        :disabled="friend.is_self"
-        :is-open="activeSwipeFriendId === friend.id"
-        :action-width="88"
-        @open="activeSwipeFriendId = friend.id"
-        @close="handleSwipeClose(friend.id)"
-        @action="promptRemoveFriend(friend)"
+        @click="openFriendProfile(friend)"
+        :class="!friend.is_self && 'cursor-pointer'"
+        class="card-duo flex items-center justify-between transition-colors gap-3"
       >
-        <div
-          @click="openFriendProfile(friend)"
-          :class="!friend.is_self && 'cursor-pointer'"
-          class="card-duo flex items-center justify-between transition-colors gap-3"
-        >
           <!-- Medallas de ranking -->
           <div class="min-w-8 text-center">
             <span class="text-4xl" v-if="index === 0">🥇</span>
@@ -70,36 +62,22 @@
               <span>{{ friend.streak_count }}</span>
             </div>
           </div>
-        </div>
-      </SwipeItem>
+      </div>
     </div>
 
     <p v-if="friends.filter(f => !f.is_self).length > 0" class="text-center text-sm text-slate-500 font-medium">
       Solo puedes enviar toques a quienes te siguen.
     </p>
-
-    <!-- Modal Confirmación de Dejar de Seguir -->
-    <UnfollowConfirmModal
-      :is-open="isRemoveModalOpen"
-      :loading="remove.loading.value"
-      :display-name="friendToRemove?.display_name"
-      @close="closeRemoveModal"
-      @confirm="confirmRemoveFriend"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
-import SwipeItem from './SwipeItem.vue';
-import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
 import SectionTitle from './SectionTitle.vue';
 import { Trophy, UsersRound, Flame, BellRing, ShieldCheck, Snowflake } from '@lucide/vue';
 import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
 import { useNudge } from '../composables/useNudge';
-import { useAsyncAction } from '../composables/useAsyncAction';
 import { HapticsService } from '../services/haptics';
 
 const props = defineProps({
@@ -118,10 +96,6 @@ const openFriendProfile = (friend) => {
 
 const friends = ref([]);
 const nudge = useNudge();
-const isRemoveModalOpen = ref(false);
-const friendToRemove = ref(null);
-const remove = useAsyncAction();
-const activeSwipeFriendId = ref(null);
 
 const loadFriends = async () => {
   try {
@@ -138,37 +112,6 @@ const loadFriends = async () => {
     }
   } catch (e) {
     console.warn('Error al cargar amigos:', e.message);
-  }
-};
-
-const handleSwipeClose = (friendId) => {
-  if (activeSwipeFriendId.value === friendId) {
-    activeSwipeFriendId.value = null;
-  }
-};
-
-const promptRemoveFriend = (friend) => {
-  friendToRemove.value = friend;
-  isRemoveModalOpen.value = true;
-};
-
-const closeRemoveModal = () => {
-  isRemoveModalOpen.value = false;
-  friendToRemove.value = null;
-  activeSwipeFriendId.value = null;
-};
-
-const confirmRemoveFriend = async () => {
-  if (!friendToRemove.value) return;
-  const friend = friendToRemove.value;
-  const res = await remove.run(() => ApiService.unfollowUser(friend.id), {
-    errorMsg: 'Error al dejar de seguir.'
-  });
-  if (res?.success) {
-    ToastService.success(`Dejaste de seguir a ${friend.display_name}.`);
-    friends.value = friends.value.filter(f => f.id !== friend.id);
-    delete nudge.nudged[friend.id];
-    closeRemoveModal();
   }
 };
 
