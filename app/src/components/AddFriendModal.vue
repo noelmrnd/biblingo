@@ -64,20 +64,17 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { X, Search, UsersRound } from '@lucide/vue';
 import IconButton from './IconButton.vue';
 import AppSpinner from './AppSpinner.vue';
 import UserFollowRow from './UserFollowRow.vue';
-import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
-
-const router = useRouter();
+import { ApiService } from '@/services/api';
+import { ToastService } from '@/services/toast';
 
 const MIN_QUERY_LENGTH = 2;
 const SEARCH_DEBOUNCE_MS = 350;
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'open-profile']);
 
 defineProps({
   isOpen: { type: Boolean, default: false }
@@ -135,10 +132,12 @@ const follow = async (u) => {
   }
 };
 
+// No cierra ni resetea el estado de busqueda: el padre solo oculta el modal
+// (isOpen=false) antes de navegar y lo reabre al volver, para que la busqueda
+// siga ahi en vez de tener que repetirla.
 const openProfile = (u) => {
   if (u.is_self) return;
-  close();
-  router.push({ name: 'friend-profile', params: { id: u.id } });
+  emit('open-profile', u.id);
 };
 
 const close = () => {

@@ -32,7 +32,7 @@
            Perfil de amigo y Ajustes quedan afuera a proposito, son pantallas de detalle que
            no queremos acumular en memoria indefinidamente. -->
       <router-view v-slot="{ Component }">
-        <keep-alive include="DashboardView,FriendsView,ProfileView">
+        <keep-alive :include="keepAliveNames">
           <component
             :is="Component"
             :user="currentUser"
@@ -76,6 +76,14 @@ const router = useRouter();
 const { user: currentUser, clearUser, markFreshLoad } = useCurrentUser();
 const tourRef = ref(null);
 const isInitializing = ref(true);
+
+// Deriva el include de <keep-alive> del nombre real de cada componente marcado
+// con meta.keepAlive en el router, en vez de tipearlo a mano — asi un rename
+// de archivo no desincroniza la lista y rompe el cache en silencio.
+const keepAliveNames = router.getRoutes()
+  .filter((r) => r.meta?.keepAlive)
+  .map((r) => r.components?.default?.name || r.components?.default?.__name)
+  .filter(Boolean);
 const isBrowserOnAppDomain = !Capacitor.isNativePlatform() && window.location.hostname === APP_CONFIG.appDomain;
 
 const { processInvite, resolvePendingInvite } = useInviteFlow({

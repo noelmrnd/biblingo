@@ -1,12 +1,8 @@
 <template>
   <AppPage app-header>
     <!-- Loading Indicator Centrado -->
-    <div v-if="initialLoading" class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
-      <div class="relative w-16 h-16 flex items-center justify-center">
-        <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-green animate-spin"></div>
-        <BookOpen class="w-6 h-6 text-brand-green stroke-[2.5]" />
-      </div>
-      <p class="text-slate-300 font-extrabold text-base tracking-wide">Cargando racha...</p>
+    <div v-if="initialLoading" class="flex items-center justify-center py-24">
+      <AppSpinner size="lg" />
     </div>
 
     <template v-else>
@@ -33,16 +29,16 @@ let lastLoadedUserId = null;
 
 <script setup>
 import { ref, onActivated } from 'vue';
-import { BookOpen } from '@lucide/vue';
-import AppPage from '../../components/AppPage.vue';
-import ReadingButton from '../../components/ReadingButton.vue';
-import StreakHero from '../../components/StreakHero.vue';
-import MonthlyTracker from '../../components/MonthlyTracker.vue';
-import { NotificationService } from '../../services/notifications.js';
-import { ToastService } from '../../services/toast.js';
-import { useCurrentUser } from '../../composables/useCurrentUser.js';
-import { getBadgeById } from '../../constants.js';
-import { BadgeCelebrationService } from '../../services/badgeCelebration.js';
+import AppPage from '@/components/AppPage.vue';
+import AppSpinner from '@/components/AppSpinner.vue';
+import ReadingButton from '@/components/ReadingButton.vue';
+import StreakHero from '@/components/StreakHero.vue';
+import MonthlyTracker from '@/components/MonthlyTracker.vue';
+import { NotificationService } from '@/services/notifications.js';
+import { ToastService } from '@/services/toast.js';
+import { useCurrentUser } from '@/composables/useCurrentUser.js';
+import { getBadgeById } from '@/constants.js';
+import { BadgeCelebrationService } from '@/services/badgeCelebration.js';
 
 const props = defineProps({
   user: { type: Object, required: true }
