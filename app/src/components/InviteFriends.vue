@@ -24,7 +24,7 @@
 
     <AddFriendModal
       :is-open="isAddFriendModalOpen"
-      @close="isAddFriendModalOpen = false"
+      @close="onAddFriendModalClose"
     />
   </div>
 </template>
@@ -44,10 +44,17 @@ const props = defineProps({
   forceExpand: { type: Boolean, default: false }
 });
 
+const emit = defineEmits(['changed']);
+
 const isInviteExpanded = ref(false);
 watch(() => props.forceExpand, (v) => {
   if (v) isInviteExpanded.value = true;
 }, { immediate: true });
 const isShareModalOpen = ref(false);
 const isAddFriendModalOpen = ref(false);
+
+const onAddFriendModalClose = (hadChanges) => {
+  isAddFriendModalOpen.value = false;
+  if (hadChanges) emit('changed');
+};
 </script>

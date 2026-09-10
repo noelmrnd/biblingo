@@ -39,7 +39,7 @@ import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
 import { ApiService } from '../services/api';
 
-const emit = defineEmits(['close', 'added']);
+const emit = defineEmits(['close']);
 
 defineProps({
   isOpen: { type: Boolean, default: false }
@@ -49,12 +49,14 @@ const username = ref('');
 const loading = ref(false);
 const statusMsg = ref('');
 const statusError = ref(false);
+const hadChanges = ref(false);
 
 const close = () => {
   if (loading.value) return;
   username.value = '';
   statusMsg.value = '';
-  emit('close');
+  emit('close', hadChanges.value);
+  hadChanges.value = false;
 };
 
 const addFriend = async () => {
@@ -69,7 +71,7 @@ const addFriend = async () => {
     if (res.success) {
       statusMsg.value = res.message || '¡Ahora sigues a este usuario! 👥';
       statusError.value = false;
-      emit('added');
+      hadChanges.value = true;
       setTimeout(close, 900);
     }
   } catch (e) {

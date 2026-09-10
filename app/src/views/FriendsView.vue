@@ -1,8 +1,8 @@
 <template>
   <AppPage app-header>
-    <InviteFriends :user="user" :force-expand="hasNoFriends" />
+    <InviteFriends :user="user" :force-expand="hasNoFriends" @changed="rankingRef?.loadFriends()" />
 
-    <StreakRanking :user="user" @friends-loaded="onFriendsLoaded" />
+    <StreakRanking ref="rankingRef" :user="user" @friends-loaded="onFriendsLoaded" />
   </AppPage>
 </template>
 
@@ -19,6 +19,7 @@ defineProps({
 // Con 0 amigos, la tarjeta de invitar se auto-expande: no tiene sentido que el
 // usuario tenga que tocarla para descubrir como empezar su red social.
 const hasNoFriends = ref(false);
+const rankingRef = ref(null);
 const onFriendsLoaded = (count) => {
   hasNoFriends.value = count === 0;
 };
