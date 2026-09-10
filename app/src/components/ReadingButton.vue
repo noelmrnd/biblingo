@@ -17,7 +17,7 @@
       block
       :disabled="loading"
       :icon="BookOpen"
-      text="Marcar lectura de hoy"
+      text="Registrar lectura de hoy"
       @click="openReactionModal"
     />
 

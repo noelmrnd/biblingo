@@ -4,9 +4,10 @@
     :disabled="disabled || readonly || loading"
     @click="handleClick"
     :class="[
-      'font-bold rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 inline-flex items-center justify-center gap-2 cursor-pointer select-none box-border',
+      'font-bold rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 inline-flex items-center justify-center cursor-pointer select-none box-border',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
       'whitespace-nowrap',
+      size === 'lg' ? 'gap-3' : 'gap-2',
       block ? 'w-full' : '',
       readonly ? '!opacity-100 !cursor-default': '',
       sizeClasses,

@@ -3,7 +3,7 @@
     :is-open="isOpen"
     :loading="loading"
     title="¿Cómo estuvo tu lectura?"
-    description="Elige tu reacción sobre lo que leíste hoy:"
+    description="Elige cómo te sentiste al leer hoy."
     @close="onClose"
   >
     <div class="space-y-2.5 py-2">
@@ -56,8 +56,8 @@
         :disabled="loading"
         :loading="loading"
         loading-text="Registrando lectura..."
-        :text="selectedReaction ? 'Registrar lectura' : 'Registrar sin reacción'"
-        :icon="BookOpen"
+        text="Registrar lectura"
+        :icon="Check"
         @click="onConfirm"
       />
     </template>
