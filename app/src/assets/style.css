@@ -37,17 +37,17 @@ html {
 }
 
 /* Botones planos con feedback de presion (escala + brillo), sin bisel 3D */
-.btn-3d-orange {
-  @apply bg-brand-flame hover:bg-brand-flame-dark text-white font-extrabold py-3.5 px-6 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;
-}
+/*.btn-3d-orange {*/
+/*  @apply bg-brand-flame hover:bg-brand-flame-dark text-white font-extrabold py-3.5 px-6 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;*/
+/*}*/
 
-.btn-3d-blue {
-  @apply bg-brand-blue text-white font-extrabold py-3.5 px-6 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;
-}
+/*.btn-3d-blue {*/
+/*  @apply bg-brand-blue text-white font-extrabold py-3.5 px-6 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;*/
+/*}*/
 
-.btn-3d-dark {
-  @apply bg-brand-card hover:bg-slate-800 text-slate-200 font-extrabold py-3 px-5 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;
-}
+/*.btn-3d-dark {*/
+/*  @apply bg-brand-card hover:bg-slate-800 text-slate-200 font-extrabold py-3 px-5 rounded-2xl transition-all duration-150 shadow-md active:shadow-sm active:scale-[0.97] active:brightness-95 flex items-center justify-center gap-2 cursor-pointer;*/
+/*}*/
 
 .card-duo {
   @apply bg-brand-card border border-brand-border rounded-3xl p-4 shadow-xl;
@@ -58,12 +58,12 @@ html {
 }
 
 /* Glassmorphism */
-.glass-panel {
-  background: rgba(31, 41, 61, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
+/*.glass-panel {*/
+/*  background: rgba(31, 41, 61, 0.75);*/
+/*  backdrop-filter: blur(12px);*/
+/*  -webkit-backdrop-filter: blur(12px);*/
+/*  border: 1px solid rgba(255, 255, 255, 0.08);*/
+/*}*/
 
 /* Ocultar barras de scroll pero mantener funcionalidad táctil */
 .no-scrollbar::-webkit-scrollbar {

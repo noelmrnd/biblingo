@@ -20,7 +20,7 @@
           <Share2 class="w-5 h-5 stroke-[2.5]" />
           <span>Compartir</span>
         </AppButton>
-        <AppButton color="dark" block @click="copyLink">
+        <AppButton color="card" block @click="copyLink">
           <Link class="w-5 h-5 stroke-[2.5]" />
           <span>Copiar enlace</span>
         </AppButton>

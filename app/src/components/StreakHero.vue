@@ -8,12 +8,15 @@
     <!-- Llama animada (o congelada si la racha ya se perdió); su color/tamaño escala
          segun el hito mas alto alcanzado, para que dia 100 se vea distinto a dia 1 -->
     <div class="inline-block relative my-3">
+      <Snowflake v-if="user.is_streak_lost" class="w-16 h-16 stroke-[2] text-brand-freeze-light" />
+      <ShieldCheck v-else-if="user.will_use_freeze_today" class="w-16 h-16 stroke-[2] text-brand-freeze-light" />
       <div
+        v-else
         class="inline-block filter"
-        :class="[(user.is_streak_lost || user.will_use_freeze_today) ? 'text-7xl' : `${tier.sizeClass} animate-flame-pulse`]"
-        :style="(user.is_streak_lost || user.will_use_freeze_today) ? '' : `filter: drop-shadow(0 0 20px ${tier.glow})`"
+        :class="[`${tier.sizeClass} animate-flame-pulse`]"
+        :style="`filter: drop-shadow(0 0 20px ${tier.glow})`"
       >
-        {{ user.is_streak_lost ? '🥶' : (user.will_use_freeze_today ? '🧊' : tier.emoji) }}
+        {{ tier.emoji }}
       </div>
     </div>
 
@@ -23,7 +26,7 @@
       </h2>
       <p
         class="font-extrabold text-base uppercase tracking-wider"
-        :class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
+        :class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
       >
         {{ user.is_streak_lost ? 'Racha perdida' : (user.will_use_freeze_today ? 'Racha congelada' : 'Racha de lectura activa') }}
       </p>
@@ -42,6 +45,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { ShieldCheck, Snowflake } from '@lucide/vue';
 import { getStreakTier } from '../constants';
 
 const props = defineProps({

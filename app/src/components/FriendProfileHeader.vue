@@ -20,19 +20,25 @@
           <strong class="text-white font-extrabold">{{ followingCount || 0 }}</strong> seguidos
         </button>
       </div>
+
+      <div v-if="mutualFriendsCount > 0" class="flex items-center gap-1.5 text-slate-400 text-sm font-medium pt-1">
+        <UsersRound class="w-4 h-4 stroke-[2.5]" />
+        <span>{{ mutualFriendsCount }} amigo{{ mutualFriendsCount > 1 ? 's' : '' }} en común</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { UserRound } from '@lucide/vue';
+import { UserRound, UsersRound } from '@lucide/vue';
 
 defineProps({
   displayName: { type: String, default: '' },
   username: { type: String, default: '' },
   avatarInitial: { type: String, default: '' },
   followersCount: { type: Number, default: 0 },
-  followingCount: { type: Number, default: 0 }
+  followingCount: { type: Number, default: 0 },
+  mutualFriendsCount: { type: Number, default: 0 },
 });
 
 defineEmits(['open-followers', 'open-following']);

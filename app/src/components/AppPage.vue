@@ -18,15 +18,15 @@
           aria-label="Cómo funciona la racha"
         >
           <!-- Protectores de racha disponibles -->
-          <div class="flex items-center gap-2 bg-slate-900 border border-sky-500/30 px-3 py-1 rounded-full shadow-inner">
-            <span class="text-lg">🧊</span>
-            <span class="font-semibold text-sky-300 text-lg">{{ streakFreezes }}</span>
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-brand-freeze/30 px-3 py-1 rounded-full shadow-inner">
+            <ShieldCheck class="w-5 h-5 text-brand-freeze-light stroke-[2.5]" />
+            <span class="font-semibold text-brand-freeze-light text-lg">{{ streakFreezes }}</span>
           </div>
 
           <!-- Racha activa en la barra superior -->
-          <div class="flex items-center gap-2 bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full shadow-inner">
-            <span class="text-lg">🔥</span>
-            <span class="font-semibold text-amber-400 text-lg">{{ streakCount }}</span>
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full shadow-inner">
+            <Flame class="w-5 h-5 text-brand-flame stroke-[2.5]" />
+            <span class="font-semibold text-brand-flame text-lg">{{ streakCount }}</span>
           </div>
         </button>
       </template>
@@ -67,7 +67,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft } from '@lucide/vue';
+import { ArrowLeft, ShieldCheck, Flame } from '@lucide/vue';
 import { keyboardHeight } from '../utils/keyboard';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import AppRulesModal from './AppRulesModal.vue';

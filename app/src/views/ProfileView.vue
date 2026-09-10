@@ -25,14 +25,13 @@
       <StatCell
         :value="user.is_streak_lost ? 0 : user.streak_count"
         label="Racha actual"
-        :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
-        :emoji="user.is_streak_lost ? '🥶' : user.will_use_freeze_today ? '🧊' : null"
-        :icon="(user.is_streak_lost || user.will_use_freeze_today) ? null : Flame"
-        icon-color-class="text-amber-400"
+        :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+        :icon="user.is_streak_lost ? Snowflake : user.will_use_freeze_today ? ShieldCheck : Flame"
+        :icon-color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
       />
-      <StatCell :value="user.total_days_read || 0" label="Días leídos" color-class="text-brand-green" :icon="BookOpenCheck" icon-color-class="text-brand-green" />
+      <StatCell :value="user.total_days_read || 0" label="Días leídos" color-class="text-brand-days" :icon="BookOpenCheck" icon-color-class="text-brand-days" />
       <StatCell :value="user.max_streak_count" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-      <StatCell :value="user.streak_freezes_used || 0" label="Protectores usados" color-class="text-sky-300" :icon="Shield" icon-color-class="text-sky-300" />
+      <StatCell :value="user.streak_freezes_used || 0" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
     </div>
 
     <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
@@ -69,7 +68,7 @@ import FollowListModal from '../components/FollowListModal.vue';
 import ProfileHeader from '../components/ProfileHeader.vue';
 import IconButton from '../components/IconButton.vue';
 import ReactionBreakdown from '../components/ReactionBreakdown.vue';
-import { Flame, Zap, Settings, BookOpenCheck, Shield } from '@lucide/vue';
+import { Flame, Zap, Settings, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import StatCell from '../components/StatCell.vue';
 import { formatMemberSince } from '../utils/dateFormatter';
 import { useCurrentUser } from '../composables/useCurrentUser';

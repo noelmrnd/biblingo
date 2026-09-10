@@ -36,14 +36,14 @@
         :key="day.dateStr"
         :class="[
           day.isRead ? 'bg-brand-green text-white border-emerald-600 shadow-emerald-500/30' : '',
-          day.isFrozen ? 'bg-sky-500/10 text-sky-300 border-sky-500/20' : '',
+          day.isFrozen ? 'bg-brand-freeze text-white border-brand-freeze-dark shadow-brand-freeze/30' : '',
           !day.isRead && !day.isFrozen ? 'bg-slate-800 text-slate-600 border-slate-700' : '',
           day.isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : ''
         ]"
         class="aspect-square rounded-2xl border flex items-center justify-center text-base font-bold transition-all"
       >
-        <span v-if="day.isRead">✓</span>
-        <span v-else-if="day.isFrozen" class="text-lg leading-none">🧊</span>
+        <Check v-if="day.isRead" class="w-5 h-5 stroke-[2.5]" />
+        <ShieldCheck v-else-if="day.isFrozen" class="w-5 h-5 stroke-[2.5]" />
         <span v-else>{{ day.dateNum }}</span>
       </div>
     </div>
@@ -52,7 +52,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onActivated } from 'vue';
-import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
+import { Calendar, ChevronLeft, ChevronRight, ShieldCheck, Check } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import IconButton from './IconButton.vue';
 import SectionTitle from './SectionTitle.vue';

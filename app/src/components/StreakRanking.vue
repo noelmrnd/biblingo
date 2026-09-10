@@ -4,7 +4,7 @@
 
     <div v-if="friends.filter(f => !f.is_self).length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
       <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
-      <p class="text-lg font-extrabold text-white">Aún no sigues a nadie.</p>
+      <p class="text-lg font-bold text-white">Aún no sigues a nadie.</p>
       <p class="text-base text-slate-300 font-medium">Comparte tu perfil o agrega a un amigo por su usuario para empezar.</p>
     </div>
 
@@ -49,7 +49,7 @@
               v-if="!friend.is_self && friend.is_mutual && !friend.has_read_today"
               @click.stop="() => { HapticsService.light(); nudge.sendNudge(friend.id, friend.display_name); }"
               :disabled="friend.nudged_today || nudge.nudged[friend.id] || nudge.loading[friend.id]"
-              class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
+              class="bg-amber-500 hover:bg-amber-400 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 font-semibold px-3 py-1.5 rounded-xl text-base flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-amber-400/40 disabled:border-slate-700"
             >
               <BellRing class="w-4 h-4 stroke-[2.5]" />
               <span>{{ (friend.nudged_today || nudge.nudged[friend.id]) ? 'Enviado' : 'Toque' }}</span>
@@ -59,14 +59,14 @@
             <div
               :class="[
                 (friend.is_streak_lost || friend.will_use_freeze_today)
-                  ? 'bg-sky-500/10 border-sky-500/20 text-sky-300'
-                  : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                  ? 'bg-brand-freeze/10 border-brand-freeze/20 text-brand-freeze-light'
+                  : 'bg-brand-flame/10 border-brand-flame/20 text-brand-flame'
               ]"
-              class="flex items-center gap-1.5 font-extrabold text-base px-2.5 py-1.5 rounded-xl border"
+              class="flex items-center gap-1.5 font-bold text-base px-2.5 py-1.5 rounded-xl border"
             >
-              <span v-if="friend.is_streak_lost" class="text-base leading-none">🥶</span>
-              <span v-else-if="friend.will_use_freeze_today" class="text-base leading-none">🧊</span>
-              <Flame v-else class="w-4 h-4 text-amber-400 stroke-[2.5]" />
+              <Snowflake v-if="friend.is_streak_lost" class="w-4 h-4 text-brand-freeze-light stroke-[2.5]" />
+              <ShieldCheck v-else-if="friend.will_use_freeze_today" class="w-4 h-4 text-brand-freeze-light stroke-[2.5]" />
+              <Flame v-else class="w-4 h-4 text-brand-flame stroke-[2.5]" />
               <span>{{ friend.streak_count }}</span>
             </div>
           </div>
@@ -95,7 +95,7 @@ import { useRouter } from 'vue-router';
 import SwipeItem from './SwipeItem.vue';
 import UnfollowConfirmModal from './UnfollowConfirmModal.vue';
 import SectionTitle from './SectionTitle.vue';
-import { Trophy, UsersRound, Flame, BellRing } from '@lucide/vue';
+import { Trophy, UsersRound, Flame, BellRing, ShieldCheck, Snowflake } from '@lucide/vue';
 import { ApiService } from '../services/api';
 import { ToastService } from '../services/toast';
 import { useNudge } from '../composables/useNudge';

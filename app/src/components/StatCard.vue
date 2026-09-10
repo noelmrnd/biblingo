@@ -5,7 +5,7 @@
         <span v-if="emoji" class="text-2xl leading-none">{{ emoji }}</span>
         <component v-else-if="icon" :is="icon" class="w-5 h-5 stroke-[2.5]" :class="iconColorClass" />
       </slot>
-      <div class="text-2xl font-extrabold" :class="colorClass">{{ value }}</div>
+      <div class="text-2xl font-bold" :class="colorClass">{{ value }}</div>
     </div>
     <div class="text-slate-300 text-sm font-semibold">{{ label }}</div>
   </div>

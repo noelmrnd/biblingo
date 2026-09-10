@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <SectionTitle title="Reacciones" :icon="Heart" icon-color-class="text-rose-400" />
+    <SectionTitle title="Reacciones" :icon="Heart" icon-color-class="text-rose-500" _icon-color-class="text-brand-reaction" />
 
     <AppCard>
       <div v-if="breakdown.length > 0" class="flex flex-wrap gap-2">

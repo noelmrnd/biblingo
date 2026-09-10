@@ -68,7 +68,7 @@
           <AppButton 
             v-if="currentStep > 0"
             @click="prevStep"
-            color="dark"
+            color="card"
           >
             <ChevronLeft class="w-4 h-4 stroke-[3]" />
           </AppButton>
@@ -91,7 +91,7 @@
             block
           >
             <span>¡Empezar a leer!</span>
-            <span>🚀</span>
+            <Rocket class="w-5 h-5 stroke-[2.5]" />
           </AppButton>
         </div>
       </div>
@@ -103,9 +103,10 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppButton from './AppButton.vue';
-import { 
-  ChevronRight, 
-  ChevronLeft 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Rocket
 } from '@lucide/vue';
 import confetti from 'canvas-confetti';
 import { StorageService } from '../services/storage';

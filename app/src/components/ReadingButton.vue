@@ -2,7 +2,7 @@
   <div class="w-full">
     <AppButton
       v-if="hasReadToday"
-      color="dark"
+      color="card"
       size="lg"
       block
       readonly

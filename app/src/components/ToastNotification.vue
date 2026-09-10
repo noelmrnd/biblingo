@@ -23,19 +23,19 @@
         class="pointer-events-auto max-w-sm w-full border-1 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3"
       >
         <div class="flex items-center gap-3">
-          <span class="text-2xl flex-shrink-0">
-            {{ toastState.type === 'error' ? '⚠️' : toastState.type === 'info' ? 'ℹ️' : '✅' }}
-          </span>
+          <AlertTriangle v-if="toastState.type === 'error'" class="w-6 h-6 stroke-[2.5] flex-shrink-0" />
+          <Info v-else-if="toastState.type === 'info'" class="w-6 h-6 stroke-[2.5] flex-shrink-0" />
+          <CheckCircle v-else class="w-6 h-6 stroke-[2.5] flex-shrink-0" />
           <p class="text-base font-extrabold leading-snug">
             {{ toastState.message }}
           </p>
         </div>
 
-        <button 
+        <button
           @click="ToastService.hide()"
-          class="text-slate-400 hover:text-white font-black text-lg p-1 transition-colors cursor-pointer"
+          class="text-slate-400 hover:text-white p-1 transition-colors cursor-pointer"
         >
-          ✕
+          <X class="w-5 h-5 stroke-[2.5]" />
         </button>
       </div>
     </div>
@@ -44,5 +44,6 @@
 </template>
 
 <script setup>
+import { AlertTriangle, Info, CheckCircle, X } from '@lucide/vue';
 import { toastState, ToastService } from '../services/toast';
 </script>

@@ -18,11 +18,12 @@
         :avatar-initial="(friend.display_name || '?').charAt(0).toUpperCase()"
         :followers-count="friend.followers_count"
         :following-count="friend.following_count"
+        :mutual-friends-count="friend.mutual_friends_count"
         @open-followers="followList.open('followers')"
         @open-following="followList.open('following')"
       >
         <template #badge>
-          <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-black font-sans">AMIGOS</span>
+          <span v-if="friend.is_mutual" class="text-xs bg-brand-green/20 text-brand-green px-2 py-0.5 rounded-md font-bold font-sans">AMIGOS</span>
           <span v-else-if="friend.is_following" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-bold font-sans">SIGUIENDO</span>
           <span v-else-if="friend.is_followed_by" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-bold font-sans">TE SIGUE</span>
         </template>
@@ -52,7 +53,7 @@
 
         <AppButton
           v-if="friend.is_mutual && !friend.has_read_today"
-          color="orange"
+          color="nudge"
           block
           :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
           @click="nudge.sendNudge(friend.id, friend.display_name)"
@@ -67,17 +68,16 @@
         <StatCell
           :value="friend.is_streak_lost ? 0 : friend.streak_count"
           label="Racha actual"
-          :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-sky-300' : 'text-amber-400'"
-          :emoji="friend.is_streak_lost ? '🥶' : friend.will_use_freeze_today ? '🧊' : null"
-          :icon="(friend.is_streak_lost || friend.will_use_freeze_today) ? null : Flame"
-          icon-color-class="text-amber-400"
+          :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+          :icon="friend.is_streak_lost ? Snowflake : friend.will_use_freeze_today ? ShieldCheck : Flame"
+          :icon-color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
         />
         <StatCell
           :value="friend.total_days_read || 0"
           label="Días leídos"
-          color-class="text-brand-green"
+          color-class="text-brand-days"
           :icon="BookOpenCheck"
-          icon-color-class="text-brand-green"
+          icon-color-class="text-brand-days"
         />
       </div>
 
@@ -86,11 +86,6 @@
       <ReactionBreakdown :reaction-counts="friend.reaction_counts" />
 
       <BadgesCircles :earned-badges="friend.badges || []" />
-
-      <div v-if="friend.mutual_friends_count > 0" class="flex items-center justify-center gap-2 text-slate-300 text-base font-medium">
-        <UsersRound class="w-5 h-5 text-slate-400 stroke-[2.5]" />
-        <span>{{ friend.mutual_friends_count }} amigo{{ friend.mutual_friends_count > 1 ? 's' : '' }} en común</span>
-      </div>
 
       <p v-if="memberSinceLabel" class="text-center text-slate-500 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
     </template>
@@ -118,7 +113,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, UsersRound, BookOpenCheck } from '@lucide/vue';
+import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import AppPage from '../components/AppPage.vue';
 import BadgesCircles from '../components/BadgesCircles.vue';
 import FriendProfileHeader from '../components/FriendProfileHeader.vue';

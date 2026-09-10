@@ -53,7 +53,7 @@
         <!-- Panel de Desarrollo Local (Vite Dev / Localhost) -->
         <div v-if="IS_DEV" class="pt-4 border-t border-slate-800 space-y-3">
           <div class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
-            <span>🛠️</span> Entorno de desarrollo
+            <Wrench class="w-3.5 h-3.5 stroke-[2.5]" /> Entorno de desarrollo
           </div>
           <div class="flex gap-3">
             <input 
@@ -84,6 +84,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { Wrench } from '@lucide/vue';
 import AppButton from '../components/AppButton.vue';
 import { AuthService } from '../services/authService';
 import { IS_DEV, APP_CONFIG } from '../constants';

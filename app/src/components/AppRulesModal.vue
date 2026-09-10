@@ -13,7 +13,7 @@
 
     <div class="space-y-4">
       <div class="flex gap-3">
-        <Flame class="w-5 h-5 text-amber-400 stroke-[2.5] shrink-0 mt-0.5" />
+        <Flame class="w-5 h-5 text-brand-flame stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Racha:</strong>
           es la cantidad de días seguidos en los que has registrado una lectura.
@@ -22,13 +22,13 @@
       </div>
 
       <div class="flex gap-3">
-        <span class="text-xl leading-none shrink-0">🧊</span>
+        <ShieldCheck class="w-5 h-5 text-sky-400 aatext-brand-freeze-light stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Protectores de racha:</strong>
           te ayudan a mantener tu racha si un día no lees.
           Se usan automáticamente cuando termina el día sin registrar tu lectura.
           Ganas 1 por cada 7 días de lectura y puedes tener hasta 2.
-          <span class="text-sky-300">
+          <span class="text-brand-freeze-light">
             <template v-if="nextFreezeText">
               Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
             </template>
@@ -40,7 +40,7 @@
       </div>
 
       <div class="flex gap-3">
-        <Heart class="w-5 h-5 text-rose-400 stroke-[2.5] shrink-0 mt-0.5" />
+        <Heart class="w-5 h-5 text-brand-reaction stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Reacciones:</strong>
           podrás indicar cómo te hizo sentir tu lectura.
@@ -49,7 +49,7 @@
       </div>
 
       <div class="flex gap-3">
-        <BellRing class="w-5 h-5 text-sky-400 stroke-[2.5] shrink-0 mt-0.5" />
+        <BellRing class="w-5 h-5 text-brand-nudge stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Toques:</strong>
           son recordatorios que puedes enviar a las personas que sigues (y también te siguen) para que no olviden su lectura del día.
@@ -61,7 +61,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { HelpCircle, Flame, Heart, BellRing } from '@lucide/vue';
+import { HelpCircle, Flame, Heart, BellRing, ShieldCheck } from '@lucide/vue';
 import AppModal from './AppModal.vue';
 
 const props = defineProps({

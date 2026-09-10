@@ -16,7 +16,7 @@
     <template #footer>
       <div class="flex items-center gap-3 w-full">
         <div class="flex-1">
-          <AppButton color="dark" block :disabled="loading" @click="$emit('close')">
+          <AppButton color="card" block :disabled="loading" @click="$emit('close')">
             {{ cancelLabel }}
           </AppButton>
         </div>
