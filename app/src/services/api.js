@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../constants';
+import { API_BASE_URL } from '@/constants';
 import { StorageService } from './storage';
 
 export { API_BASE_URL };

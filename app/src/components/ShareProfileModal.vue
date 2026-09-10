@@ -29,8 +29,8 @@ import { Share2, Link } from '@lucide/vue';
 import QRCode from 'qrcode';
 import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
-import { ShareService } from '../services/shareService';
-import { ToastService } from '../services/toast';
+import { ShareService } from '@/services/shareService';
+import { ToastService } from '@/services/toast';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },

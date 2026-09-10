@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { HapticsService } from '../services/haptics';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

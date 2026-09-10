@@ -111,21 +111,21 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
-import AppPage from '../components/AppPage.vue';
-import BadgesCircles from '../components/BadgesCircles.vue';
-import FriendProfileHeader from '../components/FriendProfileHeader.vue';
-import ReactionBreakdown from '../components/ReactionBreakdown.vue';
-import StatCell from '../components/StatCell.vue';
-import WeeklyTracker from '../components/WeeklyTracker.vue';
-import AppButton from '../components/AppButton.vue';
-import UnfollowConfirmModal from '../components/UnfollowConfirmModal.vue';
-import FollowListModal from '../components/FollowListModal.vue';
-import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
-import { formatMemberSince } from '../utils/dateFormatter';
-import { useFollowListPanel } from '../composables/useFollowListPanel';
-import { useNudge } from '../composables/useNudge';
-import { useAsyncAction } from '../composables/useAsyncAction';
+import AppPage from '@/components/AppPage.vue';
+import BadgesCircles from '@/components/BadgesCircles.vue';
+import FriendProfileHeader from '@/components/FriendProfileHeader.vue';
+import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
+import StatCell from '@/components/StatCell.vue';
+import WeeklyTracker from '@/components/WeeklyTracker.vue';
+import AppButton from '@/components/AppButton.vue';
+import UnfollowConfirmModal from '@/components/UnfollowConfirmModal.vue';
+import FollowListModal from '@/components/FollowListModal.vue';
+import { ApiService } from '@/services/api';
+import { ToastService } from '@/services/toast';
+import { formatMemberSince } from '@/utils/dateFormatter';
+import { useFollowListPanel } from '@/composables/useFollowListPanel';
+import { useNudge } from '@/composables/useNudge';
+import { useAsyncAction } from '@/composables/useAsyncAction';
 
 const props = defineProps({
   id: { type: String, required: true },

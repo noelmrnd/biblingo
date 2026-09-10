@@ -76,9 +76,9 @@ import { ref, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import SectionTitle from './SectionTitle.vue';
 import { Trophy, UsersRound, Flame, BellRing, ShieldCheck, Snowflake } from '@lucide/vue';
-import { ApiService } from '../services/api';
-import { useNudge } from '../composables/useNudge';
-import { HapticsService } from '../services/haptics';
+import { ApiService } from '@/services/api';
+import { useNudge } from '@/composables/useNudge';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   user: { type: Object, required: true }

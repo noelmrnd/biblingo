@@ -31,10 +31,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { Calendar, ShieldCheck, Check } from '@lucide/vue';
-import { toLocalDateString } from '../utils/dateFormatter';
+import { toLocalDateString } from '@/utils/dateFormatter';
 import SectionTitle from './SectionTitle.vue';
 import AppCard from './AppCard.vue';
-import { useMidnightRefresh } from '../composables/useMidnightRefresh';
+import { useMidnightRefresh } from '@/composables/useMidnightRefresh';
 
 // today reactivo: sin esto, "hoy" quedaria congelado en el dia de ayer si la
 // vista sigue montada pasada la medianoche (ver useMidnightRefresh).

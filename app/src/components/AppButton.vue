@@ -23,7 +23,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { HapticsService } from '../services/haptics';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   color: {

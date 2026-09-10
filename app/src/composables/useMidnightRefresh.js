@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { toLocalDateString } from '../utils/dateFormatter';
+import { toLocalDateString } from '@/utils/dateFormatter';
 
 const CHECK_INTERVAL_MS = 60 * 1000;
 

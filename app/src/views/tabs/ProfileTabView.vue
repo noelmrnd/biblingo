@@ -62,17 +62,17 @@
 <script setup>
 import { computed, onActivated } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AppPage from '../../components/AppPage.vue';
-import BadgesCircles from '../../components/BadgesCircles.vue';
-import FollowListModal from '../../components/FollowListModal.vue';
-import ProfileHeader from '../../components/ProfileHeader.vue';
-import IconButton from '../../components/IconButton.vue';
-import ReactionBreakdown from '../../components/ReactionBreakdown.vue';
+import AppPage from '@/components/AppPage.vue';
+import BadgesCircles from '@/components/BadgesCircles.vue';
+import FollowListModal from '@/components/FollowListModal.vue';
+import ProfileHeader from '@/components/ProfileHeader.vue';
+import IconButton from '@/components/IconButton.vue';
+import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
 import { Flame, Zap, Settings, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
-import StatCell from '../../components/StatCell.vue';
-import { formatMemberSince } from '../../utils/dateFormatter.js';
-import { useCurrentUser } from '../../composables/useCurrentUser.js';
-import { useFollowListPanel } from '../../composables/useFollowListPanel.js';
+import StatCell from '@/components/StatCell.vue';
+import { formatMemberSince } from '@/utils/dateFormatter.js';
+import { useCurrentUser } from '@/composables/useCurrentUser.js';
+import { useFollowListPanel } from '@/composables/useFollowListPanel.js';
 
 const props = defineProps({
   user: { type: Object, required: true }

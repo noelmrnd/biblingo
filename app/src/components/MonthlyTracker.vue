@@ -53,12 +53,12 @@
 <script setup>
 import { ref, computed, watch, onMounted, onActivated } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight, ShieldCheck, Check } from '@lucide/vue';
-import { ApiService } from '../services/api';
+import { ApiService } from '@/services/api';
 import IconButton from './IconButton.vue';
 import SectionTitle from './SectionTitle.vue';
-import { toLocalDateString } from '../utils/dateFormatter';
-import { monthCache } from '../utils/monthlyCalendarCache';
-import { useMidnightRefresh } from '../composables/useMidnightRefresh';
+import { toLocalDateString } from '@/utils/dateFormatter';
+import { monthCache } from '@/utils/monthlyCalendarCache';
+import { useMidnightRefresh } from '@/composables/useMidnightRefresh';
 
 // today es reactivo (via useMidnightRefresh): sin esto, si la app queda
 // abierta con el calendario ya montado y pasa la medianoche, "hoy" se

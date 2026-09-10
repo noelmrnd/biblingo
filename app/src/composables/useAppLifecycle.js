@@ -1,6 +1,6 @@
 import { App as CapApp } from '@capacitor/app';
-import { DeepLinkService } from '../services/deepLinks';
-import { NotificationService } from '../services/notifications';
+import { DeepLinkService } from '@/services/deepLinks';
+import { NotificationService } from '@/services/notifications';
 
 /**
  * Registra los listeners globales de ciclo de vida de la app: notificaciones push,

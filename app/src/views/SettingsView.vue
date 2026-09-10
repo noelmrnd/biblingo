@@ -240,21 +240,21 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { UserRound, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
-import AppPage from '../components/AppPage.vue';
-import SectionTitle from '../components/SectionTitle.vue';
-import AppButton from '../components/AppButton.vue';
-import AppToggle from '../components/AppToggle.vue';
-import ConfirmActionModal from '../components/ConfirmActionModal.vue';
-import ExpandableCard from '../components/ExpandableCard.vue';
-import SettingsActionButton from '../components/SettingsActionButton.vue';
-import FeedbackModal from '../components/FeedbackModal.vue';
-import { NotificationService } from '../services/notifications';
-import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
-import { StorageService } from '../services/storage';
-import { ReviewService } from '../services/review';
-import { useAsyncAction } from '../composables/useAsyncAction';
-import versionInfo from '../version.json';
+import AppPage from '@/components/AppPage.vue';
+import SectionTitle from '@/components/SectionTitle.vue';
+import AppButton from '@/components/AppButton.vue';
+import AppToggle from '@/components/AppToggle.vue';
+import ConfirmActionModal from '@/components/ConfirmActionModal.vue';
+import ExpandableCard from '@/components/ExpandableCard.vue';
+import SettingsActionButton from '@/components/SettingsActionButton.vue';
+import FeedbackModal from '@/components/FeedbackModal.vue';
+import { NotificationService } from '@/services/notifications';
+import { ApiService } from '@/services/api';
+import { ToastService } from '@/services/toast';
+import { StorageService } from '@/services/storage';
+import { ReviewService } from '@/services/review';
+import { useAsyncAction } from '@/composables/useAsyncAction';
+import versionInfo from '@/version.json';
 
 const appVersion = versionInfo.version;
 

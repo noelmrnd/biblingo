@@ -68,10 +68,10 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft, ShieldCheck, Flame } from '@lucide/vue';
-import { keyboardHeight } from '../utils/keyboard';
-import { useCurrentUser } from '../composables/useCurrentUser';
+import { keyboardHeight } from '@/utils/keyboard';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 import AppRulesModal from './AppRulesModal.vue';
-import { HapticsService } from '../services/haptics';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   // true: header global (logo + racha). false: header propio con title/backRoute.

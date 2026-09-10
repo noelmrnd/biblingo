@@ -45,5 +45,5 @@
 
 <script setup>
 import { AlertTriangle, Info, CheckCircle, X } from '@lucide/vue';
-import { toastState, ToastService } from '../services/toast';
+import { toastState, ToastService } from '@/services/toast';
 </script>

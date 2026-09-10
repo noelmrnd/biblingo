@@ -1,7 +1,7 @@
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
 import { ApiService } from './api';
-import { getAppleConfig, GOOGLE_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from '../constants';
+import { getAppleConfig, GOOGLE_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from '@/constants';
 
 let socialLoginInitialized = false;
 

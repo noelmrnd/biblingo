@@ -41,7 +41,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, UsersRound, UserRound } from '@lucide/vue';
-import { HapticsService } from '../services/haptics';
+import { HapticsService } from '@/services/haptics';
 
 const route = useRoute();
 const router = useRouter();

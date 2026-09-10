@@ -1,6 +1,6 @@
 import { reactive } from 'vue';
-import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
+import { ApiService } from '@/services/api';
+import { ToastService } from '@/services/toast';
 
 /**
  * Envio de "toque" a un amigo, indexado por id para soportar tanto una lista

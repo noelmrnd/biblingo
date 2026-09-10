@@ -45,8 +45,8 @@
 <script setup>
 import { computed } from 'vue';
 import AppButton from './AppButton.vue';
-import { badgeCelebrationState, BadgeCelebrationService } from '../services/badgeCelebration';
-import { HapticsService } from '../services/haptics';
+import { badgeCelebrationState, BadgeCelebrationService } from '@/services/badgeCelebration';
+import { HapticsService } from '@/services/haptics';
 
 const badge = computed(() => badgeCelebrationState.value.badge);
 

@@ -69,8 +69,8 @@ import { ref, watch } from 'vue';
 import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
 import { Check, BookOpen } from '@lucide/vue';
-import { READING_REACTIONS } from '../constants';
-import { HapticsService } from '../services/haptics';
+import { READING_REACTIONS } from '@/constants';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },

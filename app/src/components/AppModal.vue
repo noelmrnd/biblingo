@@ -63,7 +63,7 @@
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { X } from '@lucide/vue';
 import IconButton from './IconButton.vue';
-import { keyboardHeight } from '../utils/keyboard';
+import { keyboardHeight } from '@/utils/keyboard';
 
 const props = defineProps({
   isOpen: {

@@ -24,7 +24,7 @@ import { computed } from 'vue';
 import { Heart } from '@lucide/vue';
 import SectionTitle from './SectionTitle.vue';
 import AppCard from './AppCard.vue';
-import { READING_REACTIONS } from '../constants';
+import { READING_REACTIONS } from '@/constants';
 
 const props = defineProps({
   reactionCounts: { type: Object, default: () => ({}) },

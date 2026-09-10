@@ -37,11 +37,11 @@ import { BookOpen, CheckCircle2 } from '@lucide/vue';
 import AppButton from './AppButton.vue';
 import confetti from 'canvas-confetti';
 import ReactionModal from './ReactionModal.vue';
-import { ApiService } from '../services/api';
-import { NotificationService } from '../services/notifications';
-import { ToastService } from '../services/toast';
-import { StorageService } from '../services/storage';
-import { HapticsService } from '../services/haptics';
+import { ApiService } from '@/services/api';
+import { NotificationService } from '@/services/notifications';
+import { ToastService } from '@/services/toast';
+import { StorageService } from '@/services/storage';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   user: { type: Object, required: true },

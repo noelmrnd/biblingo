@@ -54,13 +54,13 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { X, UsersRound } from '@lucide/vue';
-import { ApiService } from '../services/api';
+import { ApiService } from '@/services/api';
 import IconButton from './IconButton.vue';
 import SegmentedTabs from './SegmentedTabs.vue';
 import AppSpinner from './AppSpinner.vue';
 import UserFollowRow from './UserFollowRow.vue';
-import { HapticsService } from '../services/haptics';
-import { ToastService } from '../services/toast';
+import { HapticsService } from '@/services/haptics';
+import { ToastService } from '@/services/toast';
 
 const tabOptions = [
   { id: 'followers', label: 'Seguidores', color: 'green' },

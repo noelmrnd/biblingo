@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { ToastService } from '../services/toast';
+import { ToastService } from '@/services/toast';
 
 /**
  * Envuelve una accion async con el patron repetido en toda la app:

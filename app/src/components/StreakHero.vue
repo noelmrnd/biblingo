@@ -46,7 +46,7 @@
 <script setup>
 import { computed } from 'vue';
 import { ShieldCheck, Snowflake } from '@lucide/vue';
-import { getStreakTier } from '../constants';
+import { getStreakTier } from '@/constants';
 
 const props = defineProps({
   user: { type: Object, required: true }

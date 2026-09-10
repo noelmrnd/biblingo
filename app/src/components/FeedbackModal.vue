@@ -54,9 +54,9 @@ import { ref } from 'vue';
 import { MessageSquarePlus } from '@lucide/vue';
 import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
-import { ApiService } from '../services/api';
-import { useAsyncAction } from '../composables/useAsyncAction';
-import { HapticsService } from '../services/haptics';
+import { ApiService } from '@/services/api';
+import { useAsyncAction } from '@/composables/useAsyncAction';
+import { HapticsService } from '@/services/haptics';
 
 const FEEDBACK_TYPES = [
   { id: 'idea', label: 'Idea' },

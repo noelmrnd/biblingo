@@ -49,9 +49,9 @@ import { Medal } from '@lucide/vue';
 import SectionTitle from './SectionTitle.vue';
 import AppCard from './AppCard.vue';
 import AppModal from './AppModal.vue';
-import { formatDateDMY } from '../utils/dateFormatter';
-import { BADGES } from '../constants';
-import { HapticsService } from '../services/haptics';
+import { formatDateDMY } from '@/utils/dateFormatter';
+import { BADGES } from '@/constants';
+import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
   // Array {badge_id, earned_at} tal cual devuelve el backend.

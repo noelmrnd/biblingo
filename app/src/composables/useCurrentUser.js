@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { ApiService } from '../services/api';
-import { monthCache } from '../utils/monthlyCalendarCache';
+import { ApiService } from '@/services/api';
+import { monthCache } from '@/utils/monthlyCalendarCache';
 
 // Singleton a nivel de modulo: todas las vistas que llamen a useCurrentUser()
 // comparten la misma referencia, en vez de que cada una guarde su propia copia

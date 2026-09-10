@@ -84,9 +84,9 @@
 <script setup>
 import { ref } from 'vue';
 import { Wrench } from '@lucide/vue';
-import AppButton from '../components/AppButton.vue';
-import { AuthService } from '../services/authService';
-import { IS_DEV, APP_CONFIG } from '../constants';
+import AppButton from '@/components/AppButton.vue';
+import { AuthService } from '@/services/authService';
+import { IS_DEV, APP_CONFIG } from '@/constants';
 
 const emit = defineEmits(['login-success']);
 const loading = ref(false);

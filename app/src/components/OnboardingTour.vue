@@ -108,14 +108,14 @@ import {
   Rocket
 } from '@lucide/vue';
 import confetti from 'canvas-confetti';
-import { StorageService } from '../services/storage';
-import { ToastService } from '../services/toast';
-import { HapticsService } from '../services/haptics';
+import { StorageService } from '@/services/storage';
+import { ToastService } from '@/services/toast';
+import { HapticsService } from '@/services/haptics';
 
-import tourStep1 from '../assets/tour/tour-step-1.png';
-import tourStep2 from '../assets/tour/tour-step-2.png';
-import tourStep3 from '../assets/tour/tour-step-3.png';
-import tourStep4 from '../assets/tour/tour-step-4.png';
+import tourStep1 from '@/assets/tour/tour-step-1.png';
+import tourStep2 from '@/assets/tour/tour-step-2.png';
+import tourStep3 from '@/assets/tour/tour-step-3.png';
+import tourStep4 from '@/assets/tour/tour-step-4.png';
 
 const router = useRouter();
 const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';

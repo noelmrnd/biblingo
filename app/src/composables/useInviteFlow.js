@@ -1,6 +1,6 @@
-import { StorageService } from '../services/storage';
-import { ApiService } from '../services/api';
-import { ToastService } from '../services/toast';
+import { StorageService } from '@/services/storage';
+import { ApiService } from '@/services/api';
+import { ToastService } from '@/services/toast';
 
 const PENDING_INVITE_KEY = 'pending_invite_username';
 
