@@ -12,12 +12,12 @@
       </div>
       <p class="text-slate-400 text-sm font-medium font-mono truncate">@{{ username }}</p>
 
-      <div class="flex items-center gap-4 text-slate-300 text-sm font-medium pt-1">
+      <div class="flex items-center gap-4 text-slate-300 text-base font-medium pt-1">
         <button type="button" @click="$emit('open-followers')" class="cursor-pointer hover:text-white transition-colors">
           <strong class="text-white font-extrabold">{{ followersCount || 0 }}</strong> {{ followersCount === 1 ? 'seguidor' : 'seguidores' }}
         </button>
         <button type="button" @click="$emit('open-following')" class="cursor-pointer hover:text-white transition-colors">
-          <strong class="text-white font-extrabold">{{ followingCount || 0 }}</strong> seguidos
+          <strong class="text-white font-extrabold">{{ followingCount || 0 }}</strong> siguiendo
         </button>
       </div>
 

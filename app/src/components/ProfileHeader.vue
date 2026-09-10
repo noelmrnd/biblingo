@@ -20,7 +20,7 @@
         <strong class="text-white font-extrabold">{{ followersCount || 0 }}</strong> {{ followersCount === 1 ? 'seguidor' : 'seguidores' }}
       </button>
       <button type="button" @click="$emit('open-following')" class="cursor-pointer hover:text-white transition-colors">
-        <strong class="text-white font-extrabold">{{ followingCount || 0 }}</strong> seguidos
+        <strong class="text-white font-extrabold">{{ followingCount || 0 }}</strong> siguiendo
       </button>
     </div>
   </div>

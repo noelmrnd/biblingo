@@ -7,7 +7,7 @@
       </slot>
       <div class="text-2xl font-bold" :class="colorClass">{{ value }}</div>
     </div>
-    <div class="text-slate-300 text-sm font-semibold">{{ label }}</div>
+    <div class="text-slate-300 text-base font-medium">{{ label }}</div>
   </div>
 </template>
 
