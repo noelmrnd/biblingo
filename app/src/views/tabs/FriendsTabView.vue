@@ -8,9 +8,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import AppPage from '../components/AppPage.vue';
-import InviteFriends from '../components/InviteFriends.vue';
-import StreakRanking from '../components/StreakRanking.vue';
+import AppPage from '../../components/AppPage.vue';
+import InviteFriends from '../../components/InviteFriends.vue';
+import StreakRanking from '../../components/StreakRanking.vue';
 
 defineProps({
   user: { type: Object, required: true }

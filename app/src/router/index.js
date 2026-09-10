@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import DashboardView from '../views/DashboardView.vue';
-import FriendsView from '../views/FriendsView.vue';
+import DashboardView from '../views/tabs/DashboardView.vue';
+import FriendsView from '../views/tabs/FriendsView.vue';
 import FriendProfileView from '../views/FriendProfileView.vue';
-import ProfileView from '../views/ProfileView.vue';
+import ProfileView from '../views/tabs/ProfileView.vue';
 import SettingsView from '../views/SettingsView.vue';
 
 const routes = [

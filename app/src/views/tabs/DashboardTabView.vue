@@ -34,15 +34,15 @@ let lastLoadedUserId = null;
 <script setup>
 import { ref, onActivated } from 'vue';
 import { BookOpen } from '@lucide/vue';
-import AppPage from '../components/AppPage.vue';
-import ReadingButton from '../components/ReadingButton.vue';
-import StreakHero from '../components/StreakHero.vue';
-import MonthlyTracker from '../components/MonthlyTracker.vue';
-import { NotificationService } from '../services/notifications';
-import { ToastService } from '../services/toast';
-import { useCurrentUser } from '../composables/useCurrentUser';
-import { getBadgeById } from '../constants';
-import { BadgeCelebrationService } from '../services/badgeCelebration';
+import AppPage from '../../components/AppPage.vue';
+import ReadingButton from '../../components/ReadingButton.vue';
+import StreakHero from '../../components/StreakHero.vue';
+import MonthlyTracker from '../../components/MonthlyTracker.vue';
+import { NotificationService } from '../../services/notifications.js';
+import { ToastService } from '../../services/toast.js';
+import { useCurrentUser } from '../../composables/useCurrentUser.js';
+import { getBadgeById } from '../../constants.js';
+import { BadgeCelebrationService } from '../../services/badgeCelebration.js';
 
 const props = defineProps({
   user: { type: Object, required: true }
