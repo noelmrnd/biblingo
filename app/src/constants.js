@@ -32,8 +32,8 @@ export const READING_REACTIONS = [
   { id: 'loved', emoji: '❤️', label: 'Me encantó', desc: 'Inspiradora y edificante' },
   { id: 'thoughtful', emoji: '💡', label: 'Me puso a pensar', desc: 'Profunda y reflexiva' },
   { id: 'peaceful', emoji: '🕊️', label: 'Me dio paz', desc: 'Tranquila y reconfortante' },
-  { id: 'challenged', emoji: '⚡', label: 'Me desafió', desc: 'Confrontó mi vida y hábitos' },
-  { id: 'saddened', emoji: '🥺', label: 'Me entristeció', desc: 'Sensible o conmovedora' },
+  { id: 'challenged', emoji: '⚡️', label: 'Me desafió', desc: 'Confrontó mi vida y hábitos' },
+  { id: 'moved', emoji: '🥺', label: 'Me conmovió', desc: 'Sensible o emotiva' },
 ];
 
 export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id) || null;
@@ -57,14 +57,18 @@ export const BADGES = [
   { id: 'following_20', category: 'following', threshold: 20, emoji: '🧭', label: 'Explorador social', description: 'Sigues a 20 personas en Libringo.' },
   { id: 'followers_5', category: 'followers', threshold: 5, emoji: '⭐', label: '5 seguidores', description: '5 personas te siguen.' },
   { id: 'followers_20', category: 'followers', threshold: 20, emoji: '🎉', label: 'Comunidad', description: '20 personas te siguen.' },
-  { id: 'reaction_loved_10', category: 'reaction', threshold: 10, reaction: 'loved', emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que marcaste como "Me encantó".' },
+  { id: 'reaction_loved_10', category: 'reaction', threshold: 10, reaction: 'loved', emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que te encantaron.' },
   { id: 'reaction_thoughtful_10', category: 'reaction', threshold: 10, reaction: 'thoughtful', emoji: '💡', label: 'Pensador', description: '10 lecturas que te hicieron pensar.' },
   { id: 'reaction_peaceful_10', category: 'reaction', threshold: 10, reaction: 'peaceful', emoji: '🕊️', label: 'En paz', description: '10 lecturas que te dieron paz.' },
-  { id: 'reaction_challenged_10', category: 'reaction', threshold: 10, reaction: 'challenged', emoji: '⚡', label: 'Desafiado', description: '10 lecturas que confrontaron tu vida y hábitos.' },
+  { id: 'reaction_challenged_10', category: 'reaction', threshold: 10, reaction: 'challenged', emoji: '⚡️', label: 'Desafiado', description: '10 lecturas que confrontaron tu vida y hábitos.' },
+  { id: 'reaction_moved_10', category: 'reaction', threshold: 10, reaction: 'moved', emoji: '🥺', label: 'Conmovido', description: '10 lecturas que te conmovieron.' },
   { id: 'days_read_50', category: 'days_read', threshold: 50, emoji: '📚', label: '50 días leídos', description: 'Leíste 50 días en total (no tienen que ser seguidos).' },
+  { id: 'days_read_100', category: 'days_read', threshold: 100, emoji: '📖', label: '100 días leídos', description: 'Leíste 100 días en total (no tienen que ser seguidos).' },
   { id: 'days_read_365', category: 'days_read', threshold: 365, emoji: '🏛️', label: 'Un año leído', description: 'Un año completo de días leídos acumulados.' },
-  { id: 'mutual_5', category: 'mutual', threshold: 5, emoji: '💞', label: '5 amigos mutuos', description: '5 personas que te siguen y a las que también sigues.' },
+  { id: 'mutual_5', category: 'mutual', threshold: 5, emoji: '💞', label: '5 amigos', description: '5 personas que te siguen y a las que también sigues.' },
+  { id: 'mutual_20', category: 'mutual', threshold: 20, emoji: '💘', label: '20 amigos', description: '20 personas que te siguen y a las que también sigues.' },
   { id: 'nudge_sent_10', category: 'nudge_sent', threshold: 10, emoji: '🔔', label: 'Motivador', description: 'Enviaste 10 toques a tus amigos.' },
+  { id: 'nudge_sent_50', category: 'nudge_sent', threshold: 50, emoji: '📯', label: 'Superfan', description: 'Enviaste 50 toques a tus amigos.' },
   { id: 'nudge_received_10', category: 'nudge_received', threshold: 10, emoji: '📣', label: 'Popular', description: 'Recibiste 10 toques de tus amigos.' },
 ];
 

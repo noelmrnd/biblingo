@@ -74,7 +74,7 @@ class ReadingController {
 
     private const MAX_STREAK_FREEZES = 2;
     private const FREEZE_EVERY_DAYS = 7;
-    private const VALID_REACTIONS = ['loved', 'thoughtful', 'peaceful', 'challenged', 'saddened'];
+    private const VALID_REACTIONS = ['loved', 'thoughtful', 'peaceful', 'challenged', 'moved'];
 
     public static function logReading(string $userId, ?string $reaction = null) {
         if ($reaction !== null && !in_array($reaction, self::VALID_REACTIONS, true)) {
