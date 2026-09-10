@@ -44,11 +44,7 @@
             </div>
 
             <!-- Body / Contenido Principal -->
-            <!-- px-2 -mx-2 se cancelan visualmente (mismo elemento) pero abren un buffer
-                 de 8px dentro del contenedor con overflow-y-auto, para que un ring/scale
-                 de un hijo (ej. item seleccionado en ReactionModal) no se recorte contra
-                 el borde del scroll — overflow-x queda clippeado igual por el overflow-y. -->
-            <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 px-2 -mx-2 no-scrollbar overscroll-contain">
+            <div v-if="$slots.default" class="flex-1 overflow-y-auto min-h-0 no-scrollbar overscroll-contain">
               <slot />
             </div>
 

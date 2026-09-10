@@ -15,20 +15,20 @@
         :disabled="loading"
         :class="[
           selectedReaction === item.id
-            ? 'border-brand-green bg-emerald-500/15 ring-2 ring-inset ring-brand-green/50 shadow-lg shadow-emerald-950/40 scale-[1.01]'
+            ? 'border-brand-green bg-emerald-500/15'
             : 'border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 hover:border-slate-700 active:scale-[0.99]'
         ]"
-        class="w-full text-left p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none group"
+        class="w-full text-left px-4 py-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none group"
       >
-        <div class="flex items-center gap-3.5 min-w-0">
+        <div class="flex items-center gap-4 min-w-0">
           <span class="text-2xl filter drop-shadow-sm flex-shrink-0 transition-transform duration-200 group-hover:scale-110 group-active:scale-95">
             {{ item.emoji }}
           </span>
           <div class="min-w-0">
-            <p class="font-black text-base text-white tracking-wide truncate">
+            <p class="font-semibold text-lg text-white tracking-wide truncate">
               {{ item.label }}
             </p>
-            <p class="text-sm text-slate-400 font-medium truncate">
+            <p class="text-base text-slate-400 font-medium truncate">
               {{ item.desc }}
             </p>
           </div>
@@ -50,13 +50,13 @@
 
     <template #footer>
       <AppButton
-        color="green"
+        :color="selectedReaction ? 'green' : 'blue'"
         size="lg"
         block
-        :disabled="!selectedReaction || loading"
+        :disabled="loading"
         :loading="loading"
         loading-text="Registrando lectura..."
-        text="Registrar lectura"
+        :text="selectedReaction ? 'Registrar lectura' : 'Registrar sin reacción'"
         :icon="BookOpen"
         @click="onConfirm"
       />
@@ -100,7 +100,7 @@ const onClose = () => {
 };
 
 const onConfirm = () => {
-  if (!selectedReaction.value || props.loading) return;
+  if (props.loading) return;
   emit('confirm', selectedReaction.value);
 };
 </script>
