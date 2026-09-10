@@ -21,6 +21,7 @@ export const getAppleConfig = (platform) => {
 
 export const APP_CONFIG = {
   name: 'Libringo',
+  appDomain: 'app.libringo.com',
   prodWebUrl: 'https://libringo.com',
   prodAppUrl: 'https://app.libringo.com',
   isDev: IS_DEV,

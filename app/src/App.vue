@@ -1,13 +1,20 @@
 <template>
-  <div class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white relative max-w-lg mx-auto shadow-xl">
+  <div
+    class="h-full w-full bg-brand-dark flex flex-col overflow-hidden selection:bg-brand-green selection:text-white relative"
+    :class="{ 'max-w-lg mx-auto shadow-xl': !isBrowserOnAppDomain }"
+  >
     <!-- Componente Toast Flotante Global -->
     <ToastNotification />
 
     <!-- Modal de Celebracion para Logros -->
     <BadgeCelebrationModal />
 
+    <!-- app.libringo.com abierto desde un navegador normal (no la WebView nativa):
+         mostrar la invitación a descargar la app en vez de la app web/login. -->
+    <GetAppView v-if="isBrowserOnAppDomain" />
+
     <!-- Splash mientras se resuelve la sesión guardada, evita el parpadeo hacia Login -->
-    <div v-if="isInitializing" class="flex-1 flex items-center justify-center">
+    <div v-else-if="isInitializing" class="flex-1 flex items-center justify-center">
       <div class="w-10 h-10 border-4 border-slate-700 border-t-brand-green rounded-full animate-spin"></div>
     </div>
 
@@ -46,9 +53,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { Capacitor } from '@capacitor/core';
 import BottomNav from './components/BottomNav.vue';
 import OnboardingTour from './components/OnboardingTour.vue';
 import LoginView from './views/LoginView.vue';
+import GetAppView from './views/GetAppView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import BadgeCelebrationModal from './components/BadgeCelebrationModal.vue';
 import { ToastService } from './services/toast';
@@ -60,11 +69,13 @@ import { AnalyticsService } from './services/analytics';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
+import {APP_CONFIG} from "@/constants.js";
 
 const router = useRouter();
 const { user: currentUser, clearUser, markFreshLoad } = useCurrentUser();
 const tourRef = ref(null);
 const isInitializing = ref(true);
+const isBrowserOnAppDomain = !Capacitor.isNativePlatform() && window.location.hostname === APP_CONFIG.appDomain;
 
 const { processInvite, resolvePendingInvite } = useInviteFlow({
   getCurrentUser: () => currentUser.value,
