@@ -34,6 +34,11 @@ import { Calendar, ShieldCheck, Check } from '@lucide/vue';
 import { toLocalDateString } from '../utils/dateFormatter';
 import SectionTitle from './SectionTitle.vue';
 import AppCard from './AppCard.vue';
+import { useMidnightRefresh } from '../composables/useMidnightRefresh';
+
+// today reactivo: sin esto, "hoy" quedaria congelado en el dia de ayer si la
+// vista sigue montada pasada la medianoche (ver useMidnightRefresh).
+const { today } = useMidnightRefresh();
 
 const props = defineProps({
   // El padre (ej. FriendProfileView) ya trae esta info como parte del perfil completo.
@@ -52,14 +57,13 @@ watch(() => props.history, (history) => {
 
 const weekDays = computed(() => {
   const labels = ['D', 'L', 'M', 'X', 'J', 'V', 'S']; // indexado por Date#getDay() (0 = Domingo)
-  const today = new Date();
-  const todayStr = toLocalDateString(today);
+  const todayStr = toLocalDateString(today.value);
 
   // Ultimos 7 dias terminando hoy, no la semana calendario: evita celdas de
   // dias futuros vacias cuando hoy es lunes/martes.
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
+    const d = new Date(today.value);
+    d.setDate(today.value.getDate() - (6 - i));
     const dateStr = toLocalDateString(d);
     const isToday = (dateStr === todayStr);
     const isFrozen = historyByDate.value.get(dateStr) === true;

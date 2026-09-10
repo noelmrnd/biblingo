@@ -102,7 +102,11 @@ const emptyMessage = computed(() => {
 });
 
 const loadTab = async (tab) => {
-  if (!props.userId || listsByTab.value[tab] !== null) return;
+  // loadingTab.value[tab] tambien: sin esto, si activeTab e isOpen cambian en
+  // el mismo tick (ej. abrir el modal directo en "following"), ambos watchers
+  // llaman loadTab(tab) antes de que el primer await resuelva y listsByTab
+  // siga en null para los dos, disparando la misma peticion dos veces.
+  if (!props.userId || listsByTab.value[tab] !== null || loadingTab.value[tab]) return;
   loadingTab.value[tab] = true;
   try {
     const res = await ApiService.getFollowList(props.userId, tab);
