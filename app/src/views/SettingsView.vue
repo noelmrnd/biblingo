@@ -17,69 +17,42 @@
       >
         <div class="space-y-3">
           <!-- Nombre de Usuario (Editable) -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre</label>
-            <div class="relative flex items-center">
-              <UserRound class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-              <input
-                v-model="editDisplayName"
-                type="text"
-                placeholder="Tu nombre de usuario"
-                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
-                @keyup.enter="saveProfile"
-              />
-            </div>
-          </div>
+          <AppFormField label="Nombre">
+            <AppTextInput
+              v-model="editDisplayName"
+              :icon="UserRound"
+              placeholder="Tu nombre de usuario"
+              @keyup.enter="saveProfile"
+            />
+          </AppFormField>
 
           <!-- Usuario (Editable) -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</label>
-            <div class="relative flex items-center">
-              <span class="absolute left-3.5 text-slate-400 pointer-events-none">@</span>
-              <input
-                v-model="editUsername"
-                type="text"
-                placeholder="usuario"
-                maxlength="20"
-                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl pl-8 pr-4 py-3 text-base focus:outline-none transition-colors lowercase"
-                @keyup.enter="saveProfile"
-              />
-            </div>
-            <p v-if="editUsername && !isUsernameValid" class="text-rose-400 text-xs font-semibold">
-              3-20 caracteres: minúsculas, números o guion bajo.
-            </p>
-          </div>
+          <AppFormField label="Usuario" :error="editUsername && !isUsernameValid ? '3-20 caracteres: minúsculas, números o guion bajo.' : ''">
+            <AppTextInput
+              v-model="editUsername"
+              :icon="AtSign"
+              placeholder="usuario"
+              maxlength="20"
+              input-class="lowercase"
+              @keyup.enter="saveProfile"
+            />
+          </AppFormField>
 
           <!-- Correo Electrónico (Solo Lectura con Badge) -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Correo electrónico</label>
-            <div class="relative flex items-center">
-              <Mail class="w-5 h-5 text-slate-500 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-              <input
-                :value="user.email || 'Autenticación Social'"
-                type="email"
-                disabled
-                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
-              />
-              <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
-              </span>
-            </div>
-          </div>
+          <AppFormField label="Correo electrónico">
+            <AppTextInput :model-value="user.email || 'Autenticación Social'" :icon="Mail" type="email" disabled>
+              <template #suffix>
+                <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
+                  <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
+                </span>
+              </template>
+            </AppTextInput>
+          </AppFormField>
 
           <!-- Zona Horaria (Auto-detectada) -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Zona horaria</label>
-            <div class="relative flex items-center">
-              <Globe class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none stroke-[2.5]" />
-              <input
-                :value="currentTimezone"
-                type="text"
-                disabled
-                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
-              />
-            </div>
-          </div>
+          <AppFormField label="Zona horaria">
+            <AppTextInput :model-value="currentTimezone" :icon="Globe" disabled />
+          </AppFormField>
         </div>
 
         <AppButton
@@ -242,10 +215,12 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { UserRound, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import { UserRound, AtSign, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
 import AppPage from '@/components/AppPage.vue';
 import SectionTitle from '@/components/SectionTitle.vue';
 import AppButton from '@/components/AppButton.vue';
+import AppFormField from '@/components/AppFormField.vue';
+import AppTextInput from '@/components/AppTextInput.vue';
 import AppToggle from '@/components/AppToggle.vue';
 import ConfirmActionModal from '@/components/ConfirmActionModal.vue';
 import ExpandableCard from '@/components/ExpandableCard.vue';

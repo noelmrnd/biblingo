@@ -37,26 +37,13 @@
 
     <!-- Sin libro activo: nada que perder, inputs directos. -->
     <div v-else class="space-y-3">
-      <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre del libro</label>
-        <input
-          v-model="newBookTitle"
-          type="text"
-          placeholder="Ej. Génesis, Biblia, etc."
-          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
-        />
-      </div>
+      <AppFormField label="Nombre del libro">
+        <AppTextInput v-model="newBookTitle" placeholder="Ej. Génesis, Biblia, etc." />
+      </AppFormField>
 
-      <div v-if="!isNewBookBible" class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Número de páginas</label>
-        <input
-          v-model="newBookTotalPages"
-          type="number"
-          min="1"
-          placeholder="Ej. 320"
-          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
-        />
-      </div>
+      <AppFormField v-if="!isNewBookBible" label="Número de páginas">
+        <AppTextInput v-model="newBookTotalPages" type="number" min="1" placeholder="Ej. 320" />
+      </AppFormField>
       <p v-else class="text-sm text-slate-400">
         La Biblia se registra por capítulos, no por páginas.
       </p>
@@ -91,6 +78,8 @@ import { ref, computed, onMounted } from 'vue';
 import { BookOpen } from '@lucide/vue';
 import ExpandableCard from './ExpandableCard.vue';
 import AppButton from './AppButton.vue';
+import AppFormField from './AppFormField.vue';
+import AppTextInput from './AppTextInput.vue';
 import ConfirmActionModal from './ConfirmActionModal.vue';
 import { ApiService } from '@/services/api';
 import { useAsyncAction } from '@/composables/useAsyncAction';
