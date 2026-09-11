@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(30) NOT NULL UNIQUE,
     streak_count INT DEFAULT 0,
     max_streak_count INT DEFAULT 0,
+    days_read INT NOT NULL DEFAULT 0,
     streak_freezes INT NOT NULL DEFAULT 1,
     streak_freezes_used INT NOT NULL DEFAULT 0,
     last_read_date DATE NULL,
@@ -19,7 +20,30 @@ CREATE TABLE IF NOT EXISTS users (
     platform ENUM('ios', 'android', 'web') DEFAULT 'ios',
     status ENUM('active', 'banned', 'deleted') NOT NULL DEFAULT 'active',
     notification_prefs JSON NULL,
+    pages_read INT NOT NULL DEFAULT 0,
+    show_current_book BOOLEAN NOT NULL DEFAULT TRUE,
+    show_reading_progress BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 1b. Libro actual del usuario (control de lectura). Solo 1 libro 'reading' por
+-- usuario a la vez (validado en BookController, no a nivel SQL). tracking_mode
+-- 'bitmask' se usa para libros de capitulos no lineales (ej. Biblia, 1189
+-- capitulos): progress_bitmask guarda 1 bit por capitulo, current_unit no aplica.
+-- Definida antes de reading_logs porque esta la referencia via FK (book_id).
+CREATE TABLE IF NOT EXISTS books (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    tracking_mode ENUM('linear', 'bitmask') NOT NULL DEFAULT 'linear',
+    total_units INT NULL,
+    current_unit INT NOT NULL DEFAULT 0,
+    progress_bitmask BINARY(149) NULL,
+    status ENUM('reading', 'finished', 'abandoned') NOT NULL DEFAULT 'reading',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_status (user_id, status),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Registro diario de lectura
@@ -29,9 +53,12 @@ CREATE TABLE IF NOT EXISTS reading_logs (
     read_date DATE NOT NULL,
     reaction VARCHAR(50) NULL,
     is_frozen_day BOOLEAN NOT NULL DEFAULT FALSE,
+    units_read INT NULL,
+    book_id BIGINT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_user_day (user_id, read_date),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. Seguimientos (asimétrico, estilo Duolingo). "Amigos mutuos" = ambos se siguen.

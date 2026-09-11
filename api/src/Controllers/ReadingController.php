@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Libringo\Controllers;
 
 use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\BookEntity;
 use Libringo\Entities\ReadingLogEntity;
 use Libringo\Entities\UserEntity;
 use Libringo\Utils\DateUtils;
@@ -24,7 +25,7 @@ class ReadingController {
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $user['timezone'], (int)$user['streak_freezes']);
 
-        $totalDaysRead = ReadingLogEntity::countTotalDaysRead($db, $userId);
+        $activeBook = BookEntity::findActiveByUser($db, $userId);
 
         sendJsonResponse([
             'success'              => true,
@@ -33,7 +34,10 @@ class ReadingController {
             'max_streak_count'     => (int)$user['max_streak_count'],
             'streak_freezes'       => (int)$user['streak_freezes'],
             'streak_freezes_used'  => (int)$user['streak_freezes_used'],
-            'total_days_read'      => $totalDaysRead,
+            'days_read'      => (int)$user['days_read'],
+            'pages_read'     => (int)$user['pages_read'],
+            'current_book_title'   => $activeBook['title'] ?? null,
+            'reading_progress_percent' => ($activeBook && $activeBook['total_units']) ? BookEntity::computeProgressPercent($activeBook) : null,
             'reaction_counts'      => FriendController::countReactions($db, $userId),
             'member_since'         => substr((string)$user['created_at'], 0, 10),
             'followers_count'      => FriendController::countFollowers($db, $userId),
@@ -76,7 +80,14 @@ class ReadingController {
     private const FREEZE_EVERY_DAYS = 7;
     private const VALID_REACTIONS = ['loved', 'thoughtful', 'peaceful', 'challenged', 'moved'];
 
-    public static function logReading(string $userId, ?string $reaction = null) {
+    /**
+     * $newPage/$chapters: avance opcional del libro activo, registrado en la MISMA
+     * transaccion que la racha (atomico — si el avance es invalido, no se marca la
+     * racha ni se guarda nada). Si el usuario no tiene libro activo, se ignoran.
+     * Para avance adicional el mismo dia DESPUES de ya haber leido hoy, ver
+     * BookController::updateProgress en su lugar (no repite la racha/reaccion).
+     */
+    public static function logReading(string $userId, ?string $reaction = null, ?int $newPage = null, ?array $chapters = null) {
         if ($reaction !== null && !in_array($reaction, self::VALID_REACTIONS, true)) {
             sendJsonResponse(['error' => 'reaction invalida.'], 400);
         }
@@ -141,19 +152,39 @@ class ReadingController {
                     $freezesAvailable += 1;
                 }
 
+                $unitsRead = null;
+                $bookId = null;
+                $bookFinished = false;
+                $activeBook = BookEntity::findActiveByUserForUpdate($db, $userId);
+                if ($activeBook) {
+                    $progress = BookEntity::applyProgress($db, $activeBook, $newPage, $chapters);
+                    $unitsRead = $progress['units_read'];
+                    $bookId = $progress['book_id'];
+                    $bookFinished = $progress['finished'];
+                    UserEntity::incrementTotalPagesRead($db, $userId, $unitsRead);
+                }
+
                 UserEntity::updateStreak($db, $userId, $currentStreak, $maxStreak, $freezesAvailable, $freezesUsed, $today);
 
                 $logId = (string)SnowflakeId::nextId();
-                ReadingLogEntity::upsertLog($db, $logId, $userId, $today, $reaction);
+                ReadingLogEntity::insertLog($db, $logId, $userId, $today, $reaction, $unitsRead, $bookId);
+                UserEntity::incrementDaysRead($db, $userId);
 
                 if (!empty($frozenDates)) {
                     ReadingLogEntity::insertFrozenDays($db, $userId, $frozenDates);
                 }
 
-                $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction, $user['created_at']);
+                $pagesRead = (int)$user['pages_read'] + ($unitsRead ?? 0);
+                $daysRead = (int)$user['days_read'] + 1;
+                $newBadges = self::checkBadgesAfterLog($db, $userId, $currentStreak, $reaction, $user['created_at'], $bookFinished, $pagesRead, $daysRead);
             }
 
             $db->commit();
+        } catch (\InvalidArgumentException $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            sendJsonResponse(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             if ($db->inTransaction()) {
                 $db->rollBack();
@@ -189,11 +220,16 @@ class ReadingController {
      * la ve celebrada como cualquier otra medalla en su primera lectura, sin
      * necesitar un mecanismo aparte para medallas otorgadas fuera de este flujo.
      */
-    private static function checkBadgesAfterLog(\PDO $db, string $userId, int $currentStreak, ?string $reaction, string $userCreatedAt): array {
+    private static function checkBadgesAfterLog(\PDO $db, string $userId, int $currentStreak, ?string $reaction, string $userCreatedAt, bool $bookFinished, int $pagesRead, int $daysRead): array {
         $badgeValues = [
             'streak'    => $currentStreak,
-            'days_read' => ReadingLogEntity::countTotalDaysRead($db, $userId),
+            'days_read' => $daysRead,
+            'pages'     => $pagesRead,
         ];
+
+        if ($bookFinished) {
+            $badgeValues['books_finished'] = BookEntity::countFinishedByUser($db, $userId);
+        }
 
         if ($reaction !== null) {
             $reactionCounts = ReadingLogEntity::countReactionsGrouped($db, $userId);

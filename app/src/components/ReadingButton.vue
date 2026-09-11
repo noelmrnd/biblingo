@@ -1,7 +1,8 @@
 <template>
   <div class="w-full">
+    <!-- Ya leyó hoy y no hay libro activo: nada mas que registrar por hoy -->
     <AppButton
-      v-if="hasReadToday"
+      v-if="hasReadToday && !activeBook"
       color="green"
       size="lg"
       block
@@ -10,38 +11,84 @@
       text="¡Perfecto, ya leíste hoy!"
     />
 
+    <!-- Ya leyó hoy pero hay libro activo: puede seguir sumando avance el resto
+         del dia, sin volver a tocar la racha ni la reaccion (ver BookController::updateProgress) -->
+    <AppButton
+      v-else-if="hasReadToday"
+      color="green"
+      size="lg"
+      block
+      :disabled="loadingExtraProgress || loadingActiveBook"
+      :icon="BookOpen"
+      text="Registrar más avance"
+      @click="openExtraProgressModal"
+    />
+
     <AppButton
       v-else
       color="green"
       size="lg"
       block
-      :disabled="loading"
+      :disabled="loading || loadingActiveBook"
       :icon="BookOpen"
       text="Registrar lectura de hoy"
       @click="openReactionModal"
     />
 
-    <!-- Modal de Reacción al Marcar Lectura -->
-    <ReactionModal
+    <!-- Modal de Registro de Lectura: avance del libro activo (si hay) + reacción -->
+    <ReadingFlowModal
       :is-open="showReactionModal"
       :loading="loading"
+      :active-book="activeBook"
       @close="showReactionModal = false"
       @confirm="handleReactionConfirmed"
     />
+
+    <!-- Modal de Avance Extra: solo el paso de progreso, sin reaccion -->
+    <AppModal
+      :is-open="showExtraProgressModal"
+      :loading="loadingExtraProgress"
+      title="Más avance de hoy"
+      :description="activeBook?.title"
+      @close="showExtraProgressModal = false"
+    >
+      <BookProgressStep v-if="activeBook" ref="extraProgressStepRef" :book="activeBook" :loading="loadingExtraProgress" />
+
+      <template #footer>
+        <AppButton
+          color="green"
+          size="lg"
+          block
+          :disabled="loadingExtraProgress || !isExtraProgressValid"
+          :loading="loadingExtraProgress"
+          loading-text="Guardando..."
+          text="Guardar avance"
+          :icon="BookOpen"
+          @click="submitExtraProgress"
+        />
+      </template>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { BookOpen, CheckCircle2 } from '@lucide/vue';
 import AppButton from './AppButton.vue';
+import AppModal from './AppModal.vue';
+import BookProgressStep from './BookProgressStep.vue';
 import confetti from 'canvas-confetti';
-import ReactionModal from './ReactionModal.vue';
+import ReadingFlowModal from './ReadingFlowModal.vue';
 import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
 import { ToastService } from '@/services/toast';
 import { StorageService } from '@/services/storage';
 import { HapticsService } from '@/services/haptics';
+import { useCurrentUser } from '@/composables/useCurrentUser';
+import { getBadgeById } from '@/constants';
+import { BadgeCelebrationService } from '@/services/badgeCelebration';
+
+const { refreshProfile } = useCurrentUser();
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -52,19 +99,100 @@ const emit = defineEmits(['reading-logged']);
 
 const loading = ref(false);
 const showReactionModal = ref(false);
+const activeBook = ref(null);
+// Evita que un click justo despues de activarse la vista (antes de que resuelva
+// getActiveBook) muestre el flujo sin el paso de progreso por creer que no hay
+// libro activo — bloquea el boton hasta tener la respuesta, como initialLoading en DashboardTabView.
+const loadingActiveBook = ref(true);
+
+const loadActiveBook = async () => {
+  loadingActiveBook.value = true;
+  try {
+    const res = await ApiService.getActiveBook();
+    if (res.success) {
+      activeBook.value = res.book;
+    }
+  } catch (e) {
+    console.warn('No se pudo cargar el libro activo:', e.message);
+  } finally {
+    loadingActiveBook.value = false;
+  }
+};
+
+// onMounted cubre la primera aparicion: este componente nace via v-if (recien
+// cuando hasReadToday deja de ser null) DESPUES de que DashboardTabView ya esta
+// activo dentro del keep-alive, asi que no hay transicion de activacion que
+// dispare onActivated esa primera vez (se quedaba con loadingActiveBook en true
+// para siempre — el boton nunca se habilitaba). onActivated cubre las vueltas
+// siguientes al tab, para reflejar un cambio de libro hecho en Ajustes.
+onMounted(loadActiveBook);
+onActivated(loadActiveBook);
 
 const openReactionModal = () => {
-  if (loading.value) return;
+  if (loading.value || loadingActiveBook.value) return;
   showReactionModal.value = true;
 };
 
-const handleReactionConfirmed = async (reaction) => {
+// Avance extra: mismo libro, mismo dia, pero sin racha ni reaccion (ver
+// BookController::updateProgress) — disponible solo despues de haber marcado
+// la lectura de hoy, como reemplazo del boton principal (no coexisten).
+const showExtraProgressModal = ref(false);
+const loadingExtraProgress = ref(false);
+const extraProgressStepRef = ref(null);
+const isExtraProgressValid = computed(() => extraProgressStepRef.value?.isValid ?? false);
+
+const openExtraProgressModal = () => {
+  if (loadingExtraProgress.value || loadingActiveBook.value) return;
+  showExtraProgressModal.value = true;
+};
+
+const submitExtraProgress = async () => {
+  if (!extraProgressStepRef.value?.isValid || loadingExtraProgress.value) return;
+  loadingExtraProgress.value = true;
+  try {
+    const payload = extraProgressStepRef.value.getPayload();
+    const res = await ApiService.updateBookProgress(payload);
+    if (res.success) {
+      activeBook.value = res.book;
+      showExtraProgressModal.value = false;
+      ToastService.success('¡Avance guardado! 📖');
+      // pages_read cambio en el servidor — refrescar el usuario compartido
+      // para que Perfil (y cualquier otra vista) lo vea actualizado sin recargar.
+      refreshProfile({ force: true });
+
+      // Este flujo no pasa por handleReactionConfirmed (no hay reaccion), asi que
+      // la celebracion de medallas ganadas por paginas/libro terminado va aca.
+      (res.new_badges || []).forEach((badgeId) => {
+        const badge = getBadgeById(badgeId);
+        if (!badge) return;
+        BadgeCelebrationService.celebrate(badge);
+      });
+    }
+  } catch (e) {
+    ToastService.error(e.message || 'No se pudo guardar tu avance.');
+  } finally {
+    loadingExtraProgress.value = false;
+  }
+};
+
+const handleReactionConfirmed = async ({ reaction, progress }) => {
   if (loading.value) return;
   loading.value = true;
   try {
-    const res = await ApiService.logReading(reaction);
+    const res = await ApiService.logReading(reaction, progress);
     if (res.success) {
       showReactionModal.value = false;
+
+      // Refresca el libro activo: si se mando avance en este mismo log, current_unit
+      // ya cambio en el servidor y el boton de "avance extra" necesita el valor nuevo.
+      if (progress && activeBook.value) {
+        try {
+          const bookRes = await ApiService.getActiveBook();
+          if (bookRes.success) activeBook.value = bookRes.book;
+        } catch (e) {
+          console.warn('No se pudo refrescar el libro activo:', e.message);
+        }
+      }
 
       // Caso 2: Limpiar las notificaciones locales entregadas y el badge solo tras haber leído
       await NotificationService.clearLocalNotifications();

@@ -86,10 +86,57 @@ export const ApiService = {
     return request(`/reading/calendar?year=${year}&month=${month}`);
   },
 
-  async logReading(reaction = null) {
+  // progress: { currentPage } o { chapters }, opcional. El backend calcula y guarda
+  // el avance del libro activo en la MISMA transaccion que la racha (atomico —
+  // si el avance es invalido, no se marca la racha ni se guarda nada).
+  async logReading(reaction = null, progress = null) {
+    const body = { reaction };
+    if (progress?.currentPage !== undefined) body.current_page = progress.currentPage;
+    if (progress?.chapters !== undefined) body.chapters = progress.chapters;
     return request('/reading/log', {
       method: 'POST',
-      body: JSON.stringify({ reaction })
+      body: JSON.stringify(body)
+    });
+  },
+
+  // Si title detecta 'biblia' el backend activa tracking por capitulos y
+  // total_pages se ignora. Reemplaza el libro activo anterior, si habia uno.
+  async createBook(title, totalPages = null) {
+    return request('/books', {
+      method: 'POST',
+      body: JSON.stringify({ title, total_pages: totalPages })
+    });
+  },
+
+  // null si el usuario no tiene libro activo configurado.
+  async getActiveBook() {
+    return request('/books/active');
+  },
+
+  // Quita el libro activo sin reemplazarlo (el control de lectura es opcional).
+  async removeActiveBook() {
+    return request('/books/active', { method: 'DELETE' });
+  },
+
+  // "Avance extra": para sumar mas paginas/capitulos el mismo dia DESPUES de ya
+  // haber marcado la lectura de hoy (logReading). Nunca toca la racha ni la
+  // reaccion, solo suma sobre el mismo reading_log del dia.
+  // tracking_mode 'linear': { currentPage }. 'bitmask': { chapters: [12, 45, ...] }
+  // (OR incremental sobre lo ya marcado, nunca reemplaza).
+  async updateBookProgress({ currentPage, chapters } = {}) {
+    const body = {};
+    if (currentPage !== undefined) body.current_page = currentPage;
+    if (chapters !== undefined) body.chapters = chapters;
+    return request('/books/progress', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  },
+
+  async updatePrivacyPrefs(prefs) {
+    return request('/user/privacy-prefs', {
+      method: 'POST',
+      body: JSON.stringify(prefs)
     });
   },
 

@@ -143,7 +143,7 @@ class UserEntity {
     }
 
     public static function getReadingStatusRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT username, streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT username, streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at, pages_read, days_read FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }
@@ -161,7 +161,7 @@ class UserEntity {
      * y ve el estado ya actualizado por la primera).
      */
     public static function getStreakRowForUpdate(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at FROM users WHERE id = ? FOR UPDATE");
+        $stmt = $db->prepare("SELECT streak_count, max_streak_count, streak_freezes, streak_freezes_used, last_read_date, timezone, created_at, pages_read, days_read FROM users WHERE id = ? FOR UPDATE");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }
@@ -185,15 +185,49 @@ class UserEntity {
 
     /** Solo devuelve cuentas activas: ver el perfil de un banned/deleted responde "no encontrado". */
     public static function getProfileRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, streak_freezes, last_read_date, timezone, created_at FROM users WHERE id = ? AND status = 'active'");
+        $stmt = $db->prepare("SELECT display_name, username, streak_count, max_streak_count, streak_freezes, last_read_date, timezone, created_at, pages_read, days_read, show_current_book, show_reading_progress FROM users WHERE id = ? AND status = 'active'");
         $stmt->execute([$userId]);
         return $stmt->fetch();
     }
 
     public static function getSettingsRow(\PDO $db, string $userId): array|false {
-        $stmt = $db->prepare("SELECT display_name, username, email, timezone, reminder_time FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT display_name, username, email, timezone, reminder_time, show_current_book, show_reading_progress FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
+    }
+
+    /** timezone + pages_read en 1 sola query, para flujos que necesitan ambos (ver BookController::updateProgress). */
+    public static function getTimezoneAndPagesRead(\PDO $db, string $userId): array|false {
+        $stmt = $db->prepare("SELECT timezone, pages_read FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        return $stmt->fetch();
+    }
+
+    public static function incrementTotalPagesRead(\PDO $db, string $userId, int $delta): void {
+        if ($delta === 0) return;
+        $stmt = $db->prepare("UPDATE users SET pages_read = pages_read + ? WHERE id = ?");
+        $stmt->execute([$delta, $userId]);
+    }
+
+    /** Se llama junto al INSERT de reading_logs (ver ReadingLogEntity::insertLog / ReadingController::logReading). */
+    public static function incrementDaysRead(\PDO $db, string $userId): void {
+        $stmt = $db->prepare("UPDATE users SET days_read = days_read + 1 WHERE id = ?");
+        $stmt->execute([$userId]);
+    }
+
+    public static function updatePrivacyPrefs(\PDO $db, string $userId, ?bool $showCurrentBook, ?bool $showReadingProgress): void {
+        $fields = [];
+        $params = [];
+        if ($showCurrentBook !== null) {
+            $fields[] = 'show_current_book = ?';
+            $params[] = $showCurrentBook ? 1 : 0;
+        }
+        if ($showReadingProgress !== null) {
+            $fields[] = 'show_reading_progress = ?';
+            $params[] = $showReadingProgress ? 1 : 0;
+        }
+        if (empty($fields)) return;
+        self::updateFields($db, $userId, $fields, $params);
     }
 
     public static function updateFields(\PDO $db, string $userId, array $fields, array $params): void {

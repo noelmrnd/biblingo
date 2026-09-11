@@ -29,7 +29,7 @@
           </div>
 
           <!-- Indicador de Progreso Segmentado -->
-          <div class="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+          <div class="grid grid-cols-5 gap-1.5 h-1.5 w-full">
             <div 
               v-for="(_, index) in steps" 
               :key="index"
@@ -42,11 +42,11 @@
         </div>
 
         <!-- Contenido Central Dinámico del Paso -->
-        <div class="py-6 flex flex-col items-center text-center space-y-4 flex-1">
+        <div v-if="currentStepData.type !== 'book-config'" class="py-6 flex flex-col items-center text-center space-y-4 flex-1">
           <!-- Ilustración del paso desde /tour -->
           <div class="relative flex items-center justify-center w-full mt-6 mb-4">
-            <img 
-              :src="currentStepData.image" 
+            <img
+              :src="currentStepData.image"
               :alt="currentStepData.title"
               class="h-40 object-contain drop-shadow-xl select-none pointer-events-none transition-all duration-300"
             />
@@ -61,6 +61,52 @@
               {{ currentStepData.description }}
             </p>
           </div>
+        </div>
+
+        <!-- Paso de configuracion: registrar el libro que esta leyendo -->
+        <div v-else class="py-6 flex flex-col items-center text-center space-y-4 flex-1 w-full">
+          <div class="space-y-3">
+            <h3 class="text-2xl font-extrabold text-white leading-tight">
+              {{ currentStepData.title }}
+            </h3>
+            <p class="text-slate-300 text-base font-medium leading-relaxed">
+              {{ currentStepData.description }}
+            </p>
+          </div>
+
+          <div class="w-full space-y-3 text-left">
+            <div>
+              <label class="text-sm font-semibold text-slate-400">Nombre del libro</label>
+              <input
+                v-model="bookTitle"
+                type="text"
+                placeholder="Ej. Génesis, Biblia, etc."
+                class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+              />
+            </div>
+
+            <div v-if="!isBibleTitle">
+              <label class="text-sm font-semibold text-slate-400">Número de páginas</label>
+              <input
+                v-model="bookTotalPages"
+                type="number"
+                min="1"
+                placeholder="Ej. 320"
+                class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+              />
+            </div>
+            <p v-else class="text-sm text-slate-400">
+              La Biblia se registra por capítulos, no por páginas. ¡Podrás marcarlos en cualquier orden!
+            </p>
+          </div>
+
+          <button
+            type="button"
+            @click="skipBookConfig"
+            class="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+          >
+            Prefiero decidirlo después
+          </button>
         </div>
 
         <!-- Footer: Botones de Acción -->
@@ -88,6 +134,9 @@
             color="green"
             haptic="heavy"
             block
+            :loading="savingBook"
+            loading-text="Guardando..."
+            :disabled="savingBook || !isBookConfigValid"
             text="¡Empezar a leer!"
             :icon="Rocket"
             icon-position="end"
@@ -111,6 +160,7 @@ import confetti from 'canvas-confetti';
 import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
 import { HapticsService } from '@/services/haptics';
+import { ApiService } from '@/services/api';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
 import tourStep2 from '@/assets/tour/tour-step-2.png';
@@ -147,9 +197,43 @@ const steps = [
     ambientColor: 'bg-brand-green',
     image: tourStep4
   },
+  {
+    type: 'book-config',
+    title: '¿Qué estás leyendo?',
+    description: 'Regístralo y te iremos preguntando en qué página vas cada vez que leas. Puedes cambiarlo cuando quieras.',
+    ambientColor: 'bg-brand-blue',
+  },
 ];
 
 const currentStepData = computed(() => steps[currentStep.value]);
+
+// Paso 5 (book-config): registro opcional del libro activo.
+const bookTitle = ref('');
+const bookTotalPages = ref('');
+const savingBook = ref(false);
+const skippedBookConfig = ref(false);
+
+// Mismo match flexible que BookEntity::detectTrackingMode en el backend (sin
+// acentos/mayusculas): solo para decidir si mostramos el input de paginas.
+const isBibleTitle = computed(() => {
+  const normalized = bookTitle.value
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().trim();
+  return normalized.includes('biblia');
+});
+
+const isBookConfigValid = computed(() => {
+  if (skippedBookConfig.value || bookTitle.value.trim() === '') return true;
+  if (isBibleTitle.value) return true;
+  return Number(bookTotalPages.value) > 0;
+});
+
+const skipBookConfig = () => {
+  HapticsService.light();
+  skippedBookConfig.value = true;
+  bookTitle.value = '';
+  bookTotalPages.value = '';
+};
 
 const nextStep = () => {
   if (currentStep.value < steps.length - 1) {
@@ -171,6 +255,21 @@ const skipTour = async () => {
 };
 
 const finishTour = async () => {
+  if (!isBookConfigValid.value) return;
+
+  const title = bookTitle.value.trim();
+  if (title !== '' && !skippedBookConfig.value) {
+    savingBook.value = true;
+    try {
+      await ApiService.createBook(title, isBibleTitle.value ? null : Number(bookTotalPages.value));
+    } catch (e) {
+      // No bloquea el onboarding: el usuario puede registrar su libro despues desde su perfil.
+      ToastService.error(e.message || 'No se pudo guardar tu libro, podrás agregarlo después.');
+    } finally {
+      savingBook.value = false;
+    }
+  }
+
   try {
     confetti({
       particleCount: 90,

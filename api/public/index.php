@@ -7,6 +7,7 @@ require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 
 use Libringo\Controllers\AuthController;
+use Libringo\Controllers\BookController;
 use Libringo\Controllers\FriendController;
 use Libringo\Controllers\ReadingController;
 use Libringo\Controllers\UserController;
@@ -68,7 +69,9 @@ $routes = [
     },
     'POST /api/reading/log' => function () use ($userId, $input) {
         $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
-        ReadingController::logReading($userId, $reaction);
+        $newPage = isset($input['current_page']) ? (int)$input['current_page'] : null;
+        $chapters = is_array($input['chapters'] ?? null) ? array_map('intval', $input['chapters']) : null;
+        ReadingController::logReading($userId, $reaction, $newPage, $chapters);
     },
 
     'GET /api/friends' => fn() => FriendController::getFriends($userId),
@@ -95,8 +98,14 @@ $routes = [
     'POST /api/friends/unfollow' => fn() => FriendController::unfollow($userId),
     'POST /api/friends/nudge' => fn() => FriendController::nudgeFriend($userId),
 
+    'POST /api/books' => fn() => BookController::create($userId),
+    'GET /api/books/active' => fn() => BookController::getActive($userId),
+    'DELETE /api/books/active' => fn() => BookController::removeActive($userId),
+    'POST /api/books/progress' => fn() => BookController::updateProgress($userId),
+
     'GET /api/user/settings' => fn() => UserController::getSettings($userId),
     'POST /api/user/update' => fn() => UserController::updateProfile($userId),
+    'POST /api/user/privacy-prefs' => fn() => UserController::updatePrivacyPrefs($userId),
     'POST /api/user/notification-prefs' => fn() => UserController::updateNotificationPrefs($userId),
     'POST /api/user/push-token' => fn() => UserController::registerPushToken($userId),
     'DELETE /api/user/push-token' => fn() => UserController::unregisterPushToken($userId),
