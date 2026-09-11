@@ -1,7 +1,5 @@
 <template>
-  <div class="space-y-3">
-    <SectionTitle title="Ranking de rachas" :icon="Trophy" icon-color-class="text-amber-400" />
-
+  <SectionTitle title="Ranking de rachas" :icon="Trophy" icon-color-class="text-amber-400">
     <div v-if="friends.filter(f => !f.is_self).length === 0" class="card-duo text-center py-8 text-slate-400 space-y-2">
       <UsersRound class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
       <p class="text-lg font-bold text-white">Aún no sigues a nadie.</p>
@@ -68,7 +66,7 @@
     <p v-if="friends.filter(f => !f.is_self).length > 0" class="text-center text-sm text-slate-500 font-medium">
       Solo puedes enviar toques a quienes te siguen.
     </p>
-  </div>
+  </SectionTitle>
 </template>
 
 <script setup>

@@ -21,19 +21,21 @@
     </ProfileHeader>
 
     <!-- Resumen: racha actual, maxima, constancia total y protectores usados (mismo peso visual) -->
-    <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
-      <StatCell
-        :value="formatNumber(user.is_streak_lost ? 0 : user.streak_count)"
-        label="Racha actual"
-        :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
-        :icon="user.is_streak_lost ? Snowflake : user.will_use_freeze_today ? ShieldCheck : Flame"
-        :icon-color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
-      />
-      <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="CalendarCheck" icon-color-class="text-brand-days" />
-      <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-      <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
-      <StatCell class="col-span-2" :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
-    </div>
+    <SectionTitle title="Resumen" :icon="Zap" icon-color-class="text-purple-400">
+      <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
+        <StatCell
+          :value="formatNumber(user.is_streak_lost ? 0 : user.streak_count)"
+          label="Racha actual"
+          :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+          :icon="user.is_streak_lost ? Snowflake : user.will_use_freeze_today ? ShieldCheck : Flame"
+          :icon-color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+        />
+        <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="CalendarCheck" icon-color-class="text-brand-days" />
+        <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
+        <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
+        <StatCell class="col-span-2" :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
+      </div>
+    </SectionTitle>
 
     <!-- Libro actual (control de lectura) -->
     <ReadingProgressCard
@@ -80,6 +82,7 @@ import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
 import { formatNumber } from '@/utils/numberFormatter';
 import { Flame, Zap, Settings, BookOpen, CalendarCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import StatCell from '@/components/StatCell.vue';
+import SectionTitle from '@/components/SectionTitle.vue';
 import { formatMemberSince } from '@/utils/dateFormatter.js';
 import { useCurrentUser } from '@/composables/useCurrentUser.js';
 import { useFollowListPanel } from '@/composables/useFollowListPanel.js';

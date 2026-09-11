@@ -1,6 +1,5 @@
 <template>
-  <div class="space-y-3">
-    <SectionTitle title="Últimos 7 días" :icon="Calendar" icon-color-class="text-amber-400" />
+  <SectionTitle title="Últimos 7 días" :icon="Calendar" icon-color-class="text-amber-400">
     <AppCard>
       <div class="grid grid-cols-7 gap-1.5 text-center">
         <div
@@ -25,7 +24,7 @@
         </div>
       </div>
     </AppCard>
-  </div>
+  </SectionTitle>
 </template>
 
 <script setup>

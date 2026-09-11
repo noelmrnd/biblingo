@@ -1,8 +1,11 @@
 <template>
-  <h3 class="font-bold text-white text-lg flex items-center gap-3">
-    <component :is="icon" class="w-6 h-6 stroke-[2.5]" :class="iconColorClass" />
-    <span>{{ title }}</span>
-  </h3>
+  <div class="space-y-3">
+    <h3 class="font-bold text-white text-lg flex items-center gap-3">
+      <component :is="icon" class="w-6 h-6 stroke-[2.5]" :class="iconColorClass" />
+      <span>{{ title }}</span>
+    </h3>
+    <slot/>
+  </div>
 </template>
 
 <script setup>

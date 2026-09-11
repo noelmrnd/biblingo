@@ -3,163 +3,164 @@
     title="Ajustes"
     :back-route="{ name: 'profile' }"
   >
-    <div class="space-y-4">
-      <SectionTitle title="Configuración" :icon="Settings" icon-color-class="text-sky-400" />
+    <SectionTitle title="Configuración" :icon="Settings" icon-color-class="text-sky-400">
+      <div class="space-y-3">
+        <!-- Datos de Perfil -->
+        <ExpandableCard
+          v-model="isProfileExpanded"
+          title="Datos de perfil"
+          description="Ve o edita los datos de cuenta"
+          icon-bg-class="bg-brand-green/10 border-brand-green/30"
+          icon-color-class="text-brand-green"
+          :icon="UserCheck"
+        >
+          <div class="space-y-3">
+            <!-- Nombre de Usuario (Editable) -->
+            <AppFormField label="Nombre">
+              <AppTextInput
+                v-model="editDisplayName"
+                :icon="UserRound"
+                placeholder="Tu nombre de usuario"
+                @keyup.enter="saveProfile"
+              />
+            </AppFormField>
 
-      <!-- Datos de Perfil -->
-      <ExpandableCard
-        v-model="isProfileExpanded"
-        title="Datos de perfil"
-        description="Ve o edita los datos de cuenta"
-        icon-bg-class="bg-brand-green/10 border-brand-green/30"
-        icon-color-class="text-brand-green"
-        :icon="UserCheck"
-      >
-        <div class="space-y-3">
-          <!-- Nombre de Usuario (Editable) -->
-          <AppFormField label="Nombre">
-            <AppTextInput
-              v-model="editDisplayName"
-              :icon="UserRound"
-              placeholder="Tu nombre de usuario"
-              @keyup.enter="saveProfile"
-            />
-          </AppFormField>
+            <!-- Usuario (Editable) -->
+            <AppFormField label="Usuario" :error="editUsername && !isUsernameValid ? '3-20 caracteres: minúsculas, números o guion bajo.' : ''">
+              <AppTextInput
+                v-model="editUsername"
+                :icon="AtSign"
+                placeholder="usuario"
+                maxlength="20"
+                input-class="lowercase"
+                @keyup.enter="saveProfile"
+              />
+            </AppFormField>
 
-          <!-- Usuario (Editable) -->
-          <AppFormField label="Usuario" :error="editUsername && !isUsernameValid ? '3-20 caracteres: minúsculas, números o guion bajo.' : ''">
-            <AppTextInput
-              v-model="editUsername"
-              :icon="AtSign"
-              placeholder="usuario"
-              maxlength="20"
-              input-class="lowercase"
-              @keyup.enter="saveProfile"
-            />
-          </AppFormField>
+            <!-- Correo Electrónico (Solo Lectura con Badge) -->
+            <AppFormField label="Correo electrónico">
+              <AppTextInput :model-value="user.email || 'Autenticación Social'" :icon="Mail" type="email" disabled>
+                <template #suffix>
+                  <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
+                    <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
+                  </span>
+                </template>
+              </AppTextInput>
+            </AppFormField>
 
-          <!-- Correo Electrónico (Solo Lectura con Badge) -->
-          <AppFormField label="Correo electrónico">
-            <AppTextInput :model-value="user.email || 'Autenticación Social'" :icon="Mail" type="email" disabled>
-              <template #suffix>
-                <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
-                  <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
-                </span>
-              </template>
-            </AppTextInput>
-          </AppFormField>
+            <!-- Zona Horaria (Auto-detectada) -->
+            <AppFormField label="Zona horaria">
+              <AppTextInput :model-value="currentTimezone" :icon="Globe" disabled />
+            </AppFormField>
+          </div>
 
-          <!-- Zona Horaria (Auto-detectada) -->
-          <AppFormField label="Zona horaria">
-            <AppTextInput :model-value="currentTimezone" :icon="Globe" disabled />
-          </AppFormField>
-        </div>
+          <AppButton
+            color="green"
+            block
+            :disabled="saveProfileAction.loading.value || !hasProfileChanges || !isUsernameValid"
+            :text="saveProfileAction.loading.value ? 'Guardando...' : 'Guardar datos'"
+            @click="saveProfile"
+          />
+        </ExpandableCard>
 
-        <AppButton
-          color="green"
-          block
-          :disabled="saveProfileAction.loading.value || !hasProfileChanges || !isUsernameValid"
-          :text="saveProfileAction.loading.value ? 'Guardando...' : 'Guardar datos'"
-          @click="saveProfile"
-        />
-      </ExpandableCard>
-
-      <!-- Categorias de Notificacion -->
-      <ExpandableCard
-        v-model="isNotificationsExpanded"
-        title="Notificaciones"
-        description="Elige qué avisos quieres recibir"
-        icon-bg-class="bg-sky-500/10 border-sky-500/30"
-        icon-color-class="text-sky-400"
-        :icon="BellRing"
-      >
-        <div class="space-y-1">
-          <div v-for="cat in NOTIFICATION_CATEGORIES" :key="cat.key" class="border-b border-slate-800/70 last:border-0">
-            <div class="flex items-center justify-between gap-3 py-2.5">
-              <div class="min-w-0">
-                <p class="text-base font-semibold text-white">{{ cat.label }}</p>
-                <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
-              </div>
-              <AppToggle v-model="notificationPrefs[cat.key]" />
-            </div>
-
-            <!-- Hora del recordatorio: solo tiene sentido con la categoria activa -->
-            <div v-if="cat.key === 'daily_reminder' && notificationPrefs.daily_reminder" class="pb-3 space-y-2.5">
-              <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
-                <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
-                <input
-                  v-model="reminderTime"
-                  type="time"
-                  step="600"
-                  class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
-                />
+        <!-- Categorias de Notificacion -->
+        <ExpandableCard
+          v-model="isNotificationsExpanded"
+          title="Notificaciones"
+          description="Elige qué avisos quieres recibir"
+          icon-bg-class="bg-sky-500/10 border-sky-500/30"
+          icon-color-class="text-sky-400"
+          :icon="BellRing"
+        >
+          <div class="space-y-1">
+            <div v-for="cat in NOTIFICATION_CATEGORIES" :key="cat.key" class="border-b border-slate-800/70 last:border-0">
+              <div class="flex items-center justify-between gap-3 py-2.5">
+                <div class="min-w-0">
+                  <p class="text-base font-semibold text-white">{{ cat.label }}</p>
+                  <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
+                </div>
+                <AppToggle v-model="notificationPrefs[cat.key]" />
               </div>
 
-              <button
-                type="button"
-                @click="triggerTestNotification"
-                :disabled="testingNotification"
-                class="text-amber-400/80 hover:text-amber-300 font-semibold text-sm underline underline-offset-2 decoration-amber-400/40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ testingNotification ? 'Programando...' : 'Probar notificación' }}
-              </button>
+              <!-- Hora del recordatorio: solo tiene sentido con la categoria activa -->
+              <div v-if="cat.key === 'daily_reminder' && notificationPrefs.daily_reminder" class="pb-3 space-y-2.5">
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl">
+                  <span class="text-base font-bold text-slate-200">Hora de lectura:</span>
+                  <input
+                    v-model="reminderTime"
+                    type="time"
+                    step="600"
+                    class="bg-slate-800 border border-slate-700 text-amber-400 font-extrabold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:border-brand-green"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  @click="triggerTestNotification"
+                  :disabled="testingNotification"
+                  class="text-amber-400/80 hover:text-amber-300 font-semibold text-sm underline underline-offset-2 decoration-amber-400/40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ testingNotification ? 'Programando...' : 'Probar notificación' }}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <AppButton
-          color="green"
-          block
-          :disabled="savePrefsAction.loading.value || !prefsDirty"
-          :text="savePrefsAction.loading.value ? 'Guardando...' : 'Guardar notificaciones'"
-          @click="saveNotificationPrefs"
-        />
-      </ExpandableCard>
+          <AppButton
+            color="green"
+            block
+            :disabled="savePrefsAction.loading.value || !prefsDirty"
+            :text="savePrefsAction.loading.value ? 'Guardando...' : 'Guardar notificaciones'"
+            @click="saveNotificationPrefs"
+          />
+        </ExpandableCard>
 
-      <BookSettingsCard />
-      <PrivacySettingsCard />
-    </div>
+        <BookSettingsCard />
+        <PrivacySettingsCard />
+      </div>
+    </SectionTitle>
 
-    <!-- Botones de Acción -->
-    <div class="space-y-3">
-      <!-- Comentado: reabrir el tour desde aca vuelve a pasar por el paso de
-           configurar libro (OnboardingTour step 5), que reemplaza el libro activo
-           sin la confirmacion que si tiene "Cambiar libro" en Ajustes. Reactivar
-           solo si se separa ese paso del tour, o solo para cuentas nuevas. -->
-      <!--
-      <SettingsActionButton
-        :icon="Compass"
-        class="hover:border-indigo-400/50 [&_svg]:text-indigo-400"
-        @click="openTour"
-      >
-        Ver guía de inicio
-      </SettingsActionButton>
-      -->
+    <SectionTitle title="Más" :icon="MoreHorizontal" icon-color-class="text-slate-400">
+      <!-- Botones de Acción -->
+      <div class="space-y-3">
+        <!-- Comentado: reabrir el tour desde aca vuelve a pasar por el paso de
+             configurar libro (OnboardingTour step 5), que reemplaza el libro activo
+             sin la confirmacion que si tiene "Cambiar libro" en Ajustes. Reactivar
+             solo si se separa ese paso del tour, o solo para cuentas nuevas. -->
+        <!--
+        <SettingsActionButton
+          :icon="Compass"
+          class="hover:border-indigo-400/50 [&_svg]:text-indigo-400"
+          @click="openTour"
+        >
+          Ver guía de inicio
+        </SettingsActionButton>
+        -->
 
-      <SettingsActionButton
-        :icon="Star"
-        class="hover:border-amber-400/50 [&_svg]:text-amber-400 [&_svg]:fill-amber-400"
-        @click="rateApp"
-      >
-        Calificar la aplicación
-      </SettingsActionButton>
+        <SettingsActionButton
+          :icon="Star"
+          class="hover:border-amber-400/50 [&_svg]:text-amber-400 [&_svg]:fill-amber-400"
+          @click="rateApp"
+        >
+          Calificar la aplicación
+        </SettingsActionButton>
 
-      <SettingsActionButton
-        :icon="MessageSquarePlus"
-        class="hover:border-sky-400/50 [&_svg]:text-sky-400"
-        @click="isFeedbackModalOpen = true"
-      >
-        Enviar sugerencia
-      </SettingsActionButton>
+        <SettingsActionButton
+          :icon="MessageSquarePlus"
+          class="hover:border-sky-400/50 [&_svg]:text-sky-400"
+          @click="isFeedbackModalOpen = true"
+        >
+          Enviar sugerencia
+        </SettingsActionButton>
 
-      <SettingsActionButton
-        :icon="LogOut"
-        variant="danger"
-        class="[&_svg]:text-rose-400"
-        @click="isLogoutModalOpen = true"
-      >
-        Cerrar sesión
-      </SettingsActionButton>
+        <SettingsActionButton
+          :icon="LogOut"
+          variant="danger"
+          class="[&_svg]:text-rose-400"
+          @click="isLogoutModalOpen = true"
+        >
+          Cerrar sesión
+        </SettingsActionButton>
 
       <div class="flex flex-col pt-8">
         <a
@@ -183,6 +184,7 @@
         </p>
       </div>
     </div>
+    </SectionTitle>
 
     <!-- Modal Confirmación de Cerrar Sesión -->
     <ConfirmActionModal
@@ -215,7 +217,22 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { UserRound, AtSign, BellRing, LogOut, Trash2, UserCheck, Mail, Globe, CheckCircle2, Compass, Settings, Star, MessageSquarePlus } from '@lucide/vue';
+import {
+  UserRound,
+  AtSign,
+  BellRing,
+  LogOut,
+  Trash2,
+  UserCheck,
+  Mail,
+  Globe,
+  CheckCircle2,
+  Compass,
+  Settings,
+  Star,
+  MessageSquarePlus,
+  MoreHorizontal
+} from '@lucide/vue';
 import AppPage from '@/components/AppPage.vue';
 import SectionTitle from '@/components/SectionTitle.vue';
 import AppButton from '@/components/AppButton.vue';

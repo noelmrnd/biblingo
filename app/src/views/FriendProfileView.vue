@@ -61,30 +61,31 @@
         />
       </div>
 
-      <SectionTitle title="Resumen" :icon="Zap" icon-color-class="text-purple-400" />
-      <div class="card-duo grid grid-cols-3 gap-2">
-        <StatCell
-          :value="formatNumber(friend.is_streak_lost ? 0 : friend.streak_count)"
-          label="Racha"
-          :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
-          :icon="friend.is_streak_lost ? Snowflake : friend.will_use_freeze_today ? ShieldCheck : Flame"
-          :icon-color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
-        />
-        <StatCell
-          :value="formatNumber(friend.days_read)"
-          label="Días"
-          color-class="text-brand-days"
-          :icon="CalendarCheck"
-          icon-color-class="text-brand-days"
-        />
-        <StatCell
-          :value="formatNumber(friend.pages_read)"
-          label="Páginas"
-          color-class="text-brand-pages"
-          :icon="BookOpen"
-          icon-color-class="text-brand-pages"
-        />
-      </div>
+      <SectionTitle title="Resumen" :icon="Zap" icon-color-class="text-purple-400">
+        <div class="card-duo grid grid-cols-3 gap-2">
+          <StatCell
+            :value="formatNumber(friend.is_streak_lost ? 0 : friend.streak_count)"
+            label="Racha"
+            :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+            :icon="friend.is_streak_lost ? Snowflake : friend.will_use_freeze_today ? ShieldCheck : Flame"
+            :icon-color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
+          />
+          <StatCell
+            :value="formatNumber(friend.days_read)"
+            label="Días"
+            color-class="text-brand-days"
+            :icon="CalendarCheck"
+            icon-color-class="text-brand-days"
+          />
+          <StatCell
+            :value="formatNumber(friend.pages_read)"
+            label="Páginas"
+            color-class="text-brand-pages"
+            :icon="BookOpen"
+            icon-color-class="text-brand-pages"
+          />
+        </div>
+      </SectionTitle>
 
       <!-- Libro actual (respeta la privacidad configurada por el amigo) -->
       <ReadingProgressCard

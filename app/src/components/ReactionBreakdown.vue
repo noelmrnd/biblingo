@@ -1,7 +1,5 @@
 <template>
-  <div class="space-y-3">
-    <SectionTitle title="Reacciones" :icon="Heart" icon-color-class="text-rose-500" _icon-color-class="text-brand-reaction" />
-
+  <SectionTitle title="Reacciones" :icon="Heart" icon-color-class="text-rose-500">
     <AppCard>
       <div v-if="breakdown.length > 0" class="flex flex-wrap gap-2">
         <div
@@ -16,7 +14,7 @@
       </div>
       <p v-else class="text-slate-400 text-base font-medium">{{ emptyLabel }}</p>
     </AppCard>
-  </div>
+  </SectionTitle>
 </template>
 
 <script setup>

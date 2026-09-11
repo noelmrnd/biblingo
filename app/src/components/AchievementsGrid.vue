@@ -1,7 +1,5 @@
 <template>
-  <div class="space-y-3">
-    <SectionTitle title="Logros" :icon="Medal" icon-color-class="text-amber-400" />
-
+  <SectionTitle title="Logros" :icon="Medal" icon-color-class="text-amber-400">
     <AppCard>
       <div class="grid grid-cols-3 gap-4">
         <button
@@ -63,7 +61,7 @@
         </div>
       </AppModal>
     </AppCard>
-  </div>
+  </SectionTitle>
 </template>
 
 <script setup>

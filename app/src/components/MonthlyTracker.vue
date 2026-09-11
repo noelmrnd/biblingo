@@ -1,7 +1,10 @@
 <template>
   <div class="card-duo space-y-4">
     <div class="flex items-center justify-between">
-      <SectionTitle :title="monthLabel" :icon="Calendar" icon-color-class="text-amber-400" />
+      <h3 class="font-bold text-white text-lg flex items-center gap-3">
+        <Calendar class="w-6 h-6 stroke-[2.5] text-amber-400" />
+        <span>{{ monthLabel }}</span>
+      </h3>
       <div class="flex items-center gap-1 -mr-1">
         <IconButton
           :haptic="false"
@@ -55,7 +58,6 @@ import { ref, computed, watch, onMounted, onActivated } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight, ShieldCheck, Check } from '@lucide/vue';
 import { ApiService } from '@/services/api';
 import IconButton from './IconButton.vue';
-import SectionTitle from './SectionTitle.vue';
 import { toLocalDateString } from '@/utils/dateFormatter';
 import { monthCache } from '@/utils/monthlyCalendarCache';
 import { useMidnightRefresh } from '@/composables/useMidnightRefresh';

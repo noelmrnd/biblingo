@@ -1,7 +1,5 @@
 <template>
-  <div v-if="currentBookTitle" class="space-y-3">
-    <SectionTitle title="Leyendo ahora" :icon="BookOpen" icon-color-class="text-brand-days" />
-
+  <SectionTitle v-if="currentBookTitle" title="Leyendo ahora" :icon="BookOpen" icon-color-class="text-brand-days">
     <AppCard>
       <div class="flex items-center justify-between gap-3 min-w-0">
         <p class="text-base font-bold text-white truncate">{{ currentBookTitle }}</p>
@@ -14,7 +12,7 @@
         </div>
       </div>
     </AppCard>
-  </div>
+  </SectionTitle>
 </template>
 
 <script setup>
