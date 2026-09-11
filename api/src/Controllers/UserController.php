@@ -32,9 +32,30 @@ class UserController {
                 'email'         => $user['email'],
                 'timezone'      => $user['timezone'],
                 'reminder_time' => $user['reminder_time'],
+                'show_current_book'     => (bool)$user['show_current_book'],
+                'show_reading_progress' => (bool)$user['show_reading_progress'],
             ],
             'notification_prefs' => UserEntity::getNotificationPrefs($db, $userId),
         ]);
+    }
+
+    /**
+     * Prende/apaga las 2 opciones de privacidad del control de lectura: mostrar
+     * el libro que se esta leyendo, y mostrar el % de avance, en el perfil publico.
+     */
+    public static function updatePrivacyPrefs(string $userId) {
+        $input = getJsonInput();
+        $showCurrentBook = array_key_exists('show_current_book', $input) ? (bool)$input['show_current_book'] : null;
+        $showReadingProgress = array_key_exists('show_reading_progress', $input) ? (bool)$input['show_reading_progress'] : null;
+
+        if ($showCurrentBook === null && $showReadingProgress === null) {
+            sendJsonResponse(['error' => 'Sin datos para actualizar.'], 400);
+        }
+
+        $db = getDbConnection();
+        UserEntity::updatePrivacyPrefs($db, $userId, $showCurrentBook, $showReadingProgress);
+
+        sendJsonResponse(['success' => true]);
     }
 
     /**

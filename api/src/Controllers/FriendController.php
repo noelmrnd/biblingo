@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Libringo\Controllers;
 
 use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\BookEntity;
 use Libringo\Entities\FollowEntity;
 use Libringo\Entities\FriendNudgeEntity;
 use Libringo\Entities\ReadingLogEntity;
@@ -276,8 +277,8 @@ class FriendController {
 
         // Publico, como en Duolingo: cualquier usuario autenticado puede ver el perfil
         // de cualquier otro, siga o no lo siga (igual que getFollowList).
-        $isFollowing = $isSelf ? true : self::isFollowing($db, $userId, $friendId);
-        $isFollowedBy = $isSelf ? true : self::isFollowing($db, $friendId, $userId);
+        $isFollowing = $isSelf || self::isFollowing($db, $userId, $friendId);
+        $isFollowedBy = $isSelf || self::isFollowing($db, $friendId, $userId);
 
         $friend = UserEntity::getProfileRow($db, $friendId);
         if (!$friend) {
@@ -286,6 +287,18 @@ class FriendController {
 
         $status = StreakUtils::computeStatus($friend['last_read_date'], (int)$friend['streak_count'], $friend['timezone'], (int)$friend['streak_freezes']);
         $isMutual = $isFollowing && $isFollowedBy;
+
+        // Propio perfil siempre ve su libro/avance; en perfil de otro, respeta las
+        // 2 opciones de privacidad independientes (show_current_book / show_reading_progress).
+        $showCurrentBook = $isSelf || (bool)$friend['show_current_book'];
+        $showReadingProgress = $isSelf || (bool)$friend['show_reading_progress'];
+        $activeBook = ($showCurrentBook || $showReadingProgress)
+            ? BookEntity::findActiveByUser($db, $friendId)
+            : false;
+        $readingProgress = ($showReadingProgress && $activeBook && $activeBook['total_units'])
+            ? BookEntity::computeProgressPercent($activeBook)
+            : null;
+        $currentBookTitle = ($showCurrentBook && $activeBook) ? $activeBook['title'] : null;
 
         sendJsonResponse([
             'success' => true,
@@ -300,7 +313,8 @@ class FriendController {
                 'has_read_today'      => $status->hasReadToday,
                 'is_streak_lost'      => $status->isStreakLost,
                 'will_use_freeze_today' => $status->willUseFreezeToday,
-                'total_days_read'     => ReadingLogEntity::countTotalDaysRead($db, $friendId),
+                'days_read'     => (int)$friend['days_read'],
+                'pages_read'          => (int)$friend['pages_read'],
                 'reaction_counts'     => self::countReactions($db, $friendId),
                 'member_since'        => substr((string)$friend['created_at'], 0, 10),
                 'followers_count'     => self::countFollowers($db, $friendId),
@@ -309,10 +323,13 @@ class FriendController {
                 'is_followed_by'      => $isFollowedBy,
                 'is_mutual'           => $isMutual,
                 'badges'              => BadgeEntity::listForUser($db, $friendId),
+                'current_book_title'  => $currentBookTitle,
+                'reading_progress_percent' => $readingProgress,
+                'show_current_book'     => $isSelf ? (bool)$friend['show_current_book'] : null,
+                'show_reading_progress' => $isSelf ? (bool)$friend['show_reading_progress'] : null,
             ],
             'history'              => ReadingLogEntity::fetchHistoryDates($db, $friendId, $status->today, 7),
             'nudged_today'         => ($isSelf || !$isMutual) ? false : FriendNudgeEntity::wasNudgedOn($db, $userId, $friendId, $status->today),
-            'mutual_friends_count' => $isSelf ? 0 : FollowEntity::countMutualFriends($db, $userId, $friendId),
         ]);
     }
 

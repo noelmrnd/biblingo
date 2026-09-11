@@ -18,7 +18,6 @@
         :avatar-initial="(friend.display_name || '?').charAt(0).toUpperCase()"
         :followers-count="friend.followers_count"
         :following-count="friend.following_count"
-        :mutual-friends-count="friend.mutual_friends_count"
         @open-followers="followList.open('followers')"
         @open-following="followList.open('following')"
       >
@@ -63,14 +62,14 @@
       <!-- Resumen: prueba con celdas centradas dentro de un solo card -->
       <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
         <StatCell
-          :value="friend.is_streak_lost ? 0 : friend.streak_count"
+          :value="formatNumber(friend.is_streak_lost ? 0 : friend.streak_count)"
           label="Racha actual"
           :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
           :icon="friend.is_streak_lost ? Snowflake : friend.will_use_freeze_today ? ShieldCheck : Flame"
           :icon-color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
         />
         <StatCell
-          :value="friend.total_days_read || 0"
+          :value="formatNumber(friend.days_read)"
           label="Días leídos"
           color-class="text-brand-days"
           :icon="BookOpenCheck"
@@ -78,11 +77,18 @@
         />
       </div>
 
+      <!-- Libro actual y avance total (respeta la privacidad configurada por el amigo) -->
+      <ReadingProgressCard
+        :current-book-title="friend.current_book_title"
+        :reading-progress-percent="friend.reading_progress_percent"
+        :total-pages-read="friend.total_pages_read"
+      />
+
       <WeeklyTracker :history="history" />
 
       <ReactionBreakdown :reaction-counts="friend.reaction_counts" />
 
-      <BadgesCircles :earned-badges="friend.badges || []" />
+      <AchievementsGrid :earned-badges="friend.badges || []" />
 
       <p v-if="memberSinceLabel" class="text-center text-slate-500 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
     </template>
@@ -112,7 +118,8 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import AppPage from '@/components/AppPage.vue';
-import BadgesCircles from '@/components/BadgesCircles.vue';
+import AchievementsGrid from '@/components/AchievementsGrid.vue';
+import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
 import FriendProfileHeader from '@/components/FriendProfileHeader.vue';
 import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
 import StatCell from '@/components/StatCell.vue';
@@ -123,6 +130,7 @@ import FollowListModal from '@/components/FollowListModal.vue';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';
 import { formatMemberSince } from '@/utils/dateFormatter';
+import { formatNumber } from '@/utils/numberFormatter';
 import { useFollowListPanel } from '@/composables/useFollowListPanel';
 import { useNudge } from '@/composables/useNudge';
 import { useAsyncAction } from '@/composables/useAsyncAction';
@@ -154,10 +162,7 @@ const loadFriendProfile = async (friendId) => {
   try {
     const res = await ApiService.getFriendProfile(friendId);
     if (res.success) {
-      friend.value = {
-        ...res.user,
-        mutual_friends_count: res.mutual_friends_count
-      };
+      friend.value = res.user;
       history.value = res.history || [];
       if (res.nudged_today) {
         nudge.markNudged(res.user.id);

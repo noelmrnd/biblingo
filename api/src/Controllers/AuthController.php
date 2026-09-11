@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Libringo\Controllers;
 
 use Libringo\Entities\BadgeEntity;
-use Libringo\Entities\ReadingLogEntity;
+use Libringo\Entities\BookEntity;
 use Libringo\Entities\UserEntity;
 use Libringo\Utils\Auth;
 use Libringo\Utils\DateUtils;
@@ -109,6 +109,7 @@ class AuthController {
         $userTz = $user['timezone'] ?? 'UTC';
         $lastRead = $user['last_read_date'];
         $status = StreakUtils::computeStatus($lastRead, (int)$user['streak_count'], $userTz, (int)$user['streak_freezes']);
+        $activeBook = BookEntity::findActiveByUser($db, $userId);
 
         return [
             'id'               => $userId,
@@ -119,7 +120,10 @@ class AuthController {
             'max_streak_count' => (int)$user['max_streak_count'],
             'streak_freezes'   => (int)$user['streak_freezes'],
             'streak_freezes_used' => (int)$user['streak_freezes_used'],
-            'total_days_read'  => ReadingLogEntity::countTotalDaysRead($db, $userId),
+            'days_read'  => (int)$user['days_read'],
+            'pages_read' => (int)$user['pages_read'],
+            'current_book_title' => $activeBook['title'] ?? null,
+            'reading_progress_percent' => ($activeBook && $activeBook['total_units']) ? BookEntity::computeProgressPercent($activeBook) : null,
             'reaction_counts'  => FriendController::countReactions($db, $userId),
             'member_since'     => substr((string)$user['created_at'], 0, 10),
             'followers_count'  => FriendController::countFollowers($db, $userId),

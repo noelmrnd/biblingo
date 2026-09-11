@@ -23,16 +23,23 @@
     <!-- Resumen: racha actual, maxima, constancia total y protectores usados (mismo peso visual) -->
     <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
       <StatCell
-        :value="user.is_streak_lost ? 0 : user.streak_count"
+        :value="formatNumber(user.is_streak_lost ? 0 : user.streak_count)"
         label="Racha actual"
         :color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
         :icon="user.is_streak_lost ? Snowflake : user.will_use_freeze_today ? ShieldCheck : Flame"
         :icon-color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
       />
-      <StatCell :value="user.total_days_read || 0" label="Días leídos" color-class="text-brand-days" :icon="BookOpenCheck" icon-color-class="text-brand-days" />
-      <StatCell :value="user.max_streak_count" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-      <StatCell :value="user.streak_freezes_used || 0" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
+      <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="BookOpenCheck" icon-color-class="text-brand-days" />
+      <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
+      <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
     </div>
+
+    <!-- Libro actual y avance total (control de lectura) -->
+    <ReadingProgressCard
+      :current-book-title="user.current_book_title"
+      :reading-progress-percent="user.reading_progress_percent"
+      :total-pages-read="user.pages_read"
+    />
 
     <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
     <ReactionBreakdown
@@ -41,7 +48,7 @@
     />
 
     <!-- Medallas ganadas por racha, amigos, reacciones, etc -->
-    <BadgesCircles :earned-badges="user.badges || []" />
+    <AchievementsGrid :earned-badges="user.badges || []" />
 
     <p v-if="memberSinceLabel" class="text-center text-slate-500 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
 
@@ -63,11 +70,13 @@
 import { computed, onActivated } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AppPage from '@/components/AppPage.vue';
-import BadgesCircles from '@/components/BadgesCircles.vue';
+import AchievementsGrid from '@/components/AchievementsGrid.vue';
 import FollowListModal from '@/components/FollowListModal.vue';
 import ProfileHeader from '@/components/ProfileHeader.vue';
 import IconButton from '@/components/IconButton.vue';
 import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
+import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
+import { formatNumber } from '@/utils/numberFormatter';
 import { Flame, Zap, Settings, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import StatCell from '@/components/StatCell.vue';
 import { formatMemberSince } from '@/utils/dateFormatter.js';
