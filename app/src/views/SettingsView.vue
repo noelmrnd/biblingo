@@ -143,23 +143,26 @@
         />
       </ExpandableCard>
 
-      <!-- Guía y Tutorial / Tour de Bienvenida -->
-      <ExpandableCard
-        :collapsible="false"
-        title="Guía de inicio"
-        description="Aprende cómo funciona la racha y los amigos"
-        icon-bg-class="bg-indigo-500/10 border-indigo-500/30"
-        icon-color-class="text-indigo-400"
-        :icon="Compass"
-      >
-        <template #action>
-          <AppButton color="blue" text="Ver tour" @click="openTour" />
-        </template>
-      </ExpandableCard>
+      <BookSettingsCard />
+      <PrivacySettingsCard />
     </div>
 
     <!-- Botones de Acción -->
     <div class="space-y-3">
+      <!-- Comentado: reabrir el tour desde aca vuelve a pasar por el paso de
+           configurar libro (OnboardingTour step 5), que reemplaza el libro activo
+           sin la confirmacion que si tiene "Cambiar libro" en Ajustes. Reactivar
+           solo si se separa ese paso del tour, o solo para cuentas nuevas. -->
+      <!--
+      <SettingsActionButton
+        :icon="Compass"
+        class="hover:border-indigo-400/50 [&_svg]:text-indigo-400"
+        @click="openTour"
+      >
+        Ver guía de inicio
+      </SettingsActionButton>
+      -->
+
       <SettingsActionButton
         :icon="Star"
         class="hover:border-amber-400/50 [&_svg]:text-amber-400 [&_svg]:fill-amber-400"
@@ -248,6 +251,8 @@ import ConfirmActionModal from '@/components/ConfirmActionModal.vue';
 import ExpandableCard from '@/components/ExpandableCard.vue';
 import SettingsActionButton from '@/components/SettingsActionButton.vue';
 import FeedbackModal from '@/components/FeedbackModal.vue';
+import BookSettingsCard from '@/components/BookSettingsCard.vue';
+import PrivacySettingsCard from '@/components/PrivacySettingsCard.vue';
 import { NotificationService } from '@/services/notifications';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';
