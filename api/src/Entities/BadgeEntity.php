@@ -27,11 +27,11 @@ class BadgeEntity {
         ['id' => 'followers_5',       'category' => 'followers', 'threshold' => 5],
         ['id' => 'followers_20',      'category' => 'followers', 'threshold' => 20],
         ['id' => 'followers_50',      'category' => 'followers', 'threshold' => 50],
-        ['id' => 'reaction_loved_10',      'category' => 'reaction', 'threshold' => 10, 'reaction' => 'loved'],
-        ['id' => 'reaction_thoughtful_10', 'category' => 'reaction', 'threshold' => 10, 'reaction' => 'thoughtful'],
-        ['id' => 'reaction_peaceful_10',   'category' => 'reaction', 'threshold' => 10, 'reaction' => 'peaceful'],
-        ['id' => 'reaction_challenged_10', 'category' => 'reaction', 'threshold' => 10, 'reaction' => 'challenged'],
-        ['id' => 'reaction_moved_10',      'category' => 'reaction', 'threshold' => 10, 'reaction' => 'moved'],
+        ['id' => 'reaction_loved_10',      'category' => 'reaction_loved',      'threshold' => 10],
+        ['id' => 'reaction_thoughtful_10', 'category' => 'reaction_thoughtful', 'threshold' => 10],
+        ['id' => 'reaction_peaceful_10',   'category' => 'reaction_peaceful',   'threshold' => 10],
+        ['id' => 'reaction_challenged_10', 'category' => 'reaction_challenged', 'threshold' => 10],
+        ['id' => 'reaction_moved_10',      'category' => 'reaction_moved',      'threshold' => 10],
         ['id' => 'days_read_50',      'category' => 'days_read',     'threshold' => 50],
         ['id' => 'days_read_100',     'category' => 'days_read',     'threshold' => 100],
         ['id' => 'days_read_365',     'category' => 'days_read',     'threshold' => 365],
@@ -58,8 +58,8 @@ class BadgeEntity {
     ];
 
     /**
-     * $currentValues: mapa "categoria" (o "categoria:extra", ej. "reaction:loved")
-     * => valor numerico actual. El caller decide que es barato calcular en su
+     * $currentValues: mapa "categoria" (ej. "reaction_loved") => valor
+     * numerico actual. El caller decide que es barato calcular en su
      * contexto (streak_count ya en mano en logReading, friends count tras un
      * follow, etc) — esta funcion no consulta nada por su cuenta, solo compara.
      *
@@ -76,7 +76,7 @@ class BadgeEntity {
         $newlyAwarded = [];
 
         foreach (self::CATALOG as $badge) {
-            $key = $badge['category'] . (isset($badge['reaction']) ? ":{$badge['reaction']}" : '');
+            $key = $badge['category'];
             if (!isset($currentValues[$key]) || $currentValues[$key] < $badge['threshold']) {
                 continue;
             }

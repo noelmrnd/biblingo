@@ -41,7 +41,7 @@ export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id
 
 // Catalogo de medallas: mismo catalogo que BadgeEntity::CATALOG en el backend
 // (duplicado a proposito, igual que READING_REACTIONS vs VALID_REACTIONS).
-// category+threshold(+reaction) definen CUANDO se otorga (eso lo decide el
+// category+threshold definen CUANDO se otorga (eso lo decide el
 // backend); emoji/label son solo presentacion. Agregar un tipo de medalla
 // nuevo es agregar una entrada aca + su espejo en BadgeEntity::CATALOG.
 // label: corto, para chips/circulos. description: se muestra solo al abrir el
@@ -61,11 +61,11 @@ export const BADGES = [
   { id: 'followers_5', category: 'followers', threshold: 5, emoji: '⭐', label: '5 seguidores', description: '5 personas te siguen.' },
   { id: 'followers_20', category: 'followers', threshold: 20, emoji: '🎉', label: 'Comunidad', description: '20 personas te siguen.' },
   { id: 'followers_50', category: 'followers', threshold: 50, emoji: '💫', label: 'Influyente', description: '50 personas te siguen.' },
-  { id: 'reaction_loved_10', category: 'reaction', threshold: 10, reaction: 'loved', emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que te encantaron.' },
-  { id: 'reaction_thoughtful_10', category: 'reaction', threshold: 10, reaction: 'thoughtful', emoji: '💡', label: 'Pensador', description: '10 lecturas que te hicieron pensar.' },
-  { id: 'reaction_peaceful_10', category: 'reaction', threshold: 10, reaction: 'peaceful', emoji: '🕊️', label: 'En paz', description: '10 lecturas que te dieron paz.' },
-  { id: 'reaction_challenged_10', category: 'reaction', threshold: 10, reaction: 'challenged', emoji: '⚡️', label: 'Desafiado', description: '10 lecturas que confrontaron tu vida y hábitos.' },
-  { id: 'reaction_moved_10', category: 'reaction', threshold: 10, reaction: 'moved', emoji: '🥺', label: 'Conmovido', description: '10 lecturas que te conmovieron.' },
+  { id: 'reaction_loved_10', category: 'reaction_loved', threshold: 10, emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que te encantaron.' },
+  { id: 'reaction_thoughtful_10', category: 'reaction_thoughtful', threshold: 10, emoji: '💡', label: 'Pensador', description: '10 lecturas que te hicieron pensar.' },
+  { id: 'reaction_peaceful_10', category: 'reaction_peaceful', threshold: 10, emoji: '🕊️', label: 'En paz', description: '10 lecturas que te dieron paz.' },
+  { id: 'reaction_challenged_10', category: 'reaction_challenged', threshold: 10, emoji: '⚡️', label: 'Desafiado', description: '10 lecturas que confrontaron tu vida y hábitos.' },
+  { id: 'reaction_moved_10', category: 'reaction_moved', threshold: 10, emoji: '🥺', label: 'Conmovido', description: '10 lecturas que te conmovieron.' },
   { id: 'days_read_50', category: 'days_read', threshold: 50, emoji: '📚', label: '50 días leídos', description: 'Leíste 50 días en total (no tienen que ser seguidos).' },
   { id: 'days_read_100', category: 'days_read', threshold: 100, emoji: '📖', label: '100 días leídos', description: 'Leíste 100 días en total (no tienen que ser seguidos).' },
   { id: 'days_read_365', category: 'days_read', threshold: 365, emoji: '🏛️', label: 'Un año leído', description: 'Un año completo de días leídos acumulados.' },
@@ -105,7 +105,10 @@ const BADGE_GROUP_BY_CATEGORY = {
   nudge_received: 'nudge',
 };
 
-export const getBadgeGroup = (category) => BADGE_GROUP_BY_CATEGORY[category] || category;
+export const getBadgeGroup = (category) => {
+  if (category.startsWith('reaction_')) return 'reaction';
+  return BADGE_GROUP_BY_CATEGORY[category] || category;
+};
 
 export const getBadgeById = (id) => BADGES.find((b) => b.id === id) || null;
 

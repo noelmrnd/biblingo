@@ -92,7 +92,7 @@ const selectTile = (tile) => {
   selectedTile.value = tile;
 };
 
-// Cada "tile" es 1 categoria real de medalla (streak, following, reaction:loved,
+// Cada "tile" es 1 categoria real de medalla (streak, following, reaction_loved,
 // pages, etc — mismo key que usa BadgeEntity::checkAndAward internamente), NO 1
 // por medalla individual: agrupa todos los tiers de esa categoria en un solo
 // circulo que muestra el nivel mas alto ya alcanzado + cuantos quedan por ganar,
@@ -102,7 +102,7 @@ const tiles = computed(() => {
 
   const byGroupKey = new Map();
   for (const badge of BADGES) {
-    const groupKey = badge.category + (badge.reaction ? `:${badge.reaction}` : '');
+    const groupKey = badge.category;
     if (!byGroupKey.has(groupKey)) byGroupKey.set(groupKey, []);
     byGroupKey.get(groupKey).push({ ...badge, earnedAt: earnedMap.get(badge.id) || null });
   }

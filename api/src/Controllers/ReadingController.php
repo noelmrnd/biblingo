@@ -235,7 +235,8 @@ class ReadingController {
         if ($reaction !== null) {
             $reactionCounts = ReadingLogEntity::countReactionsGrouped($db, $userId);
             foreach ($reactionCounts as $row) {
-                $badgeValues["reaction:{$row['reaction']}"] = (int)$row['total'];
+                $key = 'reaction_' . $row['reaction'];
+                $badgeValues[$key] = (int)$row['total'];
             }
         }
 
