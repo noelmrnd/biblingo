@@ -9,7 +9,7 @@
 
     <div class="space-y-1">
       <h2 class="text-2xl font-bold text-white">{{ displayName }}</h2>
-      <p class="text-slate-300 text-base font-medium font-mono flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+      <p class="text-slate-300 text-base font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
         <span>@{{ username }}</span>
         <slot name="badge" />
       </p>

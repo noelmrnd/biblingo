@@ -25,7 +25,7 @@
                 v-model="editDisplayName"
                 type="text"
                 placeholder="Tu nombre de usuario"
-                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
+                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl pl-11 pr-4 py-3 text-base focus:outline-none transition-colors"
                 @keyup.enter="saveProfile"
               />
             </div>
@@ -35,13 +35,13 @@
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</label>
             <div class="relative flex items-center">
-              <span class="absolute left-3.5 text-slate-400 font-mono pointer-events-none">@</span>
+              <span class="absolute left-3.5 text-slate-400 pointer-events-none">@</span>
               <input
                 v-model="editUsername"
                 type="text"
                 placeholder="usuario"
                 maxlength="20"
-                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-mono font-bold rounded-2xl pl-8 pr-4 py-3 text-base focus:outline-none transition-colors lowercase"
+                class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl pl-8 pr-4 py-3 text-base focus:outline-none transition-colors lowercase"
                 @keyup.enter="saveProfile"
               />
             </div>
@@ -59,9 +59,9 @@
                 :value="user.email || 'Autenticación Social'"
                 type="email"
                 disabled
-                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-400 font-medium rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 rounded-2xl pl-11 pr-28 py-3 text-base select-none cursor-not-allowed"
               />
-              <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
+              <span class="absolute right-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
                 <CheckCircle2 class="w-3.5 h-3.5 stroke-[2.5]" /> Verificado
               </span>
             </div>
@@ -76,7 +76,7 @@
                 :value="currentTimezone"
                 type="text"
                 disabled
-                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 font-medium rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
+                class="w-full bg-slate-900/60 border border-slate-800/80 text-slate-300 rounded-2xl pl-11 pr-4 py-3 text-base select-none cursor-not-allowed"
               />
             </div>
           </div>
@@ -104,7 +104,7 @@
           <div v-for="cat in NOTIFICATION_CATEGORIES" :key="cat.key" class="border-b border-slate-800/70 last:border-0">
             <div class="flex items-center justify-between gap-3 py-2.5">
               <div class="min-w-0">
-                <p class="text-base font-bold text-white">{{ cat.label }}</p>
+                <p class="text-base font-semibold text-white">{{ cat.label }}</p>
                 <p class="text-sm text-slate-400 font-medium">{{ cat.description }}</p>
               </div>
               <AppToggle v-model="notificationPrefs[cat.key]" />
