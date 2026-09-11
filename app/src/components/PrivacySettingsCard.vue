@@ -4,8 +4,8 @@
     v-model="isExpanded"
     title="Privacidad de lectura"
     description="Qué ve la gente en tu perfil"
-    icon-bg-class="bg-purple-500/10 border-purple-500/30"
-    icon-color-class="text-purple-400"
+    icon-bg-class="bg-amber-500/10 border-amber-500/30"
+    icon-color-class="text-amber-400"
     :icon="Eye"
   >
     <div class="space-y-1">
@@ -14,14 +14,14 @@
       </p>
       <div class="flex items-center justify-between gap-3 py-2.5 border-b border-slate-800/70">
         <div class="min-w-0">
-          <p class="text-base font-bold" :class="activeBook ? 'text-white' : 'text-slate-500'">Mostrar libro actual</p>
+          <p class="text-base font-semibold" :class="activeBook ? 'text-white' : 'text-slate-500'">Mostrar libro actual</p>
           <p class="text-sm text-slate-400 font-medium">El libro que estás leyendo.</p>
         </div>
         <AppToggle v-model="privacyPrefs.show_current_book" :disabled="!activeBook" />
       </div>
       <div class="flex items-center justify-between gap-3 py-2.5">
         <div class="min-w-0">
-          <p class="text-base font-bold" :class="activeBook ? 'text-white' : 'text-slate-500'">Mostrar % de avance</p>
+          <p class="text-base font-semibold" :class="activeBook ? 'text-white' : 'text-slate-500'">Mostrar % de avance</p>
           <p class="text-sm text-slate-400 font-medium">Cuánto llevas leído de tu libro.</p>
         </div>
         <AppToggle v-model="privacyPrefs.show_reading_progress" :disabled="!activeBook" />

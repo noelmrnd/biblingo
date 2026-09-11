@@ -110,15 +110,11 @@ class BookEntity {
         return count(self::decodeBitmaskChapters($bitmask));
     }
 
-    public static function computeProgressPercent(array $book): int {
-        $totalUnits = (int)($book['total_units'] ?? 0);
-        if ($totalUnits <= 0) return 0;
-
-        $currentUnit = $book['tracking_mode'] === self::MODE_BITMASK
+    /** Unidades leidas: cuenta bits marcados en modo bitmask, o current_unit en modo lineal. */
+    public static function getCurrentUnit(array $book): int {
+        return $book['tracking_mode'] === self::MODE_BITMASK
             ? self::countSetBits($book['progress_bitmask'])
             : (int)$book['current_unit'];
-
-        return (int)round(min(100, ($currentUnit / $totalUnits) * 100));
     }
 
     /**

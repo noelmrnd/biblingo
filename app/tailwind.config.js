@@ -48,6 +48,10 @@ export default {
           // sin afectar el color de accion principal (boton de leer, etc).
           days: '#4EC313',
 
+          // Paginas/capitulos leidos (StatCell "Páginas leídas" y card "Leyendo ahora").
+          // Mismo hex que brand-blue hoy, token separado por el mismo motivo que 'days'.
+          pages: '#1D6CED',
+
           dark: '#131927',
           card: '#1F293D',
           border: '#2B384E'

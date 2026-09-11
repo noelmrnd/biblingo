@@ -295,9 +295,8 @@ class FriendController {
         $activeBook = ($showCurrentBook || $showReadingProgress)
             ? BookEntity::findActiveByUser($db, $friendId)
             : false;
-        $readingProgress = ($showReadingProgress && $activeBook && $activeBook['total_units'])
-            ? BookEntity::computeProgressPercent($activeBook)
-            : null;
+        $currentUnit = ($showReadingProgress && $activeBook) ? BookEntity::getCurrentUnit($activeBook) : null;
+        $totalUnits = ($showReadingProgress && $activeBook) ? (int)$activeBook['total_units'] : null;
         $currentBookTitle = ($showCurrentBook && $activeBook) ? $activeBook['title'] : null;
 
         sendJsonResponse([
@@ -324,7 +323,8 @@ class FriendController {
                 'is_mutual'           => $isMutual,
                 'badges'              => BadgeEntity::listForUser($db, $friendId),
                 'current_book_title'  => $currentBookTitle,
-                'reading_progress_percent' => $readingProgress,
+                'reading_current_unit' => $currentUnit,
+                'reading_total_units' => $totalUnits,
                 'show_current_book'     => $isSelf ? (bool)$friend['show_current_book'] : null,
                 'show_reading_progress' => $isSelf ? (bool)$friend['show_reading_progress'] : null,
             ],

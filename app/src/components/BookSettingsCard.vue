@@ -8,20 +8,42 @@
     icon-color-class="text-purple-400"
     :icon="BookOpen"
   >
-    <div class="space-y-3">
-      <p v-if="activeBook" class="text-sm text-slate-400 font-medium">
-        Leyendo ahora: <span class="font-bold text-white">{{ activeBook.title }}</span>
+    <!-- Ya hay un libro activo: solo estado + acciones, sin inputs (cambiar
+         implica quitar el actual primero, ver confirmRemoveBook). -->
+    <div v-if="activeBook" class="space-y-3">
+      <p class="text-sm text-slate-400 font-medium">
+        Leyendo: <span class="font-semibold text-white">{{ activeBook.title }}</span>
         <span v-if="activeBook.tracking_mode === 'linear'"> ({{ activeBook.current_unit }}/{{ activeBook.total_units }} páginas)</span>
         <span v-else> ({{ activeBook.current_unit }}/{{ activeBook.total_units }} capítulos)</span>
       </p>
 
+      <AppButton
+        color="green"
+        block
+        :disabled="removeBookAction.loading.value"
+        text="Cambiar libro"
+        @click="openConfirmModal('change')"
+      />
+
+      <button
+        type="button"
+        :disabled="removeBookAction.loading.value"
+        @click="openConfirmModal('remove')"
+        class="w-full text-center text-sm font-semibold text-slate-500 hover:text-rose-400 py-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Quitar libro (dejar de registrar avance)
+      </button>
+    </div>
+
+    <!-- Sin libro activo: nada que perder, inputs directos. -->
+    <div v-else class="space-y-3">
       <div class="space-y-1.5">
         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Nombre del libro</label>
         <input
           v-model="newBookTitle"
           type="text"
           placeholder="Ej. Génesis, Biblia, etc."
-          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
+          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
         />
       </div>
 
@@ -32,7 +54,7 @@
           type="number"
           min="1"
           placeholder="Ej. 320"
-          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white font-bold rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
+          class="w-full bg-slate-900 border border-slate-800 focus:border-brand-green text-white rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"
         />
       </div>
       <p v-else class="text-sm text-slate-400">
@@ -43,30 +65,23 @@
         color="green"
         block
         :disabled="saveBookAction.loading.value || !isNewBookValid"
-        :text="saveBookAction.loading.value ? 'Guardando...' : (activeBook ? 'Cambiar libro' : 'Guardar libro')"
+        :text="saveBookAction.loading.value ? 'Guardando...' : 'Guardar libro'"
         @click="saveNewBook"
       />
-
-      <button
-        v-if="activeBook"
-        type="button"
-        :disabled="removeBookAction.loading.value"
-        @click="isRemoveBookModalOpen = true"
-        class="w-full text-center text-sm font-semibold text-slate-500 hover:text-rose-400 py-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Quitar libro (dejar de registrar avance)
-      </button>
     </div>
   </ExpandableCard>
 
-  <!-- Modal Confirmación de Quitar Libro -->
+  <!-- Modal de Confirmación: "Cambiar" y "Quitar" ejecutan la misma accion
+       (removeActiveBook) — solo cambia el mensaje segun la intencion. -->
   <ConfirmActionModal
-    :is-open="isRemoveBookModalOpen"
+    :is-open="!!removeIntent"
     :icon="BookOpen"
-    title="¿Quitar tu libro actual?"
-    description="Dejarás de registrar tu avance hasta que agregues uno nuevo. Tu avance guardado hasta hoy no se pierde."
-    confirm-label="Quitar libro"
-    @close="isRemoveBookModalOpen = false"
+    :title="removeIntent === 'change' ? '¿Cambiar de libro?' : '¿Quitar tu libro actual?'"
+    :description="removeIntent === 'change'
+      ? 'Se quitará el libro actual para que puedas registrar uno nuevo. Tu contador de páginas leídas en total no se perderá.'
+      : 'Dejarás de registrar el avance de este libro. Tu contador de páginas leídas en total no se perderá.'"
+    :confirm-label="removeIntent === 'change' ? 'Cambiar libro' : 'Quitar libro'"
+    @close="removeIntent = null"
     @confirm="confirmRemoveBook"
   />
 </template>
@@ -91,7 +106,14 @@ const newBookTitle = ref('');
 const newBookTotalPages = ref('');
 const saveBookAction = useAsyncAction();
 const removeBookAction = useAsyncAction();
-const isRemoveBookModalOpen = ref(false);
+
+// 'change' | 'remove' | null. Ambos disparan la misma llamada (confirmRemoveBook),
+// solo cambia el texto del modal — "cambiar" es "quitar" con otra intencion
+// comunicada, no una accion distinta (ver conversacion de diseño).
+const removeIntent = ref(null);
+const openConfirmModal = (intent) => {
+  removeIntent.value = intent;
+};
 
 // Mismo match flexible que BookEntity::detectTrackingMode en el backend (sin
 // acentos/mayusculas): solo para decidir si mostramos el input de paginas.
@@ -127,7 +149,7 @@ const confirmRemoveBook = async () => {
   });
   if (res === undefined) return;
   setActiveBook(null);
-  isRemoveBookModalOpen.value = false;
+  removeIntent.value = null;
 };
 
 onMounted(async () => {

@@ -4,7 +4,9 @@
     :back-route="{ name: 'friends' }"
     back-when-available
   >
-    <div v-if="loading" class="py-16 text-center text-slate-400">Cargando perfil...</div>
+    <div v-if="loading" class="py-10 flex justify-center">
+      <AppSpinner />
+    </div>
 
     <div v-else-if="!friend" class="card-duo text-center py-8 text-slate-400 space-y-2">
       <UserX class="w-12 h-12 text-slate-500 mx-auto stroke-[2]" />
@@ -59,29 +61,36 @@
         />
       </div>
 
-      <!-- Resumen: prueba con celdas centradas dentro de un solo card -->
-      <div class="card-duo grid grid-cols-2 gap-3 gap-y-5">
+      <SectionTitle title="Resumen" :icon="Zap" icon-color-class="text-purple-400" />
+      <div class="card-duo grid grid-cols-3 gap-2">
         <StatCell
           :value="formatNumber(friend.is_streak_lost ? 0 : friend.streak_count)"
-          label="Racha actual"
+          label="Racha"
           :color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
           :icon="friend.is_streak_lost ? Snowflake : friend.will_use_freeze_today ? ShieldCheck : Flame"
           :icon-color-class="(friend.is_streak_lost || friend.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
         />
         <StatCell
           :value="formatNumber(friend.days_read)"
-          label="Días leídos"
+          label="Días"
           color-class="text-brand-days"
-          :icon="BookOpenCheck"
+          :icon="CalendarCheck"
           icon-color-class="text-brand-days"
+        />
+        <StatCell
+          :value="formatNumber(friend.pages_read)"
+          label="Páginas"
+          color-class="text-brand-pages"
+          :icon="BookOpen"
+          icon-color-class="text-brand-pages"
         />
       </div>
 
-      <!-- Libro actual y avance total (respeta la privacidad configurada por el amigo) -->
+      <!-- Libro actual (respeta la privacidad configurada por el amigo) -->
       <ReadingProgressCard
         :current-book-title="friend.current_book_title"
-        :reading-progress-percent="friend.reading_progress_percent"
-        :total-pages-read="friend.total_pages_read"
+        :current-unit="friend.reading_current_unit"
+        :total-units="friend.reading_total_units"
       />
 
       <WeeklyTracker :history="history" />
@@ -116,12 +125,14 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
+import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpen, CalendarCheck, ShieldCheck, Snowflake, Zap } from '@lucide/vue';
 import AppPage from '@/components/AppPage.vue';
 import AchievementsGrid from '@/components/AchievementsGrid.vue';
 import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
 import FriendProfileHeader from '@/components/FriendProfileHeader.vue';
 import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
+import AppSpinner from "@/components/AppSpinner.vue";
+import SectionTitle from '@/components/SectionTitle.vue';
 import StatCell from '@/components/StatCell.vue';
 import WeeklyTracker from '@/components/WeeklyTracker.vue';
 import AppButton from '@/components/AppButton.vue';

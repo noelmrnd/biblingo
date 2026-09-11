@@ -29,16 +29,17 @@
         :icon="user.is_streak_lost ? Snowflake : user.will_use_freeze_today ? ShieldCheck : Flame"
         :icon-color-class="(user.is_streak_lost || user.will_use_freeze_today) ? 'text-brand-freeze-light' : 'text-brand-flame'"
       />
-      <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="BookOpenCheck" icon-color-class="text-brand-days" />
+      <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="CalendarCheck" icon-color-class="text-brand-days" />
       <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
       <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
+      <StatCell class="col-span-2" :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
     </div>
 
-    <!-- Libro actual y avance total (control de lectura) -->
+    <!-- Libro actual (control de lectura) -->
     <ReadingProgressCard
       :current-book-title="user.current_book_title"
-      :reading-progress-percent="user.reading_progress_percent"
-      :total-pages-read="user.pages_read"
+      :current-unit="user.reading_current_unit"
+      :total-units="user.reading_total_units"
     />
 
     <!-- Lecturas favoritas: desglose de reacciones registradas dia a dia -->
@@ -77,7 +78,7 @@ import IconButton from '@/components/IconButton.vue';
 import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
 import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
 import { formatNumber } from '@/utils/numberFormatter';
-import { Flame, Zap, Settings, BookOpenCheck, ShieldCheck, Snowflake } from '@lucide/vue';
+import { Flame, Zap, Settings, BookOpen, CalendarCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import StatCell from '@/components/StatCell.vue';
 import { formatMemberSince } from '@/utils/dateFormatter.js';
 import { useCurrentUser } from '@/composables/useCurrentUser.js';
