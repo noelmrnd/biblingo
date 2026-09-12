@@ -32,8 +32,7 @@
         />
         <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="CalendarCheck" icon-color-class="text-brand-days" />
         <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-        <!--<StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />-->
-        <StatCell :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
+        <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
       </div>
     </SectionTitle>
 
@@ -53,7 +52,19 @@
     <!-- Medallas ganadas por racha, amigos, reacciones, etc -->
     <AchievementsGrid :earned-badges="user.badges || []" />
 
+    <!-- Dato privado, no comparable con amigos (ver FriendController::getFriendProfile):
+         texto simple, sin el peso visual de un StatCell en el grid de Resumen. -->
+    <p class="text-center text-slate-500 text-sm font-medium">{{ formatNumber(user.pages_read) }} páginas leídas en total</p>
+
     <p v-if="memberSinceLabel" class="text-center text-slate-500 text-sm font-medium">Leyendo desde {{ memberSinceLabel }}</p>
+
+    <button
+      type="button"
+      class="w-full text-center text-sm font-semibold text-slate-400 hover:text-slate-200 cursor-pointer"
+      @click="router.push({ name: 'friend-profile', params: { id: user.id } })"
+    >
+      Ver cómo me ven los demás
+    </button>
 
     <!-- Lista de Seguidores / Seguidos -->
     <FollowListModal
@@ -80,7 +91,7 @@ import IconButton from '@/components/IconButton.vue';
 import ReactionBreakdown from '@/components/ReactionBreakdown.vue';
 import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
 import { formatNumber } from '@/utils/numberFormatter';
-import { Flame, Zap, Settings, BookOpen, CalendarCheck, ShieldCheck, Snowflake } from '@lucide/vue';
+import { Flame, Zap, Settings, CalendarCheck, ShieldCheck, Snowflake } from '@lucide/vue';
 import StatCell from '@/components/StatCell.vue';
 import SectionTitle from '@/components/SectionTitle.vue';
 import { formatMemberSince } from '@/utils/dateFormatter.js';

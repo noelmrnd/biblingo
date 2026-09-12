@@ -32,6 +32,15 @@ class BadgeEntity {
         ['id' => 'reaction_peaceful_10',   'category' => 'reaction_peaceful',   'threshold' => 10],
         ['id' => 'reaction_challenged_10', 'category' => 'reaction_challenged', 'threshold' => 10],
         ['id' => 'reaction_moved_10',      'category' => 'reaction_moved',      'threshold' => 10],
+        // Cantidad de TIPOS de reaccion distintos usados al menos una vez (no
+        // repeticiones de una misma reaccion, eso ya lo miden las 5 categorias
+        // reaction_* de arriba). Tope natural en 5 (solo existen 5 reacciones) y
+        // a prueba de abuso: 1 reaccion por dia como maximo, asi que subir de
+        // tier exige dias reales y distintos, no se puede marcar de un tiron.
+        ['id' => 'reaction_variety_2', 'category' => 'reaction_variety', 'threshold' => 2],
+        ['id' => 'reaction_variety_3', 'category' => 'reaction_variety', 'threshold' => 3],
+        ['id' => 'reaction_variety_4', 'category' => 'reaction_variety', 'threshold' => 4],
+        ['id' => 'reaction_variety_5', 'category' => 'reaction_variety', 'threshold' => 5],
         ['id' => 'days_read_50',      'category' => 'days_read',     'threshold' => 50],
         ['id' => 'days_read_100',     'category' => 'days_read',     'threshold' => 100],
         ['id' => 'days_read_365',     'category' => 'days_read',     'threshold' => 365],
@@ -46,15 +55,22 @@ class BadgeEntity {
         ['id' => 'nudge_received_50', 'category' => 'nudge_received', 'threshold' => 50],
         ['id' => 'nudge_received_100', 'category' => 'nudge_received', 'threshold' => 100],
         ['id' => 'founder',           'category' => 'founder',        'threshold' => 1],
-        ['id' => 'pages_100',         'category' => 'pages',          'threshold' => 100],
-        ['id' => 'pages_500',         'category' => 'pages',          'threshold' => 500],
-        ['id' => 'pages_1000',        'category' => 'pages',          'threshold' => 1000],
-        ['id' => 'pages_2500',        'category' => 'pages',          'threshold' => 2500],
-        ['id' => 'pages_5000',        'category' => 'pages',          'threshold' => 5000],
+        // Medallas de paginas leidas deshabilitadas: pages_read paso a ser un dato
+        // privado (ver FriendController::getFriendProfile) porque era el numero mas
+        // facil de inflar de un tiron (marcar todo un libro de golpe) y el que mas
+        // incentivaba trampa al compararse entre amigos. Se dejan comentadas, no
+        // borradas, por si vuelven bajo otro criterio (ej. atadas a books_finished).
+        // ['id' => 'pages_100',         'category' => 'pages',          'threshold' => 100],
+        // ['id' => 'pages_500',         'category' => 'pages',          'threshold' => 500],
+        // ['id' => 'pages_1000',        'category' => 'pages',          'threshold' => 1000],
+        // ['id' => 'pages_2500',        'category' => 'pages',          'threshold' => 2500],
+        // ['id' => 'pages_5000',        'category' => 'pages',          'threshold' => 5000],
         ['id' => 'books_finished_1',  'category' => 'books_finished', 'threshold' => 1],
         ['id' => 'books_finished_5',  'category' => 'books_finished', 'threshold' => 5],
         ['id' => 'books_finished_10', 'category' => 'books_finished', 'threshold' => 10],
         ['id' => 'books_finished_25', 'category' => 'books_finished', 'threshold' => 25],
+        ['id' => 'books_finished_50', 'category' => 'books_finished', 'threshold' => 50],
+        ['id' => 'books_finished_100', 'category' => 'books_finished', 'threshold' => 100],
     ];
 
     /**

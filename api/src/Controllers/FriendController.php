@@ -319,7 +319,9 @@ class FriendController {
                 'is_streak_lost'      => $status->isStreakLost,
                 'will_use_freeze_today' => $status->willUseFreezeToday,
                 'days_read'     => (int)$friend['days_read'],
-                'pages_read'          => (int)$friend['pages_read'],
+                // pages_read es un dato privado (ver conversacion sobre anti-abuso):
+                // el mas facil de inflar de un tiron, no se expone en perfiles ajenos.
+                // 'pages_read'          => (int)$friend['pages_read'],
                 'reaction_counts'     => self::countReactions($db, $friendId),
                 'member_since'        => substr((string)$friend['created_at'], 0, 10),
                 'followers_count'     => self::countFollowers($db, $friendId),

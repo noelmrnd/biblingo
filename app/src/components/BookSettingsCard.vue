@@ -42,7 +42,7 @@
       </AppFormField>
 
       <AppFormField v-if="!isNewBookBible" label="Número de páginas">
-        <AppTextInput v-model="newBookTotalPages" type="number" min="1" placeholder="Ej. 320" />
+        <AppTextInput v-model="newBookTotalPages" type="number" min="1" :max="MAX_BOOK_TOTAL_PAGES" placeholder="Ej. 120" />
       </AppFormField>
       <p v-else class="text-sm text-slate-400">
         Podrás llevar el registro de tu lectura por capítulos.
@@ -84,7 +84,7 @@ import ConfirmActionModal from './ConfirmActionModal.vue';
 import { ApiService } from '@/services/api';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import { useActiveBook } from '@/composables/useActiveBook';
-import { isBibleTitle, detectTrackingMode } from '@/utils/bookTracking';
+import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 
 // Encapsula sus propios endpoints (getActiveBook/createBook/removeActiveBook).
 // activeBook vive en el composable compartido (singleton, mismo patron que
@@ -110,7 +110,8 @@ const isNewBookBible = computed(() => isBibleTitle(newBookTitle.value));
 const isNewBookValid = computed(() => {
   if (newBookTitle.value.trim() === '') return false;
   if (isNewBookBible.value) return true;
-  return Number(newBookTotalPages.value) > 0;
+  const pages = Number(newBookTotalPages.value);
+  return pages > 0 && pages <= MAX_BOOK_TOTAL_PAGES;
 });
 
 const saveNewBook = async () => {

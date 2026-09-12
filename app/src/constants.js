@@ -39,7 +39,7 @@ export const READING_REACTIONS = [
 
 import stickerFounder from '@/assets/stickers/sticker_01.png';
 import stickerStreak from '@/assets/stickers/sticker_02.png';
-import stickerPages from '@/assets/stickers/sticker_03.png';
+import stickerReactionVariety from '@/assets/stickers/sticker_03.png'; // reutilizado: era de 'pages' (deshabilitada)
 import stickerDaysRead from '@/assets/stickers/sticker_04.png';
 import stickerBooksFinished from '@/assets/stickers/sticker_05.png';
 import stickerFollowing from '@/assets/stickers/sticker_06.png';
@@ -77,19 +77,23 @@ export const BADGE_GROUPS = [
       { id: 'streak_730', threshold: 730, label: 'Dos años de racha' },
     ],
   },
-  {
-    category: 'pages',
-    group: 'reading',
-    image: stickerPages,
-    description: 'Páginas o capítulos leídos en total.',
-    items: [
-      { id: 'pages_100', threshold: 100, label: 'Lector dedicado' },
-      { id: 'pages_500', threshold: 500, label: 'Devorador de libros' },
-      { id: 'pages_1000', threshold: 1000, label: 'Lector veterano' },
-      { id: 'pages_2500', threshold: 2500, label: 'Erudito' },
-      { id: 'pages_5000', threshold: 5000, label: 'Maestro lector' },
-    ],
-  },
+  // Medallas de paginas leidas deshabilitadas: pages_read paso a ser un dato
+  // privado (ya no viaja en getFriendProfile) porque era el numero mas facil
+  // de inflar de un tiron y el que mas incentivaba trampa al compararse entre
+  // amigos. Se deja comentado, no borrado, por si vuelve bajo otro criterio.
+  // {
+  //   category: 'pages',
+  //   group: 'reading',
+  //   image: stickerPages,
+  //   description: 'Páginas o capítulos leídos en total.',
+  //   items: [
+  //     { id: 'pages_100', threshold: 100, label: 'Lector dedicado' },
+  //     { id: 'pages_500', threshold: 500, label: 'Devorador de libros' },
+  //     { id: 'pages_1000', threshold: 1000, label: 'Lector veterano' },
+  //     { id: 'pages_2500', threshold: 2500, label: 'Erudito' },
+  //     { id: 'pages_5000', threshold: 5000, label: 'Maestro lector' },
+  //   ],
+  // },
   {
     category: 'days_read',
     group: 'reading',
@@ -112,6 +116,8 @@ export const BADGE_GROUPS = [
       { id: 'books_finished_5', threshold: 5, label: '5 libros terminados' },
       { id: 'books_finished_10', threshold: 10, label: '10 libros terminados' },
       { id: 'books_finished_25', threshold: 25, label: '25 libros terminados' },
+      { id: 'books_finished_50', threshold: 50, label: '50 libros terminados' },
+      { id: 'books_finished_100', threshold: 100, label: '100 libros terminados' },
     ],
   },
   {
@@ -191,6 +197,18 @@ export const BADGE_GROUPS = [
     description: 'Lecturas que te conmovieron.',
     items: [
       { id: 'reaction_moved_10', threshold: 10, label: 'Conmovido' },
+    ],
+  },
+  {
+    category: 'reaction_variety',
+    group: 'reaction',
+    image: stickerReactionVariety,
+    description: 'Distintas formas de vivir tus lecturas.',
+    items: [
+      { id: 'reaction_variety_2', threshold: 2, label: 'Lector versátil' },
+      { id: 'reaction_variety_3', threshold: 3, label: 'Mente abierta' },
+      { id: 'reaction_variety_4', threshold: 4, label: 'Experiencias variadas' },
+      { id: 'reaction_variety_5', threshold: 5, label: 'Lector de todas las emociones' },
     ],
   },
   {

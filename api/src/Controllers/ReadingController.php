@@ -225,7 +225,7 @@ class ReadingController {
         $badgeValues = [
             'streak'    => $currentStreak,
             'days_read' => $daysRead,
-            'pages'     => $pagesRead,
+            // 'pages' => $pagesRead, // medallas de paginas deshabilitadas, ver BadgeEntity::CATALOG
         ];
 
         if ($bookFinished) {
@@ -238,6 +238,10 @@ class ReadingController {
                 $key = 'reaction_' . $row['reaction'];
                 $badgeValues[$key] = (int)$row['total'];
             }
+
+            // $reactionCounts ya viene agrupado por reaccion (1 fila por tipo distinto
+            // usado), asi que su cantidad de filas ES la cantidad de tipos distintos.
+            $badgeValues['reaction_variety'] = count($reactionCounts);
         }
 
         $founderCutoff = getEnvVar('FOUNDER_BADGE_CUTOFF');

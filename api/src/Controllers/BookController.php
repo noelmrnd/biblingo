@@ -13,6 +13,9 @@ use Libringo\Utils\SnowflakeId;
 
 class BookController {
     private const MAX_TITLE_LENGTH = 255;
+    // Tope anti-abuso: sin esto un total_pages absurdo (999999) infla el % de
+    // avance y el contador de paginas leidas con solo marcar 1 pagina.
+    private const MAX_TOTAL_PAGES = 2000;
 
     /**
      * Crea el libro activo del usuario. Si ya tenia uno en 'reading', lo marca
@@ -42,6 +45,9 @@ class BookController {
             $totalPages = isset($input['total_pages']) ? (int)$input['total_pages'] : null;
             if ($totalPages === null || $totalPages <= 0) {
                 sendJsonResponse(['error' => 'total_pages es requerido y debe ser mayor a 0.'], 400);
+            }
+            if ($totalPages > self::MAX_TOTAL_PAGES) {
+                sendJsonResponse(['error' => 'total_pages no puede ser mayor a ' . self::MAX_TOTAL_PAGES . '.'], 400);
             }
             $totalUnits = $totalPages;
         }
@@ -149,7 +155,8 @@ class BookController {
             // Este flujo no pasa por ReadingController::checkBadgesAfterLog (no toca
             // racha/reaccion), asi que el chequeo de medallas de lectura va aca —
             // terminar un libro via "avance extra" tambien debe celebrarse.
-            $badgeValues = ['pages' => (int)$userRow['pages_read'] + $result['units_read']];
+            $badgeValues = [];
+            // 'pages' => (int)$userRow['pages_read'] + $result['units_read'], // medallas de paginas deshabilitadas, ver BadgeEntity::CATALOG
             if ($result['finished']) {
                 $badgeValues['books_finished'] = BookEntity::countFinishedByUser($db, $userId);
             }

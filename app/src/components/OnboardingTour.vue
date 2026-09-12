@@ -92,7 +92,8 @@
                 v-model="bookTotalPages"
                 type="number"
                 min="1"
-                placeholder="Ej. 320"
+                :max="MAX_BOOK_TOTAL_PAGES"
+                placeholder="Ej. 120"
                 class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
               />
             </div>
@@ -162,7 +163,7 @@ import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
 import { HapticsService } from '@/services/haptics';
 import { ApiService } from '@/services/api';
-import { isBibleTitle, detectTrackingMode } from '@/utils/bookTracking';
+import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
 import tourStep2 from '@/assets/tour/tour-step-2.png';
@@ -220,7 +221,8 @@ const isBookConfigBible = computed(() => isBibleTitle(bookTitle.value));
 const isBookConfigValid = computed(() => {
   if (skippedBookConfig.value || bookTitle.value.trim() === '') return true;
   if (isBookConfigBible.value) return true;
-  return Number(bookTotalPages.value) > 0;
+  const pages = Number(bookTotalPages.value);
+  return pages > 0 && pages <= MAX_BOOK_TOTAL_PAGES;
 });
 
 const skipBookConfig = () => {

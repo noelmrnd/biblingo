@@ -3,6 +3,12 @@ export const BOOK_TRACKING_MODE = {
   BITMASK: 'bitmask',
 };
 
+// Mismo tope que BookController::MAX_TOTAL_PAGES (anti-abuso: sin esto un
+// total_pages absurdo infla el % de avance con solo marcar 1 pagina). Duplicado
+// a proposito para validar/deshabilitar el boton antes de golpear la API,
+// pero el backend es la autoridad real.
+export const MAX_BOOK_TOTAL_PAGES = 2000;
+
 // Frases que activan el modo bitmask (capitulos no lineales, ej. Biblia).
 // Match flexible (sin acentos/mayusculas) para no exigirle al usuario escribir
 // exacto, ni un titulo exacto ("Biblia"): cubre las formas mas comunes en que

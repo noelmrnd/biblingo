@@ -68,7 +68,9 @@
       </div>
 
       <SectionTitle title="Resumen" :icon="Zap" icon-color-class="text-purple-400">
-        <div class="card-duo grid grid-cols-3 gap-2">
+        <!-- Paginas leidas es un dato privado (facil de inflar de un tiron, incentivaba
+             trampa al compararse entre amigos): no se muestra en perfiles ajenos. -->
+        <div class="card-duo grid grid-cols-2 gap-2">
           <StatCell
             :value="formatNumber(friend.is_streak_lost ? 0 : friend.streak_count)"
             label="Racha"
@@ -83,13 +85,13 @@
             :icon="CalendarCheck"
             icon-color-class="text-brand-days"
           />
-          <StatCell
-            :value="formatNumber(friend.pages_read)"
-            label="Páginas"
-            color-class="text-brand-pages"
-            :icon="BookOpen"
-            icon-color-class="text-brand-pages"
-          />
+          <!--<StatCell-->
+          <!--  :value="formatNumber(friend.pages_read)"-->
+          <!--  label="Páginas"-->
+          <!--  color-class="text-brand-pages"-->
+          <!--  :icon="BookOpen"-->
+          <!--  icon-color-class="text-brand-pages"-->
+          <!--/>-->
         </div>
       </SectionTitle>
 
@@ -132,7 +134,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, BookOpen, CalendarCheck, ShieldCheck, Snowflake, Zap } from '@lucide/vue';
+import { Flame, BellRing, UserCheck, UserRoundPlus, UserX, CalendarCheck, ShieldCheck, Snowflake, Zap } from '@lucide/vue';
 import AppPage from '@/components/AppPage.vue';
 import AchievementsGrid from '@/components/AchievementsGrid.vue';
 import ReadingProgressCard from '@/components/ReadingProgressCard.vue';
