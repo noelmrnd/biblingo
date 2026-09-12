@@ -14,24 +14,30 @@
       <div 
         class="relative w-full max-w-sm bg-brand-card border border-brand-border rounded-3xl p-6 shadow-2xl flex flex-col justify-between max-h-[90vh] overflow-y-auto no-scrollbar"
       >
-        <!-- Header: Barra de Progreso y Botón Saltar -->
+        <!-- Header: Volver + Barra de Progreso -->
         <div class="space-y-3 flex-none">
-          <div class="flex items-center justify-between">
-            <span class="text-base font-bold tracking-wider uppercase text-slate-400">
+          <div class="grid grid-cols-[2.5rem_1fr_2.5rem] items-center">
+            <IconButton
+              v-if="currentStep > 0"
+              @click="prevStep"
+              :haptic="false"
+              aria-label="Paso anterior"
+            >
+              <ChevronLeft class="w-5 h-5 stroke-[2.5]" />
+            </IconButton>
+            <div v-else></div>
+
+            <span class="text-base font-bold tracking-wider uppercase text-slate-400 text-center">
               Paso {{ currentStep + 1 }} de {{ steps.length }}
             </span>
-            <button 
-              @click="skipTour"
-              class="text-base font-medium text-slate-400 hover:text-slate-200 transition-colors py-1 px-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:scale-95 cursor-pointer"
-            >
-              Saltar
-            </button>
+
+            <div></div>
           </div>
 
           <!-- Indicador de Progreso Segmentado -->
-          <div class="grid grid-cols-5 gap-1.5 h-1.5 w-full">
-            <div 
-              v-for="(_, index) in steps" 
+          <div class="grid gap-1.5 h-1.5 w-full" :style="{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }">
+            <div
+              v-for="(_, index) in steps"
               :key="index"
               :class="[
                 index <= currentStep ? 'bg-brand-green shadow-sm shadow-emerald-500/50' : 'bg-slate-700'
@@ -93,6 +99,14 @@
 
         <!-- Paso de configuracion: registrar el libro que esta leyendo -->
         <div v-else class="py-6 flex flex-col items-center text-center space-y-4 flex-1 w-full">
+          <div class="relative flex items-center justify-center w-full mb-1">
+            <img
+              :src="currentStepData.image"
+              :alt="currentStepData.title"
+              class="h-28 object-contain drop-shadow-xl select-none pointer-events-none transition-all duration-300"
+            />
+          </div>
+
           <div class="space-y-3">
             <h3 class="text-2xl font-extrabold text-white leading-tight">
               {{ currentStepData.title }}
@@ -114,7 +128,7 @@
               />
             </div>
 
-            <div v-if="!isBookConfigBible">
+            <div v-if="bookTitle.trim() !== '' && !isBookConfigBible">
               <label class="text-sm font-semibold text-slate-400">Número de páginas</label>
               <input
                 v-model="bookTotalPages"
@@ -122,38 +136,25 @@
                 min="1"
                 :max="MAX_BOOK_TOTAL_PAGES"
                 placeholder="Ej. 120"
-                class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+                class="mt-1 w-full rounded-xl bg-slate-950/60 border px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
+                :class="pagesError ? 'border-rose-500/60 focus:border-rose-500' : 'border-slate-800 focus:border-brand-green'"
               />
+              <p v-if="pagesError" class="mt-1 text-sm text-rose-400 font-medium">{{ pagesError }}</p>
             </div>
-            <p v-else class="text-sm text-slate-400">
+            <p v-else-if="bookTitle.trim() !== ''" class="text-sm text-slate-400">
               Podrás llevar el registro de tu lectura por capítulos.
             </p>
           </div>
-
-          <button
-            type="button"
-            @click="skipBookConfig"
-            class="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
-          >
-            Prefiero decidirlo después
-          </button>
         </div>
 
         <!-- Footer: Botones de Acción -->
         <div class="pt-2 flex items-center gap-3 flex-none">
           <AppButton
-            v-if="currentStep > 0"
-            @click="prevStep"
-            color="card"
-            :icon="ChevronLeft"
-          />
-
-          <AppButton
             v-if="currentStep < steps.length - 1"
             @click="nextStep"
             color="green"
             block
-            text="Siguiente"
+            :text="currentStepData.type === 'book-config' && bookTitle.trim() === '' ? 'Registrar más tarde' : 'Siguiente'"
             :icon="ChevronRight"
             icon-position="end"
           />
@@ -166,7 +167,7 @@
             block
             :loading="savingBook"
             loading-text="Guardando..."
-            :disabled="savingBook || !isBookConfigValid"
+            :disabled="savingBook"
             text="¡Empezar a leer!"
             :icon="Rocket"
             icon-position="end"
@@ -178,9 +179,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppButton from './AppButton.vue';
+import IconButton from './IconButton.vue';
 import {
   ChevronRight,
   ChevronLeft,
@@ -189,7 +191,6 @@ import {
 import confetti from 'canvas-confetti';
 import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
-import { HapticsService } from '@/services/haptics';
 import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
 import { useCurrentUser } from '@/composables/useCurrentUser';
@@ -209,37 +210,31 @@ const currentStep = ref(0);
 const steps = [
   {
     title: 'Tu racha diaria',
-    description: 'Cada día que lees tus libros favoritos aumentas tu racha. Si dejas pasar un día sin leer, la racha se congelará. ¡Mantén encedida tu llama!',
+    description: 'Cada día que lees aumentas tu racha. Si dejas pasar un día sin leer, tu racha se congelará.',
     ambientColor: 'bg-brand-flame',
     image: tourStep1
   },
   {
-    title: 'Lectura entre amigos',
-    description: 'Invita a tus amigos con tu código o QR para leer juntos. Podrás competir en el ranking amistoso y darles un toque si se les hace tarde.',
-    ambientColor: 'bg-brand-blue',
-    image: tourStep2
-  },
-  {
     type: 'reminder-time',
     title: 'Protege tu hábito',
-    description: 'Elige la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu lectura diaria.',
+    description: 'Elige la hora de tu recordatorio diario. Te avisaremos para que no olvides leer y mantengas tu racha.',
     ambientColor: 'bg-brand-purple',
     image: tourStep3
   },
   {
-    title: 'Un momento para ti',
-    description: 'Dedica unos minutos al día a avanzar en tus libros. Al terminar, comparte cómo te hizo sentir lo que leíste.',
+    type: 'book-config',
+    title: '¿Qué estás leyendo?',
+    description: 'Registra tu libro para llevar tu avance mientras lees. Puedes cambiarlo cuando quieras.',
     ambientColor: 'bg-brand-green',
     image: tourStep4
   },
   {
-    type: 'book-config',
-    title: '¿Qué estás leyendo?',
-    description: 'Regístralo y te iremos preguntando en qué página vas cada vez que leas. Puedes cambiarlo cuando quieras.',
+    title: 'Lee con tus amigos',
+    description: 'Invita a tus amigos a leer. Compartan su progreso y compitan en el ranking de rachas.',
     ambientColor: 'bg-brand-blue',
+    image: tourStep2
   },
 ];
-
 const currentStepData = computed(() => steps[currentStep.value]);
 
 // Paso "reminder-time": hora elegida para el recordatorio diario de lectura.
@@ -249,25 +244,45 @@ const reminderTime = ref('20:00');
 const bookTitle = ref('');
 const bookTotalPages = ref('');
 const savingBook = ref(false);
-const skippedBookConfig = ref(false);
 
 const isBookConfigBible = computed(() => isBibleTitle(bookTitle.value));
 
-const isBookConfigValid = computed(() => {
-  if (skippedBookConfig.value || bookTitle.value.trim() === '') return true;
+// El paso de libro es siempre opcional: nunca bloquea el avance del tour, sin
+// importar que tan a medias haya quedado el titulo/paginas. finishTour decide
+// con isBookConfigComplete si hay suficiente para registrar el libro o no. Solo
+// se evalua al finalizar (no es reactivo/computed porque nada mas lo necesita).
+const isBookConfigComplete = () => {
+  if (bookTitle.value.trim() === '') return false;
   if (isBookConfigBible.value) return true;
   const pages = Number(bookTotalPages.value);
   return pages > 0 && pages <= MAX_BOOK_TOTAL_PAGES;
+};
+
+// Mensaje de error (o null) para el numero de paginas. Se establece solo al
+// intentar finalizar el tour (ver finishTour), no mientras se escribe: si no,
+// el error aparece apenas se toca el titulo, antes de que el usuario haya
+// tenido chance de llenar las paginas. Se limpia al volver a editar cualquiera
+// de los dos campos, para no dejar un error viejo pegado.
+const pagesError = ref(null);
+watch([bookTitle, bookTotalPages], () => {
+  pagesError.value = null;
 });
 
-const skipBookConfig = () => {
-  HapticsService.light();
-  skippedBookConfig.value = true;
-  bookTitle.value = '';
-  bookTotalPages.value = '';
+// Titulo puesto pero sin paginas validas: a diferencia de dejar todo vacio
+// (avance silencioso, sin libro), aca si hay un error visible que bloquea —
+// el usuario ya empezo a llenar el libro, no tiene sentido perderlo en silencio.
+// true si bloqueo (dejo pagesError seteado), false si puede seguir.
+const blockOnInvalidBookConfig = () => {
+  const title = bookTitle.value.trim();
+  if (title !== '' && !isBookConfigBible.value && !isBookConfigComplete()) {
+    pagesError.value = `Ingresa un número de páginas entre 1 y ${MAX_BOOK_TOTAL_PAGES}.`;
+    return true;
+  }
+  return false;
 };
 
 const nextStep = () => {
+  if (currentStepData.value.type === 'book-config' && blockOnInvalidBookConfig()) return;
   if (currentStep.value < steps.length - 1) {
     currentStep.value++;
   }
@@ -279,18 +294,9 @@ const prevStep = () => {
   }
 };
 
-const skipTour = async () => {
-  HapticsService.light();
-  isOpen.value = false;
-  currentStep.value = 0;
-  await StorageService.set(TOUR_SEEN_KEY, true);
-};
-
 const finishTour = async () => {
-  if (!isBookConfigValid.value) return;
-
   const title = bookTitle.value.trim();
-  const registeredBook = title !== '' && !skippedBookConfig.value;
+  const registeredBook = isBookConfigComplete();
   if (registeredBook) {
     savingBook.value = true;
     try {
