@@ -192,6 +192,7 @@ import { ToastService } from '@/services/toast';
 import { HapticsService } from '@/services/haptics';
 import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
@@ -200,6 +201,7 @@ import tourStep3 from '@/assets/tour/tour-step-3.png';
 import tourStep4 from '@/assets/tour/tour-step-4.png';
 
 const router = useRouter();
+const { user } = useCurrentUser();
 const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
 const isOpen = ref(false);
 const currentStep = ref(0);
@@ -341,7 +343,18 @@ const open = () => {
   preloadStepImages();
 };
 
+// Sin flag propio de "onboarding completado" en el servidor: una cuenta que ya
+// tiene actividad real (leyo algun dia, tiene racha o paginas registradas) no
+// es nueva, sin importar que el flag local se haya perdido por desinstalar y
+// reinstalar la app — evita reabrir el tour a usuarios ya establecidos.
+const hasRealActivity = (u) => u?.days_read || u?.streak_count || u?.pages_read;
+
 const checkTourStatus = async () => {
+  if (hasRealActivity(user.value)) {
+    await StorageService.set(TOUR_SEEN_KEY, true);
+    return;
+  }
+
   const hasSeenTour = await StorageService.get(TOUR_SEEN_KEY);
   if (!hasSeenTour) {
     setTimeout(() => {
