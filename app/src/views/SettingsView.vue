@@ -117,7 +117,6 @@
         </ExpandableCard>
 
         <BookSettingsCard />
-        <PrivacySettingsCard />
       </div>
     </SectionTitle>
 
@@ -238,7 +237,6 @@ import ExpandableCard from '@/components/ExpandableCard.vue';
 import SettingsActionButton from '@/components/SettingsActionButton.vue';
 import FeedbackModal from '@/components/FeedbackModal.vue';
 import BookSettingsCard from '@/components/BookSettingsCard.vue';
-import PrivacySettingsCard from '@/components/PrivacySettingsCard.vue';
 import { NotificationService } from '@/services/notifications';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';

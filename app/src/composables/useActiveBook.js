@@ -1,8 +1,8 @@
 import { ref } from 'vue';
 
 // Singleton a nivel de modulo (mismo patron que useCurrentUser): BookSettingsCard
-// escribe el libro activo tras cargarlo/crearlo/quitarlo, PrivacySettingsCard solo
-// lo lee para deshabilitar sus toggles — sin pasar por props/emit entre ambos.
+// escribe el libro activo tras cargarlo/crearlo/quitarlo y lo lee en su propia
+// seccion de privacidad para deshabilitar los toggles sin libro activo.
 const activeBook = ref(null);
 
 export function useActiveBook() {
