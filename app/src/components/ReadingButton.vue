@@ -225,7 +225,7 @@ const handleReactionConfirmed = async ({ reaction, progress }) => {
       // solo si el usuario no apagó la categoria "Recordatorio de lectura".
       if (props.user.notification_prefs?.daily_reminder !== false) {
         const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-        NotificationService.schedule7DayBurst(savedTime, res.streak_count, true);
+        NotificationService.schedule7DayBurst(savedTime, res.streak_count, true, 0, activeBook.value?.title || null);
       }
 
       emit('reading-logged', {

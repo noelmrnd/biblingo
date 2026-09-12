@@ -239,6 +239,7 @@ import SettingsActionButton from '@/components/SettingsActionButton.vue';
 import FeedbackModal from '@/components/FeedbackModal.vue';
 import BookSettingsCard from '@/components/BookSettingsCard.vue';
 import BlockedUsersCard from '@/components/BlockedUsersCard.vue';
+import { useActiveBook } from '@/composables/useActiveBook';
 import { NotificationService } from '@/services/notifications';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';
@@ -270,6 +271,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['logout', 'delete-account', 'user-updated', 'open-tour']);
+
+const { activeBook } = useActiveBook();
 
 const isLogoutModalOpen = ref(false);
 const isFeedbackModalOpen = ref(false);
@@ -376,7 +379,7 @@ const saveNotificationPrefs = async () => {
   if (notificationPrefs.daily_reminder) {
     await NotificationService.requestPermissions();
     await NotificationService.initPushNotifications(props.user.id);
-    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false, props.user.streak_freezes || 0);
+    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false, props.user.streak_freezes || 0, activeBook.value?.title || props.user.current_book_title || null);
   } else {
     await NotificationService.cancelReminders();
   }

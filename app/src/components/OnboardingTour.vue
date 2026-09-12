@@ -289,17 +289,9 @@ const skipTour = async () => {
 const finishTour = async () => {
   if (!isBookConfigValid.value) return;
 
-  try {
-    await NotificationService.requestPermissions();
-    await NotificationService.persistReminderTime(reminderTime.value);
-    await NotificationService.schedule7DayBurst(reminderTime.value, 0, false, 0);
-  } catch (e) {
-    // No bloquea el onboarding: el usuario puede ajustar el horario despues desde Ajustes.
-    console.warn('No se pudo guardar el horario de recordatorio:', e.message || e);
-  }
-
   const title = bookTitle.value.trim();
-  if (title !== '' && !skippedBookConfig.value) {
+  const registeredBook = title !== '' && !skippedBookConfig.value;
+  if (registeredBook) {
     savingBook.value = true;
     try {
       await ApiService.createBook(title, detectTrackingMode(title), isBookConfigBible.value ? null : Number(bookTotalPages.value));
@@ -309,6 +301,17 @@ const finishTour = async () => {
     } finally {
       savingBook.value = false;
     }
+  }
+
+  try {
+    await NotificationService.requestPermissions();
+    await NotificationService.persistReminderTime(reminderTime.value);
+    // El libro recien registrado personaliza el recordatorio desde la primera vez,
+    // no hay que esperar a la proxima vez que se guarden preferencias en Ajustes.
+    await NotificationService.schedule7DayBurst(reminderTime.value, 0, false, 0, registeredBook ? title : null);
+  } catch (e) {
+    // No bloquea el onboarding: el usuario puede ajustar el horario despues desde Ajustes.
+    console.warn('No se pudo guardar el horario de recordatorio:', e.message || e);
   }
 
   try {

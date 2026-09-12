@@ -104,7 +104,7 @@ export const NotificationService = {
    * queda o no un protector de racha, en vez del mismo mensaje generico de siempre —
    * es el unico dia en que perder la racha es una amenaza inminente, no hipotetica.
    */
-  async schedule7DayBurst(reminderTimeStr = '20:00', currentStreak = 1, hasReadToday = false, freezesAvailable = 0) {
+  async schedule7DayBurst(reminderTimeStr = '20:00', currentStreak = 1, hasReadToday = false, freezesAvailable = 0, bookTitle = null) {
     if (!Capacitor.isNativePlatform()) {
       console.log(`[Web Demo] Recordatorio de 7 días programado a las ${reminderTimeStr} (Ya leyó hoy: ${hasReadToday})`);
       return;
@@ -137,17 +137,30 @@ export const NotificationService = {
       const endOffset = startOffset + 6;
 
       const streakText = currentStreak + ' ' + (currentStreak === 0 ? 'día' : 'días');
+      // Con libro activo, cada mensaje lo menciona por nombre (mas personalizado que
+      // el generico "tu libro"/"tu lectura"); sin libro, cae al texto original.
+      const book = (bookTitle || '').trim();
 
       const notifications = [];
-      const messages = [
-        `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
-        'Dedica 10 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
-        '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
-        `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
-        'El conocimiento te espera. Lee 5 minutos hoy. 📕',
-        '¡Casi completas tu semana perfecta de lectura! 🎯',
-        '¡Mantén viva tu llama de lectura! Registra tu progreso hoy. 🌟'
-      ];
+      const messages = book
+        ? [
+            `¡No rompas tu racha de ${streakText}! 📖🔥 "${book}" te espera.`,
+            `Dedica 5 minutos a "${book}" hoy y sigue haciendo crecer tu hábito. 📚`,
+            `¡Un capítulo de "${book}" al día marca la diferencia! ✨`,
+            `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡Sigue con "${book}"! 🔥`,
+            `"${book}" te espera. Lee 5 minutos hoy. 📕`,
+            '¡Completa tu semana perfecta de lectura! 🎯',
+            `¡Mantén viva tu racha de lectura! Avanza en "${book}" hoy. 🌟`
+          ]
+        : [
+            `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
+            'Dedica 5 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
+            '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
+            `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
+            'El conocimiento te espera. Lee 5 minutos hoy. 📕',
+            '¡Completa tu semana perfecta de lectura! 🎯',
+            '¡Mantén viva tu racha de lectura! Registra tu progreso hoy. 🌟'
+          ];
 
       for (let dayOffset = startOffset; dayOffset <= endOffset; dayOffset++) {
         const scheduleDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0);
@@ -157,9 +170,10 @@ export const NotificationService = {
         let body;
         if (isTodayReminder) {
           title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
+          const urgentBook = book ? ` "${book}"` : '';
           body = freezesAvailable === 0
-            ? `No tienes protectores de racha. ¡Lee ahora para no perder tu racha de ${streakText}!`
-            : `¡Lee ahora para no perder tu racha de ${streakText}!`;
+            ? `No tienes protectores de racha. ¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`
+            : `¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`;
         } else {
           const msgIndex = Math.abs(dayOffset) % messages.length;
           body = messages[msgIndex];
@@ -185,7 +199,9 @@ export const NotificationService = {
         notifications.push({
           id: 2000 + dayOffset,
           title: '⏰ Última llamada de hoy',
-          body: `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Registra tu lectura! 📖`,
+          body: book
+            ? `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Sigue leyendo "${book}"! 📖`
+            : `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Registra tu lectura! 📖`,
           schedule: { at: scheduleDate },
           sound: 'beep.wav',
           badge: 1,

@@ -107,7 +107,7 @@ const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle
 const scheduleReminderForUser = async (user) => {
   if (user.notification_prefs?.daily_reminder === false) return;
   const savedTime = (await StorageService.get('reminder_time')) || user.reminder_time || '20:00';
-  NotificationService.schedule7DayBurst(savedTime, user.streak_count, user.has_read_today || false, user.streak_freezes || 0);
+  NotificationService.schedule7DayBurst(savedTime, user.streak_count, user.has_read_today || false, user.streak_freezes || 0, user.current_book_title || null);
 };
 
 const onLoginSuccess = async (user, token) => {
