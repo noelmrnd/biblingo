@@ -37,80 +37,193 @@ export const READING_REACTIONS = [
   { id: 'moved', emoji: '🥺', label: 'Me conmovió', desc: 'Sensible o emotiva' },
 ];
 
-export const getReactionById = (id) => READING_REACTIONS.find((r) => r.id === id) || null;
+import stickerFounder from '@/assets/stickers/sticker_01.png';
+import stickerStreak from '@/assets/stickers/sticker_02.png';
+import stickerPages from '@/assets/stickers/sticker_03.png';
+import stickerDaysRead from '@/assets/stickers/sticker_04.png';
+import stickerBooksFinished from '@/assets/stickers/sticker_05.png';
+import stickerFollowing from '@/assets/stickers/sticker_06.png';
+import stickerFollowers from '@/assets/stickers/sticker_07.png';
+import stickerMutual from '@/assets/stickers/sticker_08.png';
+import stickerNudgeSent from '@/assets/stickers/sticker_09.png';
+import stickerNudgeReceived from '@/assets/stickers/sticker_10.png';
+import stickerReactionLoved from '@/assets/stickers/sticker_11.png';
+import stickerReactionThoughtful from '@/assets/stickers/sticker_12.png';
+import stickerReactionPeaceful from '@/assets/stickers/sticker_13.png';
+import stickerReactionChallenged from '@/assets/stickers/sticker_14.png';
+import stickerReactionMoved from '@/assets/stickers/sticker_15.png';
 
-// Catalogo de medallas: mismo catalogo que BadgeEntity::CATALOG en el backend
-// (duplicado a proposito, igual que READING_REACTIONS vs VALID_REACTIONS).
-// category+threshold definen CUANDO se otorga (eso lo decide el
-// backend); emoji/label son solo presentacion. Agregar un tipo de medalla
-// nuevo es agregar una entrada aca + su espejo en BadgeEntity::CATALOG.
-// label: corto, para chips/circulos. description: se muestra solo al abrir el
-// detalle (modal), puede ser mas largo/explicativo.
-export const BADGES = [
-  { id: 'founder', category: 'founder', threshold: 1, emoji: '🚀', label: 'Fundador', description: 'Te uniste a Libringo en sus primeros días. ¡Gracias por confiar desde el principio!' },
-  { id: 'streak_1', category: 'streak', threshold: 1, emoji: '📖', label: 'Primera lectura', description: '¡Registraste tu primera lectura en Libringo!' },
-  { id: 'streak_7', category: 'streak', threshold: 7, emoji: '🥉', label: 'Semana completa', description: 'Completaste 7 días seguidos de racha.' },
-  { id: 'streak_30', category: 'streak', threshold: 30, emoji: '🥈', label: 'Un mes de racha', description: '30 días seguidos leyendo. ¡Constancia total!' },
-  { id: 'streak_100', category: 'streak', threshold: 100, emoji: '🥇', label: 'Imparable', description: '100 días de racha. Pocos llegan tan lejos.' },
-  { id: 'streak_365', category: 'streak', threshold: 365, emoji: '👑', label: 'Leyenda', description: 'Un año entero leyendo todos los días.' },
-  { id: 'streak_730', category: 'streak', threshold: 730, emoji: '💎', label: 'Dos años de racha', description: 'Dos años enteros leyendo todos los días.' },
-  { id: 'following_1', category: 'following', threshold: 1, emoji: '👋', label: 'Primer amigo', description: 'Seguiste a tu primera persona en Libringo.' },
-  { id: 'following_5', category: 'following', threshold: 5, emoji: '🤝', label: 'Sigues a 5', description: 'Ya sigues a 5 personas en Libringo.' },
-  { id: 'following_20', category: 'following', threshold: 20, emoji: '🧭', label: 'Explorador social', description: 'Sigues a 20 personas en Libringo.' },
-  { id: 'following_50', category: 'following', threshold: 50, emoji: '🌐', label: 'Gran explorador', description: 'Sigues a 50 personas en Libringo.' },
-  { id: 'followers_5', category: 'followers', threshold: 5, emoji: '⭐', label: '5 seguidores', description: '5 personas te siguen.' },
-  { id: 'followers_20', category: 'followers', threshold: 20, emoji: '🎉', label: 'Comunidad', description: '20 personas te siguen.' },
-  { id: 'followers_50', category: 'followers', threshold: 50, emoji: '💫', label: 'Influyente', description: '50 personas te siguen.' },
-  { id: 'reaction_loved_10', category: 'reaction_loved', threshold: 10, emoji: '❤️', label: 'Lecturas favoritas', description: '10 lecturas que te encantaron.' },
-  { id: 'reaction_thoughtful_10', category: 'reaction_thoughtful', threshold: 10, emoji: '💡', label: 'Pensador', description: '10 lecturas que te hicieron pensar.' },
-  { id: 'reaction_peaceful_10', category: 'reaction_peaceful', threshold: 10, emoji: '🕊️', label: 'En paz', description: '10 lecturas que te dieron paz.' },
-  { id: 'reaction_challenged_10', category: 'reaction_challenged', threshold: 10, emoji: '⚡️', label: 'Desafiado', description: '10 lecturas que confrontaron tu vida y hábitos.' },
-  { id: 'reaction_moved_10', category: 'reaction_moved', threshold: 10, emoji: '🥺', label: 'Conmovido', description: '10 lecturas que te conmovieron.' },
-  { id: 'days_read_50', category: 'days_read', threshold: 50, emoji: '📚', label: '50 días leídos', description: 'Leíste 50 días en total (no tienen que ser seguidos).' },
-  { id: 'days_read_100', category: 'days_read', threshold: 100, emoji: '📖', label: '100 días leídos', description: 'Leíste 100 días en total (no tienen que ser seguidos).' },
-  { id: 'days_read_365', category: 'days_read', threshold: 365, emoji: '🏛️', label: 'Un año leído', description: 'Un año completo de días leídos acumulados.' },
-  { id: 'days_read_730', category: 'days_read', threshold: 730, emoji: '🗻', label: 'Dos años leídos', description: 'Dos años completos de días leídos acumulados.' },
-  { id: 'mutual_5', category: 'mutual', threshold: 5, emoji: '💞', label: '5 amigos', description: '5 personas que te siguen y a las que también sigues.' },
-  { id: 'mutual_20', category: 'mutual', threshold: 20, emoji: '💘', label: '20 amigos', description: '20 personas que te siguen y a las que también sigues.' },
-  { id: 'mutual_50', category: 'mutual', threshold: 50, emoji: '💝', label: '50 amigos', description: '50 personas que te siguen y a las que también sigues.' },
-  { id: 'nudge_sent_10', category: 'nudge_sent', threshold: 10, emoji: '🔔', label: 'Motivador', description: 'Enviaste 10 toques a tus amigos.' },
-  { id: 'nudge_sent_50', category: 'nudge_sent', threshold: 50, emoji: '📯', label: 'Superfan', description: 'Enviaste 50 toques a tus amigos.' },
-  { id: 'nudge_sent_100', category: 'nudge_sent', threshold: 100, emoji: '🚀', label: 'Incansable', description: 'Enviaste 100 toques a tus amigos.' },
-  { id: 'nudge_received_10', category: 'nudge_received', threshold: 10, emoji: '📣', label: 'Popular', description: 'Recibiste 10 toques de tus amigos.' },
-  { id: 'nudge_received_50', category: 'nudge_received', threshold: 50, emoji: '🔥', label: 'Muy popular', description: 'Recibiste 50 toques de tus amigos.' },
-  { id: 'nudge_received_100', category: 'nudge_received', threshold: 100, emoji: '👑', label: 'Superestrella', description: 'Recibiste 100 toques de tus amigos.' },
-  { id: 'pages_100', category: 'pages', threshold: 100, emoji: '📄', label: 'Lector dedicado', description: '100 páginas o capítulos leídos en total.' },
-  { id: 'pages_500', category: 'pages', threshold: 500, emoji: '📚', label: 'Devorador de libros', description: '500 páginas o capítulos leídos en total.' },
-  { id: 'pages_1000', category: 'pages', threshold: 1000, emoji: '📖', label: 'Lector veterano', description: '1000 páginas o capítulos leídos en total.' },
-  { id: 'pages_2500', category: 'pages', threshold: 2500, emoji: '🎓', label: 'Erudito', description: '2500 páginas o capítulos leídos en total.' },
-  { id: 'pages_5000', category: 'pages', threshold: 5000, emoji: '🌟', label: 'Maestro lector', description: '5000 páginas o capítulos leídos en total.' },
-  { id: 'books_finished_1', category: 'books_finished', threshold: 1, emoji: '✅', label: 'Primer libro terminado', description: 'Terminaste tu primer libro en Libringo.' },
-  { id: 'books_finished_5', category: 'books_finished', threshold: 5, emoji: '🏆', label: '5 libros terminados', description: 'Terminaste 5 libros en Libringo.' },
-  { id: 'books_finished_10', category: 'books_finished', threshold: 10, emoji: '📗', label: '10 libros terminados', description: 'Terminaste 10 libros en Libringo.' },
-  { id: 'books_finished_25', category: 'books_finished', threshold: 25, emoji: '🎖️', label: '25 libros terminados', description: 'Terminaste 25 libros en Libringo.' },
+export const BADGE_GROUPS = [
+  {
+    category: 'founder',
+    group: 'founder',
+    image: stickerFounder,
+    description: 'Te uniste a Libringo en sus primeros días. ¡Gracias por confiar desde el principio!',
+    items: [
+      { id: 'founder', threshold: 1, label: 'Fundador' },
+    ],
+  },
+  {
+    category: 'streak',
+    group: 'streak',
+    image: stickerStreak,
+    description: 'Días seguidos leyendo, sin perder la racha.',
+    items: [
+      { id: 'streak_1', threshold: 1, label: 'Primera lectura' },
+      { id: 'streak_7', threshold: 7, label: 'Semana completa' },
+      { id: 'streak_30', threshold: 30, label: 'Un mes de racha' },
+      { id: 'streak_100', threshold: 100, label: 'Imparable' },
+      { id: 'streak_365', threshold: 365, label: 'Leyenda' },
+      { id: 'streak_730', threshold: 730, label: 'Dos años de racha' },
+    ],
+  },
+  {
+    category: 'pages',
+    group: 'reading',
+    image: stickerPages,
+    description: 'Páginas o capítulos leídos en total.',
+    items: [
+      { id: 'pages_100', threshold: 100, label: 'Lector dedicado' },
+      { id: 'pages_500', threshold: 500, label: 'Devorador de libros' },
+      { id: 'pages_1000', threshold: 1000, label: 'Lector veterano' },
+      { id: 'pages_2500', threshold: 2500, label: 'Erudito' },
+      { id: 'pages_5000', threshold: 5000, label: 'Maestro lector' },
+    ],
+  },
+  {
+    category: 'days_read',
+    group: 'reading',
+    image: stickerDaysRead,
+    description: 'Días leídos en total (no tienen que ser seguidos).',
+    items: [
+      { id: 'days_read_50', threshold: 50, label: '50 días leídos' },
+      { id: 'days_read_100', threshold: 100, label: '100 días leídos' },
+      { id: 'days_read_365', threshold: 365, label: 'Un año leído' },
+      { id: 'days_read_730', threshold: 730, label: 'Dos años leídos' },
+    ],
+  },
+  {
+    category: 'books_finished',
+    group: 'reading',
+    image: stickerBooksFinished,
+    description: 'Libros terminados en Libringo.',
+    items: [
+      { id: 'books_finished_1', threshold: 1, label: 'Primer libro terminado' },
+      { id: 'books_finished_5', threshold: 5, label: '5 libros terminados' },
+      { id: 'books_finished_10', threshold: 10, label: '10 libros terminados' },
+      { id: 'books_finished_25', threshold: 25, label: '25 libros terminados' },
+    ],
+  },
+  {
+    category: 'following',
+    group: 'friends',
+    image: stickerFollowing,
+    description: 'Personas a las que sigues en Libringo.',
+    items: [
+      { id: 'following_1', threshold: 1, label: 'Primer amigo' },
+      { id: 'following_5', threshold: 5, label: 'Sigues a 5' },
+      { id: 'following_20', threshold: 20, label: 'Explorador social' },
+      { id: 'following_50', threshold: 50, label: 'Gran explorador' },
+    ],
+  },
+  {
+    category: 'followers',
+    group: 'friends',
+    image: stickerFollowers,
+    description: 'Personas que te siguen en Libringo.',
+    items: [
+      { id: 'followers_5', threshold: 5, label: '5 seguidores' },
+      { id: 'followers_20', threshold: 20, label: 'Comunidad' },
+      { id: 'followers_50', threshold: 50, label: 'Influyente' },
+    ],
+  },
+  {
+    category: 'mutual',
+    group: 'friends',
+    image: stickerMutual,
+    description: 'Personas que te siguen y a las que también sigues.',
+    items: [
+      { id: 'mutual_5', threshold: 5, label: '5 amigos' },
+      { id: 'mutual_20', threshold: 20, label: '20 amigos' },
+      { id: 'mutual_50', threshold: 50, label: '50 amigos' },
+    ],
+  },
+  {
+    category: 'reaction_loved',
+    group: 'reaction',
+    image: stickerReactionLoved,
+    description: 'Lecturas que te encantaron.',
+    items: [
+      { id: 'reaction_loved_10', threshold: 10, label: 'Lecturas favoritas' },
+    ],
+  },
+  {
+    category: 'reaction_thoughtful',
+    group: 'reaction',
+    image: stickerReactionThoughtful,
+    description: 'Lecturas que te hicieron pensar.',
+    items: [
+      { id: 'reaction_thoughtful_10', threshold: 10, label: 'Pensador' },
+    ],
+  },
+  {
+    category: 'reaction_peaceful',
+    group: 'reaction',
+    image: stickerReactionPeaceful,
+    description: 'Lecturas que te dieron paz.',
+    items: [
+      { id: 'reaction_peaceful_10', threshold: 10, label: 'En paz' },
+    ],
+  },
+  {
+    category: 'reaction_challenged',
+    group: 'reaction',
+    image: stickerReactionChallenged,
+    description: 'Lecturas que confrontaron tu vida y hábitos.',
+    items: [
+      { id: 'reaction_challenged_10', threshold: 10, label: 'Desafiado' },
+    ],
+  },
+  {
+    category: 'reaction_moved',
+    group: 'reaction',
+    image: stickerReactionMoved,
+    description: 'Lecturas que te conmovieron.',
+    items: [
+      { id: 'reaction_moved_10', threshold: 10, label: 'Conmovido' },
+    ],
+  },
+  {
+    category: 'nudge_sent',
+    group: 'nudge',
+    image: stickerNudgeSent,
+    description: 'Toques enviados a tus amigos.',
+    items: [
+      { id: 'nudge_sent_10', threshold: 10, label: 'Motivador' },
+      { id: 'nudge_sent_50', threshold: 50, label: 'Superfan' },
+      { id: 'nudge_sent_100', threshold: 100, label: 'Incansable' },
+    ],
+  },
+  {
+    category: 'nudge_received',
+    group: 'nudge',
+    image: stickerNudgeReceived,
+    description: 'Toques recibidos de tus amigos.',
+    items: [
+      { id: 'nudge_received_10', threshold: 10, label: 'Popular' },
+      { id: 'nudge_received_50', threshold: 50, label: 'Muy popular' },
+      { id: 'nudge_received_100', threshold: 100, label: 'Superestrella' },
+    ],
+  },
 ];
 
-// Agrupacion (no afecta el otorgamiento, que sigue usando 'following' y
-// 'followers' por separado como categorias reales de BADGES/BadgeEntity):
-// solo ordena categorias relacionadas juntas en AchievementsGrid, sin
-// mostrar ningun encabezado de seccion.
-const BADGE_GROUP_BY_CATEGORY = {
-  following: 'friends',
-  followers: 'friends',
-  mutual: 'friends',
-  days_read: 'reading',
-  pages: 'reading',
-  books_finished: 'reading',
-  nudge_sent: 'nudge',
-  nudge_received: 'nudge',
+export const getBadgeById = (id) => {
+  for (const badgeGroup of BADGE_GROUPS) {
+    const item = badgeGroup.items.find((i) => i.id === id);
+    if (item) return { ...item, category: badgeGroup.category, image: badgeGroup.image, description: badgeGroup.description };
+  }
+  return null;
 };
-
-export const getBadgeGroup = (category) => {
-  if (category.startsWith('reaction_')) return 'reaction';
-  return BADGE_GROUP_BY_CATEGORY[category] || category;
-};
-
-export const getBadgeById = (id) => BADGES.find((b) => b.id === id) || null;
 
 // Escalado visual de la llama de racha en StreakHero segun el hito mas alto alcanzado
 // (no exacto como getMilestoneForStreak: aplica a partir del umbral y se mantiene).

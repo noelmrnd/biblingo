@@ -10,11 +10,7 @@
           <!-- Halo pulsante detras de la medalla -->
           <div class="relative flex items-center justify-center mb-6">
             <div class="absolute w-40 h-40 rounded-full bg-amber-400/25 blur-2xl celebration-halo"></div>
-            <div
-              class="relative w-32 h-32 rounded-full border-4 border-amber-400/60 bg-amber-500/10 flex items-center justify-center text-6xl leading-none celebration-badge-pop shadow-[0_0_60px_rgba(251,191,36,0.35)]"
-            >
-              {{ badge.emoji }}
-            </div>
+            <img :src="badge.image" :alt="badge.label" class="relative w-36 h-36 object-contain celebration-badge-pop" />
           </div>
 
           <p class="text-amber-400 text-sm font-black tracking-widest uppercase celebration-text-in" style="animation-delay: 0.15s">

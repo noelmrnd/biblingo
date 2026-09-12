@@ -32,8 +32,8 @@
         />
         <StatCell :value="formatNumber(user.days_read)" label="Días leídos" color-class="text-brand-days" :icon="CalendarCheck" icon-color-class="text-brand-days" />
         <StatCell :value="formatNumber(user.max_streak_count)" label="Racha máxima" color-class="text-purple-400" :icon="Zap" icon-color-class="text-purple-400" />
-        <StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />
-        <StatCell class="col-span-2" :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
+        <!--<StatCell :value="formatNumber(user.streak_freezes_used)" label="Protectores usados" color-class="text-brand-freeze-light" :icon="ShieldCheck" icon-color-class="text-brand-freeze-light" />-->
+        <StatCell :value="formatNumber(user.pages_read)" label="Páginas leídas" color-class="text-brand-pages" :icon="BookOpen" icon-color-class="text-brand-pages" />
       </div>
     </SectionTitle>
 
