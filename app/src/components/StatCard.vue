@@ -4,7 +4,7 @@
       <component :is="icon" class="w-5 h-5 stroke-[2.5]" :class="iconColorClass" />
       <div class="text-2xl font-bold" :class="colorClass">{{ value }}</div>
     </div>
-    <div class="text-slate-300 text-base font-medium">{{ label }}</div>
+    <p class="text-slate-300 text-base font-medium" :class="labelClass">{{ label }}</p>
   </div>
 </template>
 
@@ -12,6 +12,7 @@
 defineProps({
   value: { type: [String, Number], required: true },
   label: { type: String, required: true },
+  labelClass: { type: String },
   colorClass: { type: String, default: 'text-white' },
   // Atajos para el caso simple de un solo icono fijo (sin logica condicional):
   // evitan el slot #icon boilerplate. Para casos con estados condicionales
