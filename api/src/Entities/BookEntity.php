@@ -9,23 +9,8 @@ class BookEntity {
     public const MODE_LINEAR = 'linear';
     public const MODE_BITMASK = 'bitmask';
 
-    // Palabra clave que activa el modo bitmask (capitulos no lineales, ej. Biblia).
-    // Match flexible (sin acentos/mayusculas) para no exigirle al usuario escribir exacto.
-    private const BITMASK_TITLE_KEYWORD = 'biblia';
     public const BIBLE_TOTAL_CHAPTERS = 1189;
     public const BITMASK_BYTES = 149;
-
-    public static function detectTrackingMode(string $title): string {
-        $normalized = self::normalizeTitle($title);
-        return str_contains($normalized, self::BITMASK_TITLE_KEYWORD)
-            ? self::MODE_BITMASK
-            : self::MODE_LINEAR;
-    }
-
-    private static function normalizeTitle(string $title): string {
-        $transliterated = iconv('UTF-8', 'ASCII//TRANSLIT', $title) ?: $title;
-        return strtolower(trim($transliterated));
-    }
 
     public static function findById(\PDO $db, string $bookId): array|false {
         $stmt = $db->prepare("SELECT * FROM books WHERE id = ?");

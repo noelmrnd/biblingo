@@ -17,12 +17,14 @@ class BookController {
     /**
      * Crea el libro activo del usuario. Si ya tenia uno en 'reading', lo marca
      * 'abandoned' (solo se permite 1 libro activo a la vez, ver CLAUDE.md).
-     * title == 'biblia' (match flexible) activa tracking_mode 'bitmask' con
-     * total_units fijo (1189 capitulos); total_pages del body se ignora en ese caso.
+     * tracking_mode lo decide el front (match flexible sobre el titulo, ver
+     * app/src/utils/bookTracking.js) y se envia explicito: 'bitmask' fija
+     * total_units a 1189 capitulos (Biblia) y el total_pages del body se ignora.
      */
     public static function create(string $userId) {
         $input = getJsonInput();
         $title = trim((string)($input['title'] ?? ''));
+        $trackingMode = (string)($input['tracking_mode'] ?? '');
 
         if ($title === '') {
             sendJsonResponse(['error' => 'title es requerido.'], 400);
@@ -30,8 +32,9 @@ class BookController {
         if (mb_strlen($title) > self::MAX_TITLE_LENGTH) {
             sendJsonResponse(['error' => 'title demasiado largo.'], 400);
         }
-
-        $trackingMode = BookEntity::detectTrackingMode($title);
+        if (!in_array($trackingMode, [BookEntity::MODE_LINEAR, BookEntity::MODE_BITMASK], true)) {
+            sendJsonResponse(['error' => 'tracking_mode invalido.'], 400);
+        }
 
         if ($trackingMode === BookEntity::MODE_BITMASK) {
             $totalUnits = BookEntity::BIBLE_TOTAL_CHAPTERS;

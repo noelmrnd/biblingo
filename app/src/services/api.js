@@ -99,12 +99,13 @@ export const ApiService = {
     });
   },
 
-  // Si title detecta 'biblia' el backend activa tracking por capitulos y
-  // total_pages se ignora. Reemplaza el libro activo anterior, si habia uno.
-  async createBook(title, totalPages = null) {
+  // trackingMode lo decide el caller (ver utils/bookTracking.js): 'bitmask'
+  // activa tracking por capitulos y total_pages se ignora. Reemplaza el libro
+  // activo anterior, si habia uno.
+  async createBook(title, trackingMode, totalPages = null) {
     return request('/books', {
       method: 'POST',
-      body: JSON.stringify({ title, total_pages: totalPages })
+      body: JSON.stringify({ title, tracking_mode: trackingMode, total_pages: totalPages })
     });
   },
 

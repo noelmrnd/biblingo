@@ -3,7 +3,7 @@
   <ExpandableCard
     v-model="isExpanded"
     title="Tu libro"
-    description="Qué estás leyendo y cuánto avanzaste"
+    description="Qué estás leyendo ahora"
     icon-bg-class="bg-purple-500/10 border-purple-500/30"
     icon-color-class="text-purple-400"
     :icon="BookOpen"
@@ -38,7 +38,7 @@
     <!-- Sin libro activo: nada que perder, inputs directos. -->
     <div v-else class="space-y-3">
       <AppFormField label="Nombre del libro">
-        <AppTextInput v-model="newBookTitle" placeholder="Ej. Génesis, Biblia, etc." />
+        <AppTextInput v-model="newBookTitle" autocapitalize="words" placeholder="Ej. El Principito" />
       </AppFormField>
 
       <AppFormField v-if="!isNewBookBible" label="Número de páginas">
@@ -84,6 +84,7 @@ import ConfirmActionModal from './ConfirmActionModal.vue';
 import { ApiService } from '@/services/api';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import { useActiveBook } from '@/composables/useActiveBook';
+import { isBibleTitle, detectTrackingMode } from '@/utils/bookTracking';
 
 // Encapsula sus propios endpoints (getActiveBook/createBook/removeActiveBook).
 // activeBook vive en el composable compartido (singleton, mismo patron que
@@ -104,14 +105,7 @@ const openConfirmModal = (intent) => {
   removeIntent.value = intent;
 };
 
-// Mismo match flexible que BookEntity::detectTrackingMode en el backend (sin
-// acentos/mayusculas): solo para decidir si mostramos el input de paginas.
-const isNewBookBible = computed(() => {
-  const normalized = newBookTitle.value
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .toLowerCase().trim();
-  return normalized.includes('biblia');
-});
+const isNewBookBible = computed(() => isBibleTitle(newBookTitle.value));
 
 const isNewBookValid = computed(() => {
   if (newBookTitle.value.trim() === '') return false;
@@ -122,7 +116,7 @@ const isNewBookValid = computed(() => {
 const saveNewBook = async () => {
   const title = newBookTitle.value.trim();
   const res = await saveBookAction.run(
-    () => ApiService.createBook(title, isNewBookBible.value ? null : Number(newBookTotalPages.value)),
+    () => ApiService.createBook(title, detectTrackingMode(title), isNewBookBible.value ? null : Number(newBookTotalPages.value)),
     { successMsg: '¡Libro guardado! 📖', errorMsg: 'No se pudo guardar tu libro.' }
   );
   if (res === undefined) return;

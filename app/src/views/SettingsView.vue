@@ -20,6 +20,7 @@
               <AppTextInput
                 v-model="editDisplayName"
                 :icon="UserRound"
+                autocapitalize="words"
                 placeholder="Tu nombre de usuario"
                 @keyup.enter="saveProfile"
               />

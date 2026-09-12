@@ -80,12 +80,13 @@
               <input
                 v-model="bookTitle"
                 type="text"
-                placeholder="Ej. Génesis, Biblia, etc."
+                autocapitalize="words"
+                placeholder="Ej. El Principito"
                 class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
               />
             </div>
 
-            <div v-if="!isBibleTitle">
+            <div v-if="!isBookConfigBible">
               <label class="text-sm font-semibold text-slate-400">Número de páginas</label>
               <input
                 v-model="bookTotalPages"
@@ -161,6 +162,7 @@ import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
 import { HapticsService } from '@/services/haptics';
 import { ApiService } from '@/services/api';
+import { isBibleTitle, detectTrackingMode } from '@/utils/bookTracking';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
 import tourStep2 from '@/assets/tour/tour-step-2.png';
@@ -213,18 +215,11 @@ const bookTotalPages = ref('');
 const savingBook = ref(false);
 const skippedBookConfig = ref(false);
 
-// Mismo match flexible que BookEntity::detectTrackingMode en el backend (sin
-// acentos/mayusculas): solo para decidir si mostramos el input de paginas.
-const isBibleTitle = computed(() => {
-  const normalized = bookTitle.value
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .toLowerCase().trim();
-  return normalized.includes('biblia');
-});
+const isBookConfigBible = computed(() => isBibleTitle(bookTitle.value));
 
 const isBookConfigValid = computed(() => {
   if (skippedBookConfig.value || bookTitle.value.trim() === '') return true;
-  if (isBibleTitle.value) return true;
+  if (isBookConfigBible.value) return true;
   return Number(bookTotalPages.value) > 0;
 });
 
@@ -261,7 +256,7 @@ const finishTour = async () => {
   if (title !== '' && !skippedBookConfig.value) {
     savingBook.value = true;
     try {
-      await ApiService.createBook(title, isBibleTitle.value ? null : Number(bookTotalPages.value));
+      await ApiService.createBook(title, detectTrackingMode(title), isBookConfigBible.value ? null : Number(bookTotalPages.value));
     } catch (e) {
       // No bloquea el onboarding: el usuario puede registrar su libro despues desde su perfil.
       ToastService.error(e.message || 'No se pudo guardar tu libro, podrás agregarlo después.');
