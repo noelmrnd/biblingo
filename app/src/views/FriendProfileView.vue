@@ -30,7 +30,13 @@
         </template>
       </FriendProfileHeader>
 
-      <div class="flex gap-3">
+      <!-- Viendo tu propio perfil publico (ej. desde un link compartido): mismos
+           datos que veria cualquier otro usuario, pero sin acciones sobre vos mismo. -->
+      <p v-if="friend.is_self" class="text-center text-sm font-semibold text-slate-400 bg-slate-900 border border-slate-800 rounded-2xl py-2.5 px-4">
+        👀 Así te ven las demás personas
+      </p>
+
+      <div v-else class="flex gap-3">
         <AppButton
           v-if="!friend.is_following"
           color="green"

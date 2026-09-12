@@ -45,7 +45,7 @@
         <AppTextInput v-model="newBookTotalPages" type="number" min="1" placeholder="Ej. 320" />
       </AppFormField>
       <p v-else class="text-sm text-slate-400">
-        La Biblia se registra por capítulos, no por páginas.
+        Podrás llevar el registro de tu lectura por capítulos.
       </p>
 
       <AppButton

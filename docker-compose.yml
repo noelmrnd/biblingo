@@ -25,6 +25,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
     container_name: libringo_web
+    # tini como PID 1: pnpm no reenvia SIGTERM al proceso hijo (astro), asi que
+    # sin init docker espera el grace period completo (10s) antes de matarlo.
+    init: true
     ports:
       - "8082:3000"  # Web (Landing Page) - Astro Dev Server con Hot Reload
     volumes:
@@ -37,6 +40,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile.app
     container_name: libringo_app
+    # tini como PID 1: mismo motivo que en "web" (pnpm no reenvia SIGTERM a vite).
+    init: true
     ports:
       - "8083:3000"  # Frontend Vue + Vite Dev Server con Hot Reload
       - "5173:3000"  # Puerto alternativo Vite

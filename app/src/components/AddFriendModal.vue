@@ -136,7 +136,6 @@ const follow = async (u) => {
 // (isOpen=false) antes de navegar y lo reabre al volver, para que la busqueda
 // siga ahi en vez de tener que repetirla.
 const openProfile = (u) => {
-  if (u.is_self) return;
   emit('open-profile', u.id);
 };
 

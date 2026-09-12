@@ -1,8 +1,9 @@
 <template>
-  <SectionTitle v-if="currentBookTitle" title="Leyendo ahora" :icon="BookOpen" icon-color-class="text-brand-days">
+  <SectionTitle v-if="currentBookTitle || hasProgress" title="Leyendo ahora" :icon="BookOpen" icon-color-class="text-brand-days">
     <AppCard>
       <div class="flex items-center justify-between gap-3 min-w-0">
-        <p class="text-base font-bold text-white truncate">{{ currentBookTitle }}</p>
+        <p v-if="currentBookTitle" class="text-base font-bold text-white truncate">{{ currentBookTitle }}</p>
+        <p v-else class="text-base font-semibold text-slate-400 truncate">Porcentaje de avance</p>
         <span v-if="hasProgress" class="text-base font-semibold text-white shrink-0">{{ progressPercent }}%</span>
       </div>
 

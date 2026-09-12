@@ -13,7 +13,7 @@
         </div>
       </div>
 
-      <p class="text-xl font-black tracking-wide text-emerald-400 mt-2">@{{ username }}</p>
+      <p class="text-xl font-bold tracking-wide mt-2">@{{ username }}</p>
 
       <div class="flex gap-2.5 mt-8">
         <AppButton color="green" block :icon="Share2" text="Compartir" @click="share" />

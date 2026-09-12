@@ -97,7 +97,7 @@
               />
             </div>
             <p v-else class="text-sm text-slate-400">
-              La Biblia se registra por capítulos, no por páginas. ¡Podrás marcarlos en cualquier orden!
+              Podrás llevar el registro de tu lectura por capítulos.
             </p>
           </div>
 

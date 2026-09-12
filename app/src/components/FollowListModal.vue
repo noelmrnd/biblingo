@@ -129,7 +129,6 @@ const changeTab = (tab) => {
 };
 
 const selectUser = (u) => {
-  if (u.is_self) return;
   HapticsService.light();
   emit('select-user', u.id);
 };
