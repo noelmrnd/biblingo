@@ -283,7 +283,7 @@ export const BIBLE_BOOKS = [
   { name: 'Salmos', chapters: 150 },
   { name: 'Proverbios', chapters: 31 },
   { name: 'Eclesiastés', chapters: 12 },
-  { name: 'Cantar de los Cantares', chapters: 8 },
+  { name: 'El Cantar de los Cantares', chapters: 8 },
   { name: 'Isaías', chapters: 66 },
   { name: 'Jeremías', chapters: 52 },
   { name: 'Lamentaciones', chapters: 5 },

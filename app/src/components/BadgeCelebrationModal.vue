@@ -9,8 +9,8 @@
         <div class="w-full max-w-sm flex flex-col items-center text-center">
           <!-- Halo pulsante detras de la medalla -->
           <div class="relative flex items-center justify-center mb-6">
-            <div class="absolute w-40 h-40 rounded-full bg-amber-400/25 blur-2xl celebration-halo"></div>
-            <img :src="badge.image" :alt="badge.label" class="relative w-36 h-36 object-contain celebration-badge-pop" />
+            <div class="absolute w-48 h-48 rounded-full bg-amber-400/25 blur-2xl celebration-halo"></div>
+            <img :src="badge.image" :alt="badge.label" class="relative w-40 h-40 object-contain celebration-badge-pop" />
           </div>
 
           <p class="text-amber-400 text-sm font-black tracking-widest uppercase celebration-text-in" style="animation-delay: 0.15s">
