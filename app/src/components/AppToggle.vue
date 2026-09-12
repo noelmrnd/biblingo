@@ -6,7 +6,8 @@
     :disabled="disabled"
     @click="handleClick"
     :class="modelValue ? 'bg-brand-green' : 'bg-slate-700'"
-    class="relative w-12 h-7 rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    class="relative h-7 rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    style="width: 46px"
   >
     <span
       :class="modelValue ? 'translate-x-5' : 'translate-x-0.5'"

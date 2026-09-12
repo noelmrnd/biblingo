@@ -37,6 +37,15 @@ export const READING_REACTIONS = [
   { id: 'moved', emoji: '🥺', label: 'Me conmovió', desc: 'Sensible o emotiva' },
 ];
 
+// Selector opcional al bloquear a alguien (ver BlockEntity::REASONS en el backend,
+// debe mantenerse en sync). null ("Prefiero no decirlo") tambien es una opcion valida.
+export const BLOCK_REASONS = [
+  { id: 'spam', label: 'Spam o cuenta falsa' },
+  { id: 'inappropriate_content', label: 'Contenido inapropiado' },
+  { id: 'harassment', label: 'Acoso o comportamiento abusivo' },
+  { id: 'other', label: 'Otro motivo' },
+];
+
 import stickerFounder from '@/assets/stickers/sticker_01.png';
 import stickerStreak from '@/assets/stickers/sticker_02.png';
 import stickerReactionVariety from '@/assets/stickers/sticker_03.png'; // reutilizado: era de 'pages' (deshabilitada)

@@ -108,7 +108,18 @@
 
       <AchievementsGrid :earned-badges="friend.badges || []" />
 
-      <p v-if="memberSinceLabel" class="text-center text-slate-500 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
+      <div class="space-y-3">
+        <p v-if="memberSinceLabel" class="text-center text-slate-500 text-base font-medium">Leyendo desde {{ memberSinceLabel }}</p>
+
+        <button
+          v-if="!friend.is_self"
+          type="button"
+          @click="isBlockModalOpen = true"
+          class="text-center text-base font-semibold text-slate-500 hover:text-rose-400 p-2 cursor-pointer block mx-auto"
+        >
+          Bloquear usuario
+        </button>
+      </div>
     </template>
 
     <UnfollowConfirmModal
@@ -117,6 +128,14 @@
       :display-name="friend?.display_name"
       @close="isRemoveModalOpen = false"
       @confirm="confirmRemove"
+    />
+
+    <BlockUserModal
+      :is-open="isBlockModalOpen"
+      :loading="block.loading.value"
+      :display-name="friend?.display_name"
+      @close="isBlockModalOpen = false"
+      @confirm="confirmBlock"
     />
 
     <FollowListModal
@@ -146,6 +165,7 @@ import StatCell from '@/components/StatCell.vue';
 import WeeklyTracker from '@/components/WeeklyTracker.vue';
 import AppButton from '@/components/AppButton.vue';
 import UnfollowConfirmModal from '@/components/UnfollowConfirmModal.vue';
+import BlockUserModal from '@/components/BlockUserModal.vue';
 import FollowListModal from '@/components/FollowListModal.vue';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';
@@ -170,6 +190,8 @@ const nudge = useNudge();
 const isRemoveModalOpen = ref(false);
 const remove = useAsyncAction();
 const follow = useAsyncAction();
+const isBlockModalOpen = ref(false);
+const block = useAsyncAction();
 
 const memberSinceLabel = computed(() => formatMemberSince(friend.value?.member_since));
 
@@ -222,5 +244,17 @@ const confirmRemove = async () => {
     friend.value.is_mutual = false;
   }
   isRemoveModalOpen.value = false;
+};
+
+const confirmBlock = async (reason) => {
+  const displayName = friend.value.display_name;
+  const res = await block.run(() => ApiService.blockUser(friend.value.id, reason), {
+    errorMsg: 'No se pudo bloquear a este usuario.'
+  });
+  isBlockModalOpen.value = false;
+  if (res?.success) {
+    ToastService.success(`Bloqueaste a ${displayName}.`);
+    router.push({ name: 'friends' });
+  }
 };
 </script>

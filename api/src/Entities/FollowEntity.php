@@ -56,29 +56,43 @@ class FollowEntity {
         return $stmt->fetchAll();
     }
 
-    /** Oculta seguidores banned/deleted. */
-    public static function fetchFollowers(\PDO $db, string $targetId): array {
+    /**
+     * Oculta seguidores banned/deleted, y a cualquiera con quien exista un bloqueo
+     * (en cualquier sentido) con $viewerId — no con $targetId, dueño de la lista.
+     */
+    public static function fetchFollowers(\PDO $db, string $targetId, string $viewerId): array {
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.username
             FROM follows f
             JOIN users u ON f.follower_id = u.id
             WHERE f.followed_id = ? AND u.status = 'active'
+              AND NOT EXISTS (
+                  SELECT 1 FROM blocks b
+                  WHERE (b.blocker_id = ? AND b.blocked_id = u.id) OR (b.blocker_id = u.id AND b.blocked_id = ?)
+              )
             ORDER BY u.display_name ASC
         ");
-        $stmt->execute([$targetId]);
+        $stmt->execute([$targetId, $viewerId, $viewerId]);
         return $stmt->fetchAll();
     }
 
-    /** Oculta seguidos banned/deleted. */
-    public static function fetchFollowing(\PDO $db, string $targetId): array {
+    /**
+     * Oculta seguidos banned/deleted, y a cualquiera con quien exista un bloqueo
+     * (en cualquier sentido) con $viewerId — no con $targetId, dueño de la lista.
+     */
+    public static function fetchFollowing(\PDO $db, string $targetId, string $viewerId): array {
         $stmt = $db->prepare("
             SELECT u.id, u.display_name, u.username
             FROM follows f
             JOIN users u ON f.followed_id = u.id
             WHERE f.follower_id = ? AND u.status = 'active'
+              AND NOT EXISTS (
+                  SELECT 1 FROM blocks b
+                  WHERE (b.blocker_id = ? AND b.blocked_id = u.id) OR (b.blocker_id = u.id AND b.blocked_id = ?)
+              )
             ORDER BY u.display_name ASC
         ");
-        $stmt->execute([$targetId]);
+        $stmt->execute([$targetId, $viewerId, $viewerId]);
         return $stmt->fetchAll();
     }
 

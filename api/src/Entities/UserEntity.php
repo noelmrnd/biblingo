@@ -89,20 +89,28 @@ class UserEntity {
      * de "Agregar amigos". Prioriza matches que empiezan con el query (mas
      * relevantes) antes que matches en cualquier posicion.
      */
-    public static function searchByNameOrUsername(\PDO $db, string $query, int $limit): array {
+    // $viewerId excluye de los resultados a cualquiera con quien exista un bloqueo
+    // (en cualquier sentido) con quien busca.
+    public static function searchByNameOrUsername(\PDO $db, string $query, int $limit, string $viewerId): array {
         $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $query) . '%';
         $startsWith = str_replace(['%', '_'], ['\\%', '\\_'], $query) . '%';
         $stmt = $db->prepare(
-            "SELECT id, display_name, username FROM users
-             WHERE status = 'active' AND (display_name LIKE ? OR username LIKE ?)
-             ORDER BY (username LIKE ? OR display_name LIKE ?) DESC, display_name ASC
+            "SELECT id, display_name, username FROM users u
+             WHERE u.status = 'active' AND (u.display_name LIKE ? OR u.username LIKE ?)
+               AND NOT EXISTS (
+                   SELECT 1 FROM blocks b
+                   WHERE (b.blocker_id = ? AND b.blocked_id = u.id) OR (b.blocker_id = u.id AND b.blocked_id = ?)
+               )
+             ORDER BY (u.username LIKE ? OR u.display_name LIKE ?) DESC, u.display_name ASC
              LIMIT ?"
         );
         $stmt->bindValue(1, $like);
         $stmt->bindValue(2, $like);
-        $stmt->bindValue(3, $startsWith);
-        $stmt->bindValue(4, $startsWith);
-        $stmt->bindValue(5, $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(3, $viewerId);
+        $stmt->bindValue(4, $viewerId);
+        $stmt->bindValue(5, $startsWith);
+        $stmt->bindValue(6, $startsWith);
+        $stmt->bindValue(7, $limit, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
     }

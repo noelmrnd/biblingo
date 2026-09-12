@@ -166,6 +166,25 @@ export const ApiService = {
     });
   },
 
+  // reason es opcional (uno de BLOCK_REASONS en constants.js).
+  async blockUser(userId, reason = null) {
+    return request('/blocks', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, reason })
+    });
+  },
+
+  async unblockUser(userId) {
+    return request('/blocks', {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: userId })
+    });
+  },
+
+  async getBlockedUsers() {
+    return request('/blocks');
+  },
+
   // type: 'followers' | 'following'. Publica: puede consultarse la de cualquier usuario.
   async getFollowList(userId, type) {
     return request(`/friends/list?user_id=${userId}&type=${type}`);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Libringo\Controllers;
 
 use Libringo\Entities\BadgeEntity;
+use Libringo\Entities\BlockEntity;
 use Libringo\Entities\BookEntity;
 use Libringo\Entities\FollowEntity;
 use Libringo\Entities\FriendNudgeEntity;
@@ -111,6 +112,10 @@ class FriendController {
 
         if (self::isFollowing($db, $userId, $targetId)) {
             sendJsonResponse(['error' => "Ya sigues a {$target['display_name']}."], 400);
+        }
+
+        if (BlockEntity::existsEitherWay($db, $userId, $targetId)) {
+            sendJsonResponse(['error' => 'No puedes seguir a este usuario.'], 403);
         }
 
         $me = UserEntity::getDisplayName($db, $userId);
@@ -275,6 +280,13 @@ class FriendController {
         $db = getDbConnection();
         $isSelf = ($userId === $friendId);
 
+        // Bloqueo en cualquier sentido corta la visibilidad del perfil, igual que
+        // corta el follow — sin distinguir "quien bloqueo a quien" en el mensaje
+        // para no filtrar esa informacion al usuario bloqueado.
+        if (!$isSelf && BlockEntity::existsEitherWay($db, $userId, $friendId)) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
         // Publico, como en Duolingo: cualquier usuario autenticado puede ver el perfil
         // de cualquier otro, siga o no lo siga (igual que getFollowList). Nadie tiene
         // una fila de follow contra si mismo, asi que para isSelf esto siempre da
@@ -357,8 +369,8 @@ class FriendController {
         }
 
         $rows = $type === 'followers'
-            ? FollowEntity::fetchFollowers($db, $targetId)
-            : FollowEntity::fetchFollowing($db, $targetId);
+            ? FollowEntity::fetchFollowers($db, $targetId, $userId)
+            : FollowEntity::fetchFollowing($db, $targetId, $userId);
 
         // Una sola query con los IDs que sigo, en vez de un isFollowing() por fila.
         $followingIds = array_flip(FollowEntity::fetchFollowingIds($db, $userId));
@@ -390,7 +402,7 @@ class FriendController {
         }
 
         $db = getDbConnection();
-        $rows = UserEntity::searchByNameOrUsername($db, $query, 20);
+        $rows = UserEntity::searchByNameOrUsername($db, $query, 20, $userId);
 
         $followingIds = array_flip(FollowEntity::fetchFollowingIds($db, $userId));
 

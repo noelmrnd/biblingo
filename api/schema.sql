@@ -119,6 +119,22 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 5b2. Bloqueos entre usuarios. Bloquear quita cualquier follow existente en ambos
+-- sentidos (ver BlockController::blockUser) y bloquea nuevos follows y la vista
+-- del perfil mientras el bloqueo exista. reason es un selector opcional, no texto
+-- libre (evita moderar contenido arbitrario en esta v1).
+CREATE TABLE IF NOT EXISTS blocks (
+    id BIGINT PRIMARY KEY,
+    blocker_id BIGINT NOT NULL,
+    blocked_id BIGINT NOT NULL,
+    reason ENUM('spam', 'inappropriate_content', 'harassment', 'other') NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_block (blocker_id, blocked_id),
+    INDEX idx_blocked (blocked_id),
+    FOREIGN KEY (blocker_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 5c. Sugerencias y reportes enviados desde el perfil
 CREATE TABLE IF NOT EXISTS feedback (
     id BIGINT PRIMARY KEY,

@@ -29,9 +29,9 @@
         type="button"
         :disabled="removeBookAction.loading.value"
         @click="openConfirmModal('remove')"
-        class="w-full text-center text-sm font-semibold text-slate-500 hover:text-rose-400 py-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        class="block mx-auto text-center text-sm font-semibold text-slate-500 hover:text-rose-400 p-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Quitar libro (dejar de registrar avance)
+        Quitar libro
       </button>
     </div>
 

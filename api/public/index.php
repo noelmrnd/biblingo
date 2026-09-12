@@ -7,6 +7,7 @@ require_once __DIR__ . '/../config/env.php';
 require_once __DIR__ . '/../config/db.php';
 
 use Libringo\Controllers\AuthController;
+use Libringo\Controllers\BlockController;
 use Libringo\Controllers\BookController;
 use Libringo\Controllers\FriendController;
 use Libringo\Controllers\ReadingController;
@@ -97,6 +98,10 @@ $routes = [
     'POST /api/friends/follow' => fn() => FriendController::follow($userId),
     'POST /api/friends/unfollow' => fn() => FriendController::unfollow($userId),
     'POST /api/friends/nudge' => fn() => FriendController::nudgeFriend($userId),
+
+    'GET /api/blocks' => fn() => BlockController::listBlocked($userId),
+    'POST /api/blocks' => fn() => BlockController::blockUser($userId),
+    'DELETE /api/blocks' => fn() => BlockController::unblockUser($userId),
 
     'POST /api/books' => fn() => BookController::create($userId),
     'GET /api/books/active' => fn() => BookController::getActive($userId),
