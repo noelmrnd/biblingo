@@ -124,20 +124,6 @@
     <SectionTitle title="Más" :icon="MoreHorizontal" icon-color-class="text-slate-400">
       <!-- Botones de Acción -->
       <div class="space-y-3">
-        <!-- Comentado: reabrir el tour desde aca vuelve a pasar por el paso de
-             configurar libro (OnboardingTour step 5), que reemplaza el libro activo
-             sin la confirmacion que si tiene "Cambiar libro" en Ajustes. Reactivar
-             solo si se separa ese paso del tour, o solo para cuentas nuevas. -->
-        <!--
-        <SettingsActionButton
-          :icon="Compass"
-          class="hover:border-indigo-400/50 [&_svg]:text-indigo-400"
-          @click="openTour"
-        >
-          Ver guía de inicio
-        </SettingsActionButton>
-        -->
-
         <SettingsActionButton
           :icon="Star"
           class="hover:border-amber-400/50 [&_svg]:text-amber-400 [&_svg]:fill-amber-400"
@@ -173,12 +159,20 @@
           Política de privacidad
         </a>
 
-        <a
+        <button
           @click="isDeleteAccountModalOpen = true"
           class="text-center text-sm font-semibold text-slate-500 hover:text-slate-300 p-2 mx-auto cursor-pointer"
         >
           Eliminar cuenta
-        </a>
+        </button>
+
+        <button
+          v-if="APP_CONFIG.isDev"
+          class="text-center text-sm font-semibold text-slate-500 hover:text-slate-300 p-2 mx-auto cursor-pointer"
+          @click="openTour"
+        >
+          Guía de inicio [dev]
+        </button>
 
         <p class="text-center text-sm font-medium text-slate-600 py-2">
           Versión {{ appVersion }}
@@ -228,7 +222,6 @@ import {
   Mail,
   Globe,
   CheckCircle2,
-  Compass,
   Settings,
   Star,
   MessageSquarePlus,
@@ -253,6 +246,7 @@ import { StorageService } from '@/services/storage';
 import { ReviewService } from '@/services/review';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import versionInfo from '@/version.json';
+import {APP_CONFIG} from "@/constants.js";
 
 const appVersion = versionInfo.version;
 
@@ -365,8 +359,7 @@ const saveNotificationPrefs = async () => {
       await ApiService.updateNotificationPrefs(changedPrefs);
     }
     if (timeChanged) {
-      await StorageService.set('reminder_time', reminderTime.value);
-      await ApiService.updateProfile({ reminder_time: reminderTime.value });
+      await NotificationService.persistReminderTime(reminderTime.value);
     }
     return true;
   }, {

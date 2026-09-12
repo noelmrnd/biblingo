@@ -15,11 +15,11 @@
          del dia, sin volver a tocar la racha ni la reaccion (ver BookController::updateProgress) -->
     <AppButton
       v-else-if="hasReadToday"
-      color="green"
+      color="blue"
       size="lg"
       block
       :disabled="loadingExtraProgress || loadingActiveBook"
-      :icon="BookOpen"
+      :icon="PlusCircle"
       text="Registrar más avance"
       @click="openExtraProgressModal"
     />
@@ -56,14 +56,14 @@
 
       <template #footer>
         <AppButton
-          color="green"
+          color="blue"
           size="lg"
           block
           :disabled="loadingExtraProgress || !isExtraProgressValid"
           :loading="loadingExtraProgress"
           loading-text="Guardando..."
           text="Guardar avance"
-          :icon="BookOpen"
+          :icon="PlusCircle"
           @click="submitExtraProgress"
         />
       </template>
@@ -73,7 +73,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onActivated } from 'vue';
-import { BookOpen, CheckCircle2 } from '@lucide/vue';
+import { BookOpen, CheckCircle2, PlusCircle } from '@lucide/vue';
 import AppButton from './AppButton.vue';
 import AppModal from './AppModal.vue';
 import BookProgressStep from './BookProgressStep.vue';

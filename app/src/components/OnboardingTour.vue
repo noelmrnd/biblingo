@@ -42,7 +42,35 @@
         </div>
 
         <!-- Contenido Central Dinámico del Paso -->
-        <div v-if="currentStepData.type !== 'book-config'" class="py-6 flex flex-col items-center text-center space-y-4 flex-1">
+        <div v-if="currentStepData.type === 'reminder-time'" class="py-6 flex flex-col items-center text-center space-y-4 flex-1 w-full">
+          <div class="relative flex items-center justify-center w-full mt-6 mb-4">
+            <img
+              :src="currentStepData.image"
+              :alt="currentStepData.title"
+              class="h-40 object-contain drop-shadow-xl select-none pointer-events-none transition-all duration-300"
+            />
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-2xl font-extrabold text-white leading-tight">
+              {{ currentStepData.title }}
+            </h3>
+            <p class="text-slate-300 text-base font-medium leading-relaxed">
+              {{ currentStepData.description }}
+            </p>
+          </div>
+
+          <div class="w-full text-left">
+            <label class="text-sm font-semibold text-slate-400">Hora del recordatorio</label>
+            <input
+              v-model="reminderTime"
+              type="time"
+              class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white focus:outline-none focus:border-brand-green"
+            />
+          </div>
+        </div>
+
+        <div v-else-if="currentStepData.type !== 'book-config'" class="py-6 flex flex-col items-center text-center space-y-4 flex-1">
           <!-- Ilustración del paso desde /tour -->
           <div class="relative flex items-center justify-center w-full mt-6 mb-4">
             <img
@@ -163,6 +191,7 @@ import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
 import { HapticsService } from '@/services/haptics';
 import { ApiService } from '@/services/api';
+import { NotificationService } from '@/services/notifications';
 import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
@@ -189,8 +218,9 @@ const steps = [
     image: tourStep2
   },
   {
+    type: 'reminder-time',
     title: 'Protege tu hábito',
-    description: 'Configura la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu lectura diaria.',
+    description: 'Elige la hora ideal para tu recordatorio diario. Te enviaremos una notificación para proteger tu racha y no olvidar tu lectura diaria.',
     ambientColor: 'bg-brand-purple',
     image: tourStep3
   },
@@ -209,6 +239,9 @@ const steps = [
 ];
 
 const currentStepData = computed(() => steps[currentStep.value]);
+
+// Paso "reminder-time": hora elegida para el recordatorio diario de lectura.
+const reminderTime = ref('20:00');
 
 // Paso 5 (book-config): registro opcional del libro activo.
 const bookTitle = ref('');
@@ -253,6 +286,15 @@ const skipTour = async () => {
 
 const finishTour = async () => {
   if (!isBookConfigValid.value) return;
+
+  try {
+    await NotificationService.requestPermissions();
+    await NotificationService.persistReminderTime(reminderTime.value);
+    await NotificationService.schedule7DayBurst(reminderTime.value, 0, false, 0);
+  } catch (e) {
+    // No bloquea el onboarding: el usuario puede ajustar el horario despues desde Ajustes.
+    console.warn('No se pudo guardar el horario de recordatorio:', e.message || e);
+  }
 
   const title = bookTitle.value.trim();
   if (title !== '' && !skippedBookConfig.value) {

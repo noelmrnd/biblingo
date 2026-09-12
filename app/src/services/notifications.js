@@ -121,11 +121,18 @@ export const NotificationService = {
       const hours = parseInt(hoursStr, 10) || 20;
       const minutes = parseInt(minutesStr, 10) || 0;
 
+      // Segundo recordatorio ("última llamada") a hora fija cerca del fin del día,
+      // independiente de la hora elegida por el usuario para el primero.
+      const LAST_CHANCE_HOUR = 22;
+      const LAST_CHANCE_MINUTE = 30;
+
       const now = new Date();
       const todayReminderTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+      const todayLastChanceTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), LAST_CHANCE_HOUR, LAST_CHANCE_MINUTE, 0);
 
       // Incluir el día de hoy únicamente si el usuario NO ha leído hoy Y la hora del recordatorio es en el futuro
       const includeToday = !hasReadToday && todayReminderTime.getTime() > now.getTime();
+      const includeTodayLastChance = !hasReadToday && todayLastChanceTime.getTime() > now.getTime();
       const startOffset = includeToday ? 0 : 1;
       const endOffset = startOffset + 6;
 
@@ -170,11 +177,38 @@ export const NotificationService = {
         });
       }
 
+      // Segundo recordatorio del día ("última llamada"), a hora fija, mismo rango de 7 días.
+      const startOffsetLC = includeTodayLastChance ? 0 : 1;
+      const endOffsetLC = startOffsetLC + 6;
+      for (let dayOffset = startOffsetLC; dayOffset <= endOffsetLC; dayOffset++) {
+        const scheduleDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, LAST_CHANCE_HOUR, LAST_CHANCE_MINUTE, 0);
+        notifications.push({
+          id: 2000 + dayOffset,
+          title: '⏰ Última llamada de hoy',
+          body: `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Registra tu lectura! 📖`,
+          schedule: { at: scheduleDate },
+          sound: 'beep.wav',
+          badge: 1,
+          actionTypeId: 'OPEN_READING',
+          extra: { dayOffset, lastChance: true }
+        });
+      }
+
       await LocalNotifications.schedule({ notifications });
-      console.log(`Ráfaga de notificaciones programada (hoy incluido: ${includeToday}).`);
+      console.log(`Ráfaga de notificaciones programada (hoy incluido: ${includeToday}, última llamada hoy: ${includeTodayLastChance}).`);
     } catch (e) {
       console.error('Error al programar ráfaga de notificaciones:', e);
     }
+  },
+
+  /**
+   * Guarda la hora de recordatorio diario en storage + perfil (sin reprogramar la
+   * ráfaga: cada llamador decide cuándo y con qué datos reprogramar). Usado tanto
+   * en el Onboarding como en Ajustes.
+   */
+  async persistReminderTime(reminderTimeStr) {
+    await StorageService.set('reminder_time', reminderTimeStr);
+    await ApiService.updateProfile({ reminder_time: reminderTimeStr });
   },
 
   /**
