@@ -51,8 +51,8 @@ class FriendAddedEvent extends DomainEvent {
             'sender_id'          => $this->userId,
             'receiver_id'        => $this->friendId,
             'sender_name'        => $this->userDisplayName,
-            'notification_title' => '¡Nuevo seguidor en Libringo! 🎉',
-            'notification_body'  => "{$this->userDisplayName} empezó a seguirte. ¡Compite por la mejor racha!",
+            'notification_title' => "{$this->userDisplayName} empezó a seguirte! 🎉",
+            'notification_body'  => '¡Compite por la mejor racha! 🔥',
             'notification_data'  => [
                 'type'    => 'new_follower',
                 'user_id' => $this->userId,

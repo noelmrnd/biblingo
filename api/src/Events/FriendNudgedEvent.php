@@ -59,8 +59,8 @@ class FriendNudgedEvent extends DomainEvent {
             'receiver_id'        => $this->receiverId,
             'sender_name'        => $this->senderDisplayName,
             'nudge_date'         => $this->nudgeDate,
-            'notification_title' => '📖 Recordatorio de lectura',
-            'notification_body'  => "{$this->senderDisplayName} te ha enviado un recordatorio para que leas hoy y protejas tu racha. 🔥",
+            'notification_title' => "{$this->senderDisplayName} te dio un toque 👋",
+            'notification_body'  => '¡Protege tu racha, lee hoy! 🔥',
             'notification_data'  => [
                 'type'      => 'nudge',
                 'sender_id' => $this->senderId,
