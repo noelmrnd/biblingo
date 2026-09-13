@@ -332,7 +332,6 @@ const finishTour = async () => {
   isOpen.value = false;
   currentStep.value = 0;
   await StorageService.set(TOUR_SEEN_KEY, true);
-  ToastService.success('¡Tour completado! Que disfrutes tu lectura diaria. 📖✨');
   router.push({ name: 'dashboard' });
 };
 

@@ -252,11 +252,7 @@ class FriendController {
             sendJsonResponse(['error' => 'Error al enviar el recordatorio.'], 500);
         }
 
-        sendJsonResponse([
-            'success'   => true,
-            'message'   => "¡Le enviaste un recordatorio a {$friend['display_name']}! 🔔",
-            'friend_id' => $friendId
-        ]);
+        sendJsonResponse(['success' => true]);
     }
 
     private static function fetchNudgeTargetRow(\PDO $db, string $userId, string $friendId): array|false {

@@ -14,13 +14,12 @@ export function useNudge() {
     nudged[id] = true;
   };
 
-  const sendNudge = async (id, displayName) => {
+  const sendNudge = async (id) => {
     if (nudged[id] || loading[id]) return;
     loading[id] = true;
     try {
-      const res = await ApiService.nudgeFriend(id);
+      await ApiService.nudgeFriend(id);
       nudged[id] = true;
-      ToastService.success(res.message || `¡Le enviaste un recordatorio a ${displayName}! 🔔`);
     } catch (e) {
       ToastService.error(e.message || 'No se pudo enviar el recordatorio.');
     } finally {

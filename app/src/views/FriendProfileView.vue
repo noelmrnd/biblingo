@@ -63,7 +63,7 @@
           :disabled="nudge.nudged[friend.id] || nudge.loading[friend.id]"
           :icon="BellRing"
           :text="nudge.nudged[friend.id] ? 'Toque enviado' : 'Dar un toque'"
-          @click="nudge.sendNudge(friend.id, friend.display_name)"
+          @click="nudge.sendNudge(friend.id)"
         />
       </div>
 

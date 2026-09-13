@@ -279,9 +279,10 @@ export const NotificationService = {
     try {
       await LocalNotifications.addListener('localNotificationReceived', (notification) => {
         console.log('[LocalNotificationReceived]', notification);
-        const title = notification.title || '📖 Libringo';
-        const body = notification.body || '¡Recordatorio de lectura!';
-        ToastService.info(`${title}: ${body}`);
+        // el sistema ya muestra la notificacion local en la barra de estado aunque la app este abierta
+        // const title = notification.title || '📖 Libringo';
+        // const body = notification.body || '¡Recordatorio de lectura!';
+        // ToastService.info(`${title}: ${body}`);
         HapticsService.light();
       });
 
