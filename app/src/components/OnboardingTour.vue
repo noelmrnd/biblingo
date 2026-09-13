@@ -133,7 +133,7 @@
               <input
                 v-model="bookTotalPages"
                 type="number"
-                min="1"
+                :min="MIN_BOOK_TOTAL_PAGES"
                 :max="MAX_BOOK_TOTAL_PAGES"
                 placeholder="Ej. 120"
                 class="mt-1 w-full rounded-xl bg-slate-950/60 border px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
@@ -194,7 +194,7 @@ import { ToastService } from '@/services/toast';
 import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
 import { useCurrentUser } from '@/composables/useCurrentUser';
-import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
+import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES, MIN_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
 import tourStep2 from '@/assets/tour/tour-step-2.png';
@@ -255,7 +255,7 @@ const isBookConfigComplete = () => {
   if (bookTitle.value.trim() === '') return false;
   if (isBookConfigBible.value) return true;
   const pages = Number(bookTotalPages.value);
-  return pages > 0 && pages <= MAX_BOOK_TOTAL_PAGES;
+  return pages >= MIN_BOOK_TOTAL_PAGES && pages <= MAX_BOOK_TOTAL_PAGES;
 };
 
 // Mensaje de error (o null) para el numero de paginas. Se establece solo al
@@ -275,7 +275,7 @@ watch([bookTitle, bookTotalPages], () => {
 const blockOnInvalidBookConfig = () => {
   const title = bookTitle.value.trim();
   if (title !== '' && !isBookConfigBible.value && !isBookConfigComplete()) {
-    pagesError.value = `Ingresa un número de páginas entre 1 y ${MAX_BOOK_TOTAL_PAGES}.`;
+    pagesError.value = `Ingresa un número entre ${MIN_BOOK_TOTAL_PAGES} y ${MAX_BOOK_TOTAL_PAGES}.`;
     return true;
   }
   return false;

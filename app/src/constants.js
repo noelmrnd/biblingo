@@ -109,8 +109,8 @@ export const BADGE_GROUPS = [
     image: stickerDaysRead,
     description: 'Días leídos en total (no tienen que ser seguidos).',
     items: [
-      { id: 'days_read_50', threshold: 50, label: '50 días leídos' },
-      { id: 'days_read_100', threshold: 100, label: '100 días leídos' },
+      { id: 'days_read_60', threshold: 60, label: '2 meses leídos' },
+      { id: 'days_read_180', threshold: 180, label: '6 meses leídos' },
       { id: 'days_read_365', threshold: 365, label: 'Un año leído' },
       { id: 'days_read_730', threshold: 730, label: 'Dos años leídos' },
     ],
