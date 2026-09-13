@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal-fade">
+    <Transition name="modal-fade" @after-enter="searchInput.focus()">
       <div
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm sm:p-6"
@@ -19,33 +19,30 @@
               <div class="relative">
                 <Search class="w-5 h-5 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
+                  ref="searchInput"
                   v-model="query"
                   type="text"
                   placeholder="Buscar por nombre o usuario"
                   class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
-                  autofocus
                 />
               </div>
             </div>
 
             <div class="flex-1 overflow-y-auto min-h-0 space-y-2 pt-2 no-scrollbar overscroll-contain">
-              <div v-if="query.trim().length < MIN_QUERY_LENGTH" class="py-10 text-center text-slate-400 space-y-2">
+              <div v-if="searchQuery.length < MIN_QUERY_LENGTH" class="py-10 text-center text-slate-400 space-y-2">
                 <UsersRound class="w-10 h-10 text-slate-600 mx-auto stroke-[2]" />
                 <p class="font-bold text-white">Busca a tus amigos</p>
                 <p class="text-sm">Escribe al menos {{ MIN_QUERY_LENGTH }} letras de su nombre o usuario.</p>
               </div>
 
-              <div v-else-if="isLoading" class="py-10 flex justify-center">
-                <AppSpinner />
-              </div>
-
-              <div v-else-if="results.length === 0" class="py-10 text-center text-slate-400 space-y-2">
+              <div v-else-if="!isLoading && results.length === 0" class="py-10 text-center text-slate-400 space-y-2">
                 <UsersRound class="w-10 h-10 text-slate-600 mx-auto stroke-[2]" />
                 <p class="font-bold text-white">Sin resultados</p>
-                <p class="text-sm">No encontramos a nadie con "{{ query.trim() }}".</p>
+                <p class="text-sm">No encontramos a nadie con "{{ searchQuery }}".</p>
               </div>
 
               <UserFollowRow
+                v-if="searchQuery.length >= MIN_QUERY_LENGTH"
                 v-for="u in results"
                 :key="u.id"
                 :user="u"
@@ -66,7 +63,6 @@
 import { ref, watch } from 'vue';
 import { X, Search, UsersRound } from '@lucide/vue';
 import IconButton from './IconButton.vue';
-import AppSpinner from './AppSpinner.vue';
 import UserFollowRow from './UserFollowRow.vue';
 import { ApiService } from '@/services/api';
 import { ToastService } from '@/services/toast';
@@ -80,7 +76,10 @@ defineProps({
   isOpen: { type: Boolean, default: false }
 });
 
+const searchInput = ref(null);
+
 const query = ref('');
+const searchQuery = ref('');
 const results = ref([]);
 const isLoading = ref(false);
 const followingId = ref(null);
@@ -93,6 +92,7 @@ let requestSeq = 0;
 
 const search = async () => {
   const q = query.value.trim();
+  searchQuery.value = q;
   if (q.length < MIN_QUERY_LENGTH) {
     results.value = [];
     return;
@@ -142,6 +142,7 @@ const openProfile = (u) => {
 const close = () => {
   if (followingId.value !== null) return;
   query.value = '';
+  searchQuery.value = '';
   results.value = [];
   emit('close', hadChanges.value);
   hadChanges.value = false;
