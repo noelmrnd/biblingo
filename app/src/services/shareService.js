@@ -46,18 +46,14 @@ export const ShareService = {
   },
 
   async shareUsername(username) {
-    const inviteUrl = `https://app.libringo.com/invite/${username}`;
+    const url = `https://app.libringo.com/invite/${username}`;
     const title = 'Libringo • Lectura entre amigos 📖🔥';
-    const text = `¡Hola! Te invito a Libringo, lectura entre amigos. Sígueme: @${username}`;
+    const text = `¡Únete a Libringo y lee conmigo! Sígueme: @${username}`;
+    const dialogTitle = 'Compartir invitación de Libringo';
 
     if (Capacitor.isNativePlatform()) {
       try {
-        await Share.share({
-          title,
-          text,
-          url: inviteUrl,
-          dialogTitle: 'Compartir invitación de Libringo'
-        });
+        await Share.share({ title, text, url, dialogTitle });
         return { success: true, method: 'native', canceled: false };
       } catch (e) {
         console.warn('Compartir nativo cancelado o falló:', e);
@@ -67,7 +63,7 @@ export const ShareService = {
 
     if (navigator.share) {
       try {
-        await navigator.share({ title, text, url: inviteUrl });
+        await navigator.share({ title, text, url });
         return { success: true, method: 'web-share', canceled: false };
       } catch (e) {
         console.warn('Web Share omitido o cancelado:', e);
@@ -80,7 +76,7 @@ export const ShareService = {
     }
 
     // Fallback: sin Web Share, copiar mensaje + enlace al portapapeles
-    const copied = await copyText(`${text}\n${inviteUrl}`);
+    const copied = await copyText(`${text}\n${url}`);
     return { success: copied, method: 'clipboard', canceled: false };
   }
 };
