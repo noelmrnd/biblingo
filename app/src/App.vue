@@ -130,9 +130,13 @@ const onLoginSuccess = async (user, token) => {
 const currentUserId = computed(() => currentUser.value?.id);
 watch(currentUserId, (id) => {
   if (id) {
-    NotificationService.initPushNotifications(id, () => {
-      router.push({ name: 'friends' });
-    }).catch((e) => {
+    NotificationService.setPushNavigationHandlers(
+      (followerId) => followerId
+        ? router.push({ name: 'friend-profile', params: { id: followerId } })
+        : router.push({ name: 'friends' }),
+      () => router.push({ name: 'dashboard' })
+    );
+    NotificationService.initPushNotifications(id).catch((e) => {
       console.warn('No se pudo inicializar notificaciones push:', e.message);
     });
     AnalyticsService.setUser(id).catch(() => {});

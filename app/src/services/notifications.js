@@ -6,6 +6,72 @@ import { StorageService } from './storage';
 import { ToastService } from './toast';
 import { HapticsService } from './haptics';
 
+const pushState = { userId: null, onNewFollowerTapped: null, onNudgeTapped: null };
+let pushListenersRegistered = false;
+let localListenersRegistered = false;
+
+async function registerPushListeners() {
+  if (!Capacitor.isNativePlatform() || pushListenersRegistered) return;
+  pushListenersRegistered = true;
+
+  // Escuchar registro exitoso de token FCM / APNs
+  await PushNotifications.addListener('registration', async (token) => {
+    if (token && token.value) {
+      const pushToken = token.value;
+      const platform = Capacitor.getPlatform() || 'ios';
+
+      console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
+
+      try {
+        const savedToken = await StorageService.get('push_token');
+        const savedUserId = await StorageService.get('push_user_id');
+
+        // Enviar a la API únicamente si el token o el usuario activo cambiaron
+        if (savedToken === pushToken && String(savedUserId) === String(pushState.userId)) {
+          console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
+          return;
+        }
+
+        await ApiService.registerPushToken(pushToken, platform);
+        await StorageService.set('push_token', pushToken);
+        await StorageService.set('push_user_id', pushState.userId);
+        console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
+      } catch (err) {
+        console.warn('Error al enviar el push token a la API:', err.message);
+      }
+    }
+  });
+
+  // Escuchar posibles errores de registro
+  await PushNotifications.addListener('registrationError', (error) => {
+    console.warn('Error en registro de Push Notifications:', error);
+  });
+
+  // Escuchar cuando llega una notificación Push estando la app en primer plano.
+  // No se muestra Toast aca: el payload de FCMService incluye un bloque
+  // 'notification' (no es data-only), asi que Android ya la muestra solo en
+  // la barra de estado aunque la app este abierta — un Toast manual aca
+  // duplicaba el aviso.
+  await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+    console.log('[PushReceived]', notification);
+    HapticsService.light();
+  });
+
+  // Escuchar al tocar una notificación Push desde la barra de estado. El destino
+  // depende del tipo: un nuevo seguidor lleva a SU perfil (el ranking solo muestra
+  // a quienes yo sigo, no a quienes me siguen a mi, asi que ahi no aparece), un
+  // toque lleva a inicio (la accion pedida es leer hoy, no mirar el ranking).
+  await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
+    console.log('[PushActionPerformed]', notificationAction);
+    const data = notificationAction.notification?.data;
+    if (data?.type === 'new_follower') {
+      pushState.onNewFollowerTapped?.(data.user_id);
+    } else if (data?.type === 'nudge') {
+      pushState.onNudgeTapped?.();
+    }
+  });
+}
+
 export const NotificationService = {
   /**
    * Solicita permisos de notificación al usuario (locales y push).
@@ -24,11 +90,23 @@ export const NotificationService = {
   },
 
   /**
+   * Registra a donde navegar al tocar cada tipo de notificacion push. Separado
+   * de initPushNotifications para que llamarlo desde otro lado sin router (ej.
+   * Ajustes) no pise estos callbacks con undefined.
+   */
+  setPushNavigationHandlers(onNewFollowerTapped, onNudgeTapped) {
+    pushState.onNewFollowerTapped = onNewFollowerTapped;
+    pushState.onNudgeTapped = onNudgeTapped;
+  },
+
+  /**
    * Inicializa el registro de notificaciones Push, solicita permisos,
    * escucha eventos de registro y envía el token a la API del servidor.
    */
-  async initPushNotifications(userId, onFriendNotificationTapped) {
+  async initPushNotifications(userId) {
     if (!Capacitor.isNativePlatform() || !userId) return;
+
+    pushState.userId = userId;
 
     try {
       const permResult = await PushNotifications.requestPermissions();
@@ -39,59 +117,7 @@ export const NotificationService = {
 
       await PushNotifications.register();
 
-      // Escuchar registro exitoso de token FCM / APNs
-      await PushNotifications.addListener('registration', async (token) => {
-        if (token && token.value) {
-          const pushToken = token.value;
-          const platform = Capacitor.getPlatform() || 'ios';
-
-          console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
-
-          try {
-            const savedToken = await StorageService.get('push_token');
-            const savedUserId = await StorageService.get('push_user_id');
-
-            // Enviar a la API únicamente si el token o el usuario activo cambiaron
-            if (savedToken === pushToken && String(savedUserId) === String(userId)) {
-              console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
-              return;
-            }
-
-            await ApiService.registerPushToken(pushToken, platform);
-            await StorageService.set('push_token', pushToken);
-            await StorageService.set('push_user_id', userId);
-            console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
-          } catch (err) {
-            console.warn('Error al enviar el push token a la API:', err.message);
-          }
-        }
-      });
-
-      // Escuchar posibles errores de registro
-      await PushNotifications.addListener('registrationError', (error) => {
-        console.warn('Error en registro de Push Notifications:', error);
-      });
-
-      // Escuchar cuando llega una notificación Push estando la app en primer plano.
-      // No se muestra Toast aca: el payload de FCMService incluye un bloque
-      // 'notification' (no es data-only), asi que Android ya la muestra solo en
-      // la barra de estado aunque la app este abierta — un Toast manual aca
-      // duplicaba el aviso.
-      await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('[PushReceived]', notification);
-        HapticsService.light();
-      });
-
-      // Escuchar al tocar una notificación Push desde la barra de estado
-      await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
-        console.log('[PushActionPerformed]', notificationAction);
-        const type = notificationAction.notification?.data?.type;
-        const friendTypes = ['new_follower', 'nudge'];
-        if (friendTypes.includes(type)) {
-          onFriendNotificationTapped?.();
-        }
-      });
-
+      await registerPushListeners();
     } catch (e) {
       console.warn('Error al inicializar Push Notifications:', e);
     }
@@ -104,7 +130,13 @@ export const NotificationService = {
    * queda o no un protector de racha, en vez del mismo mensaje generico de siempre —
    * es el unico dia en que perder la racha es una amenaza inminente, no hipotetica.
    */
-  async schedule7DayBurst(reminderTimeStr = '20:00', currentStreak = 1, hasReadToday = false, freezesAvailable = 0, bookTitle = null) {
+  async schedule7DayBurst(
+    reminderTimeStr = '20:00',
+    currentStreak = 1,
+    hasReadToday = false,
+    freezesAvailable = 0,
+    bookTitle = null,
+  ) {
     if (!Capacitor.isNativePlatform()) {
       console.log(`[Web Demo] Recordatorio de 7 días programado a las ${reminderTimeStr} (Ya leyó hoy: ${hasReadToday})`);
       return;
@@ -273,16 +305,15 @@ export const NotificationService = {
 
   /**
    * Configura listeners para notificaciones locales (cuando la app está abierta o se interactúa).
+   * Idempotente: se llama tanto al iniciar la app como desde sendTestNotification.
    */
   async attachLocalListeners() {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform() || localListenersRegistered) return;
+    localListenersRegistered = true;
+
     try {
       await LocalNotifications.addListener('localNotificationReceived', (notification) => {
         console.log('[LocalNotificationReceived]', notification);
-        // el sistema ya muestra la notificacion local en la barra de estado aunque la app este abierta
-        // const title = notification.title || '📖 Libringo';
-        // const body = notification.body || '¡Recordatorio de lectura!';
-        // ToastService.info(`${title}: ${body}`);
         HapticsService.light();
       });
 
