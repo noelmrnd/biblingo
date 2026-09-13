@@ -2,7 +2,7 @@
   <div class="contents">
     <header class="flex-none z-30 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border shadow-md">
       <div class="pt-safe-cond"></div>
-      <div class="h-16 px-4 flex items-center gap-3">
+      <div class="h-16 px-5 flex items-center gap-3">
       <template v-if="appHeader">
         <div class="flex items-center gap-3 flex-1">
           <div class="w-8 h-8">
@@ -14,17 +14,17 @@
         <button
           type="button"
           @click="() => { HapticsService.light(); isRulesModalOpen = true; }"
-          class="flex items-center gap-2 cursor-pointer"
+          class="flex items-center gap-5 py-2 cursor-pointer"
           aria-label="Cómo funciona la racha"
         >
           <!-- Protectores de racha disponibles -->
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-brand-freeze/30 px-3 py-1 rounded-full shadow-inner">
+          <div class="flex items-center gap-1.5 bg-slate-900 rounded-full shadow-inner">
             <ShieldCheck class="w-5 h-5 text-brand-freeze-light stroke-[2.5]" />
             <span class="font-semibold text-brand-freeze-light text-lg">{{ streakFreezes }}</span>
           </div>
 
           <!-- Racha activa en la barra superior -->
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full shadow-inner">
+          <div class="flex items-center gap-1.5 bg-slate-900 rounded-full shadow-inner">
             <Flame class="w-5 h-5 text-brand-flame stroke-[2.5]" />
             <span class="font-semibold text-brand-flame text-lg">{{ streakCount }}</span>
           </div>

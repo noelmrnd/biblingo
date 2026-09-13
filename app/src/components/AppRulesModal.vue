@@ -25,11 +25,13 @@
         <ShieldCheck class="w-5 h-5 text-sky-400 aatext-brand-freeze-light stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Protectores de racha:</strong>
-          te ayudan a mantener tu racha si un día no lees.
-          Se usan automáticamente cuando termina el día sin registrar tu lectura.
-          Ganas 1 por cada 7 días de lectura y puedes tener hasta 2.
+          evitan que pierdas tu racha si un día no lees.
+          Ganas 1 por cada 7 días de lectura, hasta acumular 2.
           <span class="text-brand-freeze-light">
-            <template v-if="nextFreezeText">
+            <template v-if="atFreezeLimit">
+              Ya tienes el máximo de {{ MAX_STREAK_FREEZES }} protectores.
+            </template>
+            <template v-else-if="nextFreezeText">
               Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
             </template>
             <template v-else>
@@ -76,8 +78,9 @@ defineEmits(['close']);
 // y ::MAX_STREAK_FREEZES) para mostrar cuánto falta para el próximo protector.
 const FREEZE_EVERY_DAYS = 7;
 const MAX_STREAK_FREEZES = 2;
+const atFreezeLimit = computed(() => props.streakFreezes >= MAX_STREAK_FREEZES);
 const nextFreezeText = computed(() => {
-  if (!props.streakCount || props.streakFreezes >= MAX_STREAK_FREEZES) return null;
+  if (!props.streakCount || atFreezeLimit.value) return null;
   return FREEZE_EVERY_DAYS - (props.streakCount % FREEZE_EVERY_DAYS);
 });
 </script>

@@ -30,7 +30,12 @@ const props = defineProps({
 
 const hasProgress = computed(() => !!props.totalUnits);
 const progressPercent = computed(() => {
-  if (!hasProgress.value) return 0;
-  return Math.min(100, Math.max(0, Math.round((props.currentUnit / props.totalUnits) * 100)));
+  const value = hasProgress.value
+    ? Math.min(100, Math.max(0, (props.currentUnit / props.totalUnits) * 100))
+    : 0;
+  if (value > 0 && value < 100 && Math.round(value) === 0) {
+    return value.toFixed(1);
+  }
+  return Math.round(value);
 });
 </script>

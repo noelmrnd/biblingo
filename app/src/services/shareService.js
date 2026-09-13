@@ -38,17 +38,20 @@ async function copyText(text) {
   }
 }
 
+export function buildInviteUrl(username) {
+  return `https://app.libringo.com/invite/${username}`;
+}
+
 export const ShareService = {
   async copyProfileLink(username) {
-    const inviteUrl = `https://app.libringo.com/invite/${username}`;
-    const copied = await copyText(inviteUrl);
+    const copied = await copyText(buildInviteUrl(username));
     return { success: copied };
   },
 
   async shareUsername(username) {
-    const url = `https://app.libringo.com/invite/${username}`;
+    const url = buildInviteUrl(username);
     const title = 'Libringo • Lectura entre amigos 📖🔥';
-    const text = `¡Únete a Libringo y lee conmigo! Sígueme: @${username}`;
+    const text = '¡Únete a Libringo y lee conmigo!';
     const dialogTitle = 'Compartir invitación de Libringo';
 
     if (Capacitor.isNativePlatform()) {

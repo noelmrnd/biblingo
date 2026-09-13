@@ -29,7 +29,7 @@ import { Share2, Link } from '@lucide/vue';
 import QRCode from 'qrcode';
 import AppModal from './AppModal.vue';
 import AppButton from './AppButton.vue';
-import { ShareService } from '@/services/shareService';
+import { ShareService, buildInviteUrl } from '@/services/shareService';
 import { ToastService } from '@/services/toast';
 
 const props = defineProps({
@@ -43,7 +43,7 @@ const qrDataUrl = ref('');
 
 const generateQrCode = async () => {
   if (!props.username) return;
-  const inviteUrl = `https://app.libringo.com/invite/${props.username}`;
+  const inviteUrl = buildInviteUrl(props.username);
   try {
     qrDataUrl.value = await QRCode.toDataURL(inviteUrl, {
       width: 300,
