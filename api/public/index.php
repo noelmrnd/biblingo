@@ -108,6 +108,7 @@ $routes = [
     'GET /api/books/active' => fn() => BookController::getActive($userId),
     'DELETE /api/books/active' => fn() => BookController::removeActive($userId),
     'POST /api/books/progress' => fn() => BookController::updateProgress($userId),
+    'POST /api/books/progress/adjust' => fn() => BookController::adjustProgress($userId),
 
     'GET /api/user/settings' => fn() => UserController::getSettings($userId),
     'POST /api/user/update' => fn() => UserController::updateProfile($userId),

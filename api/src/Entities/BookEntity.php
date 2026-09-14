@@ -139,19 +139,22 @@ class BookEntity {
     }
 
     /**
-     * Nucleo compartido de "registrar avance": lo usan tanto el flujo principal
+     * Nucleo compartido de "aplicar avance": lo usan el flujo principal
      * (ReadingController::logReading, junto con la racha/reaccion en una sola
-     * transaccion) como el flujo de "avance extra" (BookController::updateProgress,
-     * disponible el resto del dia una vez ya se marco la lectura de hoy). $book
-     * debe venir ya leido con FOR UPDATE por el llamador (misma transaccion).
+     * transaccion), el de "avance extra" (BookController::updateProgress,
+     * disponible el resto del dia una vez ya se marco la lectura de hoy) y el
+     * de correccion manual (BookController::adjustProgress, sin tocar racha).
+     * $book debe venir ya leido con FOR UPDATE por el llamador (misma transaccion).
      * Lanza \InvalidArgumentException con mensaje listo para el usuario si el
      * input no es valido; el llamador debe hacer rollback antes de responder.
-     * $newPage puede ser menor al current_unit actual (correccion de un error
-     * al marcar) — el signo de units_read refleja avance o retroceso.
+     * $forwardOnly=true (logReading/updateProgress) rechaza retroceder pagina o
+     * desmarcar capitulos — esos dos flujos son de REGISTRO (gamificados) y
+     * deben ser siempre hacia adelante; adjustProgress es el unico que corrige
+     * en ambas direcciones, sin gamificacion de por medio.
      *
      * @return array{units_read: int, finished: bool, book_id: string, book: array}
      */
-    public static function applyProgress(\PDO $db, array $book, ?int $newPage, ?array $markChapters, array $unmarkChapters = []): array {
+    public static function applyProgress(\PDO $db, array $book, ?int $newPage, ?array $markChapters, array $unmarkChapters = [], bool $forwardOnly = false): array {
         $bookId = (string)$book['id'];
 
         if ($book['tracking_mode'] === self::MODE_LINEAR) {
@@ -161,12 +164,18 @@ class BookEntity {
             if ($newPage === null || $newPage < 0 || $newPage > $totalUnits) {
                 throw new \InvalidArgumentException("current_page debe estar entre 0 y $totalUnits.");
             }
+            if ($forwardOnly && $newPage <= $currentUnit) {
+                throw new \InvalidArgumentException("current_page debe ser mayor a $currentUnit.");
+            }
 
             $unitsRead = $newPage - $currentUnit;
             $finished = ($newPage === $totalUnits);
             self::updateLinearProgress($db, $bookId, $newPage, $finished ? 'finished' : 'reading');
             $book['current_unit'] = $newPage;
         } else {
+            if ($forwardOnly && !empty($unmarkChapters)) {
+                throw new \InvalidArgumentException('No se puede desmarcar capítulos al registrar lectura.');
+            }
             if (empty($markChapters) && empty($unmarkChapters)) {
                 throw new \InvalidArgumentException('chapters o unchapters es requerido (array de numeros de capitulo).');
             }

@@ -159,7 +159,7 @@ class ReadingController {
                 $bookFinished = false;
                 $activeBook = BookEntity::findActiveByUserForUpdate($db, $userId);
                 if ($activeBook) {
-                    $progress = BookEntity::applyProgress($db, $activeBook, $newPage, $chapters, $unchapters);
+                    $progress = BookEntity::applyProgress($db, $activeBook, $newPage, $chapters, $unchapters, true);
                     $unitsRead = $progress['units_read'];
                     $bookId = $progress['book_id'];
                     $bookFinished = $progress['finished'];

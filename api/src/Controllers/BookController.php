@@ -122,23 +122,19 @@ class BookController {
     }
 
     /**
-     * Corregir o sumar avance el mismo dia DESPUES de ya haber marcado la lectura
-     * de hoy (ver ReadingController::logReading para ese primer registro, que
-     * hace lo mismo pero atomico con la racha y la reaccion). Nunca toca la
-     * racha ni la reaccion — solo ajusta el mismo reading_log del dia
-     * (unique_user_day), nunca crea una fila nueva. El delta puede ser negativo
-     * (ej. el usuario marco de mas por error): streak/badges no dependen de la
-     * cantidad de paginas/capitulos, solo de que haya lectura ese dia, asi que
-     * corregir hacia abajo no los afecta.
-     * Modo 'linear': body.current_page (nueva pagina, 0..total_units). Modo
-     * 'bitmask': body.chapters (capitulos a marcar) y/o body.unchapters
-     * (capitulos a desmarcar).
+     * "Avance extra": registrar mas paginas/capitulos leidos el mismo dia DESPUES
+     * de ya haber marcado la lectura de hoy (ver ReadingController::logReading
+     * para ese primer registro, que hace lo mismo pero atomico con la racha y la
+     * reaccion). Nunca toca la racha ni la reaccion — solo suma sobre el mismo
+     * reading_log del dia (unique_user_day), nunca crea una fila nueva. Siempre
+     * hacia adelante (forwardOnly) — para corregir un error ver adjustProgress.
+     * Modo 'linear': body.current_page (nueva pagina, mayor a la actual). Modo
+     * 'bitmask': body.chapters (array de capitulos, OR incremental).
      */
     public static function updateProgress(string $userId) {
         $input = getJsonInput();
         $newPage = isset($input['current_page']) ? (int)$input['current_page'] : null;
         $chapters = is_array($input['chapters'] ?? null) ? array_map('intval', $input['chapters']) : null;
-        $unchapters = is_array($input['unchapters'] ?? null) ? array_map('intval', $input['unchapters']) : [];
 
         $db = getDbConnection();
         $book = null;
@@ -152,7 +148,7 @@ class BookController {
                 sendJsonResponse(['error' => 'No tienes un libro activo.'], 404);
             }
 
-            $result = BookEntity::applyProgress($db, $book, $newPage, $chapters, $unchapters);
+            $result = BookEntity::applyProgress($db, $book, $newPage, $chapters, [], true);
             $book = $result['book'];
 
             $userRow = UserEntity::getTimezoneAndPagesRead($db, $userId);
@@ -196,6 +192,81 @@ class BookController {
             'finished' => $result['finished'],
             'book' => self::formatBook($book),
             'new_badges' => $newBadges,
+        ]);
+    }
+
+    /**
+     * Corrige el progreso del libro activo SOLO hacia atras (retroceder pagina,
+     * desmarcar capitulos) para arreglar un error al marcar — para avanzar esta
+     * el registro normal de lectura (logReading/updateProgress), que es el
+     * unico camino gamificado. No toca la racha ni la reaccion, pero SI resta
+     * el mismo delta del reading_log MAS RECIENTE del usuario (sea de hoy o
+     * de un dia anterior) para que SUM(units_read) se mantenga igual a
+     * pages_read siempre — si no, cada correccion agranda la desincronizacion
+     * entre el historial y el estado real sin limite.
+     * Modo 'linear': body.current_page (0..current_unit-1). Modo 'bitmask':
+     * body.unchapters (capitulos a desmarcar; marcar no esta permitido aca).
+     */
+    public static function adjustProgress(string $userId) {
+        $input = getJsonInput();
+        $newPage = isset($input['current_page']) ? (int)$input['current_page'] : null;
+        $unchapters = is_array($input['unchapters'] ?? null) ? array_map('intval', $input['unchapters']) : [];
+
+        $db = getDbConnection();
+        $book = null;
+        $result = null;
+
+        try {
+            $db->beginTransaction();
+
+            $book = BookEntity::findActiveByUserForUpdate($db, $userId);
+            if (!$book) {
+                $db->rollBack();
+                sendJsonResponse(['error' => 'No tienes un libro activo.'], 404);
+            }
+
+            if ($book['tracking_mode'] === BookEntity::MODE_LINEAR) {
+                if ($newPage !== null && $newPage >= (int)$book['current_unit']) {
+                    $db->rollBack();
+                    sendJsonResponse(['error' => 'Solo se puede retroceder. Para avanzar, usa el registro de lectura.'], 400);
+                }
+            } elseif (!empty($input['chapters'])) {
+                $db->rollBack();
+                sendJsonResponse(['error' => 'Solo se puede desmarcar. Para marcar capítulos, usa el registro de lectura.'], 400);
+            }
+
+            // adjustProgress siempre retrocede (validado arriba), asi que $result['finished']
+            // nunca puede pasar a true aca — sin chequeo de medallas, a diferencia de
+            // updateProgress/logReading que si pueden completar un libro.
+            $result = BookEntity::applyProgress($db, $book, $newPage, null, $unchapters, false);
+            $book = $result['book'];
+
+            UserEntity::incrementTotalPagesRead($db, $userId, $result['units_read']);
+            ReadingLogEntity::decrementLatest($db, $userId, $result['units_read'], $result['book_id']);
+
+            $db->commit();
+        } catch (\InvalidArgumentException $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            sendJsonResponse(['error' => $e->getMessage()], 400);
+        } catch (\RuntimeException $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            sendJsonResponse(['error' => $e->getMessage()], 409);
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log('[BookController::adjustProgress] ' . $e->getMessage());
+            sendJsonResponse(['error' => 'Error de base de datos al corregir el avance.'], 500);
+        }
+
+        sendJsonResponse([
+            'success' => true,
+            'units_read' => $result['units_read'],
+            'book' => self::formatBook($book),
         ]);
     }
 

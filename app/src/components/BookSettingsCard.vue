@@ -18,20 +18,20 @@
       </p>
 
       <AppButton
-        color="green"
+        color="rose"
         block
         :disabled="removeBookAction.loading.value"
-        text="Cambiar libro"
-        @click="openConfirmModal('change')"
+        text="Quitar libro"
+        @click="removeModalOpen = true"
       />
 
       <button
         type="button"
-        :disabled="removeBookAction.loading.value"
-        @click="openConfirmModal('remove')"
-        class="block mx-auto text-center text-sm font-semibold text-slate-500 hover:text-rose-400 p-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="adjustAction.loading.value"
+        @click="showAdjustModal = true"
+        class="block mx-auto text-center text-sm font-semibold text-slate-500 hover:text-sky-400 p-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Quitar libro
+        Corregir progreso
       </button>
     </div>
 
@@ -85,19 +85,40 @@
     </div>
   </ExpandableCard>
 
-  <!-- Modal de Confirmación: "Cambiar" y "Quitar" ejecutan la misma accion
-       (removeActiveBook) — solo cambia el mensaje segun la intencion. -->
   <ConfirmActionModal
-    :is-open="!!removeIntent"
+    :is-open="removeModalOpen"
     :icon="BookOpen"
-    :title="removeIntent === 'change' ? '¿Cambiar de libro?' : '¿Quitar tu libro actual?'"
-    :description="removeIntent === 'change'
-      ? 'Se quitará el libro actual para que puedas registrar uno nuevo. Tu contador de páginas leídas en total no se perderá.'
-      : 'Dejarás de registrar el avance de este libro. Tu contador de páginas leídas en total no se perderá.'"
-    :confirm-label="removeIntent === 'change' ? 'Cambiar libro' : 'Quitar libro'"
-    @close="removeIntent = null"
+    title="¿Quitar tu libro actual?"
+    description="Se quitará el libro actual y podrás registrar uno nuevo. Tu contador de páginas leídas en total no se perderá."
+    confirm-label="Quitar libro"
+    @close="removeModalOpen = false"
     @confirm="confirmRemoveBook"
   />
+
+  <!-- Modal de Corregir Progreso: retroceder pagina o desmarcar capitulos, sin
+       tocar la racha (ver BookController::adjustProgress). -->
+  <AppModal
+    :is-open="showAdjustModal"
+    :loading="adjustAction.loading.value"
+    title="Corregir progreso"
+    :description="activeBook?.title"
+    @close="showAdjustModal = false"
+  >
+    <BookProgressStep v-if="activeBook" ref="adjustStepRef" :book="activeBook" :loading="adjustAction.loading.value" mode="adjust" />
+
+    <template #footer>
+      <AppButton
+        color="blue"
+        size="lg"
+        block
+        :disabled="adjustAction.loading.value || !isAdjustValid"
+        :loading="adjustAction.loading.value"
+        loading-text="Guardando..."
+        text="Guardar corrección"
+        @click="submitAdjust"
+      />
+    </template>
+  </AppModal>
 </template>
 
 <script setup>
@@ -109,6 +130,8 @@ import AppFormField from './AppFormField.vue';
 import AppTextInput from './AppTextInput.vue';
 import AppToggle from './AppToggle.vue';
 import ConfirmActionModal from './ConfirmActionModal.vue';
+import AppModal from './AppModal.vue';
+import BookProgressStep from './BookProgressStep.vue';
 import { ApiService } from '@/services/api';
 import { useAsyncAction } from '@/composables/useAsyncAction';
 import { useActiveBook } from '@/composables/useActiveBook';
@@ -127,13 +150,25 @@ const newBookTotalPages = ref('');
 const saveBookAction = useAsyncAction();
 const removeBookAction = useAsyncAction();
 
-// 'change' | 'remove' | null. Ambos disparan la misma llamada (confirmRemoveBook),
-// solo cambia el texto del modal — "cambiar" es "quitar" con otra intencion
-// comunicada, no una accion distinta (ver conversacion de diseño).
-const removeIntent = ref(null);
-const openConfirmModal = (intent) => {
-  removeIntent.value = intent;
+const showAdjustModal = ref(false);
+const adjustStepRef = ref(null);
+const adjustAction = useAsyncAction();
+const isAdjustValid = computed(() => adjustStepRef.value?.isValid ?? false);
+
+const submitAdjust = async () => {
+  if (!adjustStepRef.value?.isValid) return;
+  const payload = adjustStepRef.value.getPayload();
+  const res = await adjustAction.run(() => ApiService.adjustBookProgress(payload), {
+    successMsg: 'Progreso corregido.',
+    errorMsg: 'No se pudo corregir el progreso.'
+  });
+  if (res === undefined) return;
+
+  setActiveBook(res.book);
+  showAdjustModal.value = false;
 };
+
+const removeModalOpen = ref(false);
 
 const isNewBookBible = computed(() => isBibleTitle(newBookTitle.value));
 
@@ -163,7 +198,7 @@ const confirmRemoveBook = async () => {
   });
   if (res === undefined) return;
   setActiveBook(null);
-  removeIntent.value = null;
+  removeModalOpen.value = false;
 };
 
 const DEFAULT_PRIVACY_PREFS = { show_current_book: true, show_reading_progress: true };

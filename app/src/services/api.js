@@ -121,16 +121,31 @@ export const ApiService = {
     return request('/books/active', { method: 'DELETE' });
   },
 
-  // Corregir o sumar avance el mismo dia DESPUES de ya haber marcado la lectura
-  // de hoy (logReading). Nunca toca la racha ni la reaccion, solo ajusta el
-  // mismo reading_log del dia. tracking_mode 'linear': { currentPage } (puede
-  // ser menor a la actual). 'bitmask': { chapters, unchapters }.
-  async updateBookProgress({ currentPage, chapters, unchapters } = {}) {
+  // "Avance extra": para sumar mas paginas/capitulos el mismo dia DESPUES de ya
+  // haber marcado la lectura de hoy (logReading). Nunca toca la racha ni la
+  // reaccion, solo suma sobre el mismo reading_log del dia. Siempre hacia
+  // adelante — para corregir un error usar adjustBookProgress en su lugar.
+  // tracking_mode 'linear': { currentPage }. 'bitmask': { chapters: [12, 45, ...] }
+  // (OR incremental sobre lo ya marcado, nunca reemplaza).
+  async updateBookProgress({ currentPage, chapters } = {}) {
     const body = {};
     if (currentPage !== undefined) body.current_page = currentPage;
     if (chapters !== undefined) body.chapters = chapters;
-    if (unchapters !== undefined) body.unchapters = unchapters;
     return request('/books/progress', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  },
+
+  // Corrige el progreso del libro activo SOLO hacia atras (retroceder pagina,
+  // desmarcar capitulos) para arreglar un error al marcar. Para avanzar usa
+  // logReading/updateBookProgress. No toca reading_logs ni racha ni reaccion.
+  // tracking_mode 'linear': { currentPage } (menor a la actual). 'bitmask': { unchapters }.
+  async adjustBookProgress({ currentPage, unchapters } = {}) {
+    const body = {};
+    if (currentPage !== undefined) body.current_page = currentPage;
+    if (unchapters !== undefined) body.unchapters = unchapters;
+    return request('/books/progress/adjust', {
       method: 'POST',
       body: JSON.stringify(body)
     });

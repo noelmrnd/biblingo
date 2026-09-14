@@ -102,6 +102,26 @@ class ReadingLogEntity {
         $stmt->execute([$unitsRead, $bookId, $userId, $readDate]);
     }
 
+    /**
+     * Resta $delta (siempre <= 0, viene de BookController::adjustProgress) del
+     * reading_log mas reciente del usuario, sea de hoy o de un dia anterior —
+     * es el log donde mas probablemente esta el error que se esta corrigiendo.
+     * Mantiene SUM(units_read) == users.pages_read sin importar que dia se
+     * corrija. Si el usuario no tiene ningun log (no debería pasar: para poder
+     * retroceder ya tuvo que haber avanzado antes), tira RuntimeException.
+     */
+    public static function decrementLatest(\PDO $db, string $userId, int $delta, string $bookId): void {
+        $stmt = $db->prepare("SELECT id FROM reading_logs WHERE user_id = ? ORDER BY read_date DESC LIMIT 1 FOR UPDATE");
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            throw new \RuntimeException('No existe ningun registro de lectura para corregir.');
+        }
+
+        $upd = $db->prepare("UPDATE reading_logs SET units_read = COALESCE(units_read, 0) + ?, book_id = ? WHERE id = ?");
+        $upd->execute([$delta, $bookId, $row['id']]);
+    }
+
     /** Registra los dias salteados que un protector de racha cubrio, para pintarlos en el calendario. */
     public static function insertFrozenDays(\PDO $db, string $userId, array $dates): void {
         $stmt = $db->prepare("
