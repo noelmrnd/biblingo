@@ -340,7 +340,7 @@ export const BIBLE_BOOKS = [
 
 // Anota a cada libro el numero de capitulo GLOBAL (1..1189) en el que empieza,
 // para poder convertir entre "capitulo N del libro X" y el indice plano que
-// usa el bitmask del backend (BookEntity::orChapters/decodeBitmaskChapters).
+// usa el bitmask del backend (BookEntity::setChapters/decodeBitmaskChapters).
 let _globalOffset = 0;
 export const BIBLE_BOOKS_WITH_OFFSET = BIBLE_BOOKS.map((book) => {
   const withOffset = { ...book, startsAt: _globalOffset + 1 };

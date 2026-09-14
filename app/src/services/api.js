@@ -86,13 +86,15 @@ export const ApiService = {
     return request(`/reading/calendar?year=${year}&month=${month}`);
   },
 
-  // progress: { currentPage } o { chapters }, opcional. El backend calcula y guarda
-  // el avance del libro activo en la MISMA transaccion que la racha (atomico —
-  // si el avance es invalido, no se marca la racha ni se guarda nada).
+  // progress: { currentPage } o { chapters, unchapters }, opcional. El backend
+  // calcula y guarda el avance del libro activo en la MISMA transaccion que la
+  // racha (atomico — si el avance es invalido, no se marca la racha ni se
+  // guarda nada). currentPage puede ser menor a la pagina actual (correccion).
   async logReading(reaction = null, progress = null) {
     const body = { reaction };
     if (progress?.currentPage !== undefined) body.current_page = progress.currentPage;
     if (progress?.chapters !== undefined) body.chapters = progress.chapters;
+    if (progress?.unchapters !== undefined) body.unchapters = progress.unchapters;
     return request('/reading/log', {
       method: 'POST',
       body: JSON.stringify(body)
@@ -119,15 +121,15 @@ export const ApiService = {
     return request('/books/active', { method: 'DELETE' });
   },
 
-  // "Avance extra": para sumar mas paginas/capitulos el mismo dia DESPUES de ya
-  // haber marcado la lectura de hoy (logReading). Nunca toca la racha ni la
-  // reaccion, solo suma sobre el mismo reading_log del dia.
-  // tracking_mode 'linear': { currentPage }. 'bitmask': { chapters: [12, 45, ...] }
-  // (OR incremental sobre lo ya marcado, nunca reemplaza).
-  async updateBookProgress({ currentPage, chapters } = {}) {
+  // Corregir o sumar avance el mismo dia DESPUES de ya haber marcado la lectura
+  // de hoy (logReading). Nunca toca la racha ni la reaccion, solo ajusta el
+  // mismo reading_log del dia. tracking_mode 'linear': { currentPage } (puede
+  // ser menor a la actual). 'bitmask': { chapters, unchapters }.
+  async updateBookProgress({ currentPage, chapters, unchapters } = {}) {
     const body = {};
     if (currentPage !== undefined) body.current_page = currentPage;
     if (chapters !== undefined) body.chapters = chapters;
+    if (unchapters !== undefined) body.unchapters = unchapters;
     return request('/books/progress', {
       method: 'POST',
       body: JSON.stringify(body)

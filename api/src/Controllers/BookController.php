@@ -122,18 +122,23 @@ class BookController {
     }
 
     /**
-     * "Avance extra": registrar mas paginas/capitulos leidos el mismo dia DESPUES
-     * de ya haber marcado la lectura de hoy (ver ReadingController::logReading
-     * para ese primer registro, que hace lo mismo pero atomico con la racha y la
-     * reaccion). Nunca toca la racha ni la reaccion — solo suma sobre el mismo
-     * reading_log del dia (unique_user_day), nunca crea una fila nueva.
-     * Modo 'linear': body.current_page (nueva pagina, mayor a la actual). Modo
-     * 'bitmask': body.chapters (array de capitulos, OR incremental).
+     * Corregir o sumar avance el mismo dia DESPUES de ya haber marcado la lectura
+     * de hoy (ver ReadingController::logReading para ese primer registro, que
+     * hace lo mismo pero atomico con la racha y la reaccion). Nunca toca la
+     * racha ni la reaccion — solo ajusta el mismo reading_log del dia
+     * (unique_user_day), nunca crea una fila nueva. El delta puede ser negativo
+     * (ej. el usuario marco de mas por error): streak/badges no dependen de la
+     * cantidad de paginas/capitulos, solo de que haya lectura ese dia, asi que
+     * corregir hacia abajo no los afecta.
+     * Modo 'linear': body.current_page (nueva pagina, 0..total_units). Modo
+     * 'bitmask': body.chapters (capitulos a marcar) y/o body.unchapters
+     * (capitulos a desmarcar).
      */
     public static function updateProgress(string $userId) {
         $input = getJsonInput();
         $newPage = isset($input['current_page']) ? (int)$input['current_page'] : null;
         $chapters = is_array($input['chapters'] ?? null) ? array_map('intval', $input['chapters']) : null;
+        $unchapters = is_array($input['unchapters'] ?? null) ? array_map('intval', $input['unchapters']) : [];
 
         $db = getDbConnection();
         $book = null;
@@ -147,7 +152,7 @@ class BookController {
                 sendJsonResponse(['error' => 'No tienes un libro activo.'], 404);
             }
 
-            $result = BookEntity::applyProgress($db, $book, $newPage, $chapters);
+            $result = BookEntity::applyProgress($db, $book, $newPage, $chapters, $unchapters);
             $book = $result['book'];
 
             $userRow = UserEntity::getTimezoneAndPagesRead($db, $userId);

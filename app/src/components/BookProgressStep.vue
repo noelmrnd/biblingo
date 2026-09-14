@@ -9,12 +9,18 @@
       <input
         v-model="currentPage"
         type="number"
-        :min="book.current_unit + 1"
+        min="0"
         :max="book.total_units"
         :disabled="loading"
         class="w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white text-lg font-bold text-center focus:outline-none focus:border-brand-green"
       />
       <p v-if="pageError" class="text-rose-400 text-sm font-semibold text-center">{{ pageError }}</p>
+      <p
+        v-else-if="currentPage !== '' && Number(currentPage) < book.current_unit"
+        class="text-amber-400 text-sm font-semibold text-center"
+      >
+        Vas a retroceder tu progreso a la página {{ currentPage }}.
+      </p>
     </div>
 
     <!-- Modo bitmask (Biblia): grid de capitulos agrupado por libro, prellenado con lo ya leido -->
@@ -28,7 +34,7 @@
             <input
               type="checkbox"
               :checked="isBookFullyChecked(book_)"
-              :disabled="loading || isBookFullyRead(book_)"
+              :disabled="loading"
               @change="toggleWholeBook(book_)"
               class="app-checkbox"
             />
@@ -39,13 +45,11 @@
               v-for="n in book_.chapters"
               :key="n"
               type="button"
-              :disabled="loading || alreadyReadChapters.has(book_.startsAt + n - 1)"
+              :disabled="loading"
               @click="toggleChapter(book_.startsAt + n - 1)"
-              :class="alreadyReadChapters.has(book_.startsAt + n - 1)
-                ? 'bg-brand-green/40 text-white/70 border-brand-green/40 cursor-not-allowed'
-                : checkedChapters.has(book_.startsAt + n - 1)
-                  ? 'bg-brand-green text-white border-brand-green cursor-pointer'
-                  : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer'"
+              :class="checkedChapters.has(book_.startsAt + n - 1)
+                ? 'bg-brand-green text-white border-brand-green cursor-pointer'
+                : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer'"
               class="w-9 h-9 rounded-lg border text-sm font-bold transition-colors"
             >
               {{ n }}
@@ -71,31 +75,32 @@ const props = defineProps({
 });
 
 const currentPage = ref(String((props.book.current_unit || 0) + 1));
-// Ya guardados en el servidor: se muestran marcados y bloqueados (el backend
-// solo hace OR de bits, nunca desmarca — permitir destildarlos aca seria un
-// "desmarcar" que no tiene efecto real, solo confunde). Los recien tildados en
-// este borrador (todavia no enviados) si se pueden destildar para corregir un click.
-const alreadyReadChapters = new Set(props.book.read_chapters || []);
+// Snapshot de lo ya guardado en el servidor al abrir el paso: contra esto se
+// calcula que capitulos son "nuevos" (chapters) y cuales se destildaron
+// (unchapters) al armar el payload. checkedChapters es el estado editable.
+const savedChapters = new Set(props.book.read_chapters || []);
 const checkedChapters = ref(new Set(props.book.read_chapters || []));
 
 const pageError = computed(() => {
   const n = Number(currentPage.value);
   if (!currentPage.value || Number.isNaN(n)) return null;
-  if (n <= props.book.current_unit) return `Debe ser mayor a ${props.book.current_unit}.`;
+  if (n < 0) return 'No puede ser negativo.';
   if (n > props.book.total_units) return `No puede superar ${props.book.total_units} páginas.`;
   return null;
 });
 
 const isValid = computed(() => {
   if (props.book.tracking_mode === 'linear') {
-    return currentPage.value !== '' && !pageError.value;
+    return currentPage.value !== '' && !pageError.value && Number(currentPage.value) !== props.book.current_unit;
   }
-  // Debe marcar al menos 1 capitulo NUEVO (no basta con re-marcar lo ya leido).
-  return [...checkedChapters.value].some((c) => !alreadyReadChapters.has(c));
+  // Debe haber algun cambio respecto a lo guardado (agregar o quitar capitulos).
+  const hasAdded = [...checkedChapters.value].some((c) => !savedChapters.has(c));
+  const hasRemoved = [...savedChapters].some((c) => !checkedChapters.value.has(c));
+  return hasAdded || hasRemoved;
 });
 
 const toggleChapter = (chapterNumber) => {
-  if (props.loading || alreadyReadChapters.has(chapterNumber)) return;
+  if (props.loading) return;
   if (checkedChapters.value.has(chapterNumber)) {
     checkedChapters.value.delete(chapterNumber);
   } else {
@@ -107,18 +112,16 @@ const toggleChapter = (chapterNumber) => {
 
 const bookChapterNumbers = (book_) => Array.from({ length: book_.chapters }, (_, i) => book_.startsAt + i);
 
-const isBookFullyRead = (book_) => bookChapterNumbers(book_).every((c) => alreadyReadChapters.has(c));
-
 const isBookFullyChecked = (book_) => bookChapterNumbers(book_).every((c) => checkedChapters.value.has(c));
 
-// Checkbox del libro completo: marca todos los capitulos pendientes de una vez,
-// o los destilda (solo los que no vienen ya guardados, igual que toggleChapter individual).
+// Checkbox del libro completo: marca todos sus capitulos de una vez, o los
+// destilda todos si ya estaban todos marcados.
 const toggleWholeBook = (book_) => {
-  if (props.loading || isBookFullyRead(book_)) return;
+  if (props.loading) return;
   const chapters = bookChapterNumbers(book_);
   const next = new Set(checkedChapters.value);
   if (isBookFullyChecked(book_)) {
-    chapters.forEach((c) => { if (!alreadyReadChapters.has(c)) next.delete(c); });
+    chapters.forEach((c) => next.delete(c));
   } else {
     chapters.forEach((c) => next.add(c));
   }
@@ -129,9 +132,10 @@ const getPayload = () => {
   if (props.book.tracking_mode === 'linear') {
     return { currentPage: Number(currentPage.value) };
   }
-  // Solo los nuevos: el backend hace OR puro (mandar los ya leidos es inofensivo
-  // pero innecesario, hasta 1189 numeros de mas en el body sin aportar nada).
-  return { chapters: [...checkedChapters.value].filter((c) => !alreadyReadChapters.has(c)) };
+  return {
+    chapters: [...checkedChapters.value].filter((c) => !savedChapters.has(c)),
+    unchapters: [...savedChapters].filter((c) => !checkedChapters.value.has(c)),
+  };
 };
 
 defineExpose({ isValid, getPayload });

@@ -213,7 +213,9 @@ class UserEntity {
 
     public static function incrementTotalPagesRead(\PDO $db, string $userId, int $delta): void {
         if ($delta === 0) return;
-        $stmt = $db->prepare("UPDATE users SET pages_read = pages_read + ? WHERE id = ?");
+        // GREATEST(0, ...) por si un delta negativo de correccion deja el acumulado
+        // por debajo de 0 (ej. condicion de carrera entre dos dispositivos).
+        $stmt = $db->prepare("UPDATE users SET pages_read = GREATEST(0, pages_read + ?) WHERE id = ?");
         $stmt->execute([$delta, $userId]);
     }
 

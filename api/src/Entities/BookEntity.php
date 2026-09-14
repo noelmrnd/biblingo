@@ -103,25 +103,39 @@ class BookEntity {
     }
 
     /**
-     * Aplica OR bit a bit: marca como leidos los capitulos nuevos sin tocar los
-     * que ya estaban marcados (evita pisar progreso si dos dispositivos mandan
-     * distintos capitulos casi al mismo tiempo). Devuelve [nuevoBitmask, cantidadDeCapitulosNuevos].
+     * Marca los capitulos de $markChapters y desmarca los de $unmarkChapters (si
+     * un capitulo aparece en ambos, unmark gana por ir despues). Ya marcados no
+     * se tocan de nuevo al volver a mandarlos (evita pisar progreso si dos
+     * dispositivos mandan distintos capitulos casi al mismo tiempo). Devuelve
+     * [nuevoBitmask, delta] donde delta puede ser negativo.
      */
-    public static function orChapters(string $bitmask, array $chapterNumbers): array {
+    public static function setChapters(string $bitmask, array $markChapters, array $unmarkChapters): array {
         $bytes = array_values(unpack('C*', $bitmask));
-        $newCount = 0;
-        foreach ($chapterNumbers as $chapter) {
+        $delta = 0;
+
+        foreach ($markChapters as $chapter) {
             if ($chapter < 1 || $chapter > self::BIBLE_TOTAL_CHAPTERS) continue;
             $index = $chapter - 1;
             $byteIndex = intdiv($index, 8);
-            $bit = $index % 8;
-            $mask = 1 << $bit;
+            $mask = 1 << ($index % 8);
             if (!($bytes[$byteIndex] & $mask)) {
                 $bytes[$byteIndex] |= $mask;
-                $newCount++;
+                $delta++;
             }
         }
-        return [pack('C*', ...$bytes), $newCount];
+
+        foreach ($unmarkChapters as $chapter) {
+            if ($chapter < 1 || $chapter > self::BIBLE_TOTAL_CHAPTERS) continue;
+            $index = $chapter - 1;
+            $byteIndex = intdiv($index, 8);
+            $mask = 1 << ($index % 8);
+            if ($bytes[$byteIndex] & $mask) {
+                $bytes[$byteIndex] &= ~$mask;
+                $delta--;
+            }
+        }
+
+        return [pack('C*', ...$bytes), $delta];
     }
 
     /**
@@ -132,18 +146,20 @@ class BookEntity {
      * debe venir ya leido con FOR UPDATE por el llamador (misma transaccion).
      * Lanza \InvalidArgumentException con mensaje listo para el usuario si el
      * input no es valido; el llamador debe hacer rollback antes de responder.
+     * $newPage puede ser menor al current_unit actual (correccion de un error
+     * al marcar) — el signo de units_read refleja avance o retroceso.
      *
      * @return array{units_read: int, finished: bool, book_id: string, book: array}
      */
-    public static function applyProgress(\PDO $db, array $book, ?int $newPage, ?array $chapters): array {
+    public static function applyProgress(\PDO $db, array $book, ?int $newPage, ?array $markChapters, array $unmarkChapters = []): array {
         $bookId = (string)$book['id'];
 
         if ($book['tracking_mode'] === self::MODE_LINEAR) {
             $currentUnit = (int)$book['current_unit'];
             $totalUnits = (int)$book['total_units'];
 
-            if ($newPage === null || $newPage <= $currentUnit || $newPage > $totalUnits) {
-                throw new \InvalidArgumentException("current_page debe ser mayor a {$currentUnit} y como maximo {$totalUnits}.");
+            if ($newPage === null || $newPage < 0 || $newPage > $totalUnits) {
+                throw new \InvalidArgumentException("current_page debe estar entre 0 y $totalUnits.");
             }
 
             $unitsRead = $newPage - $currentUnit;
@@ -151,11 +167,11 @@ class BookEntity {
             self::updateLinearProgress($db, $bookId, $newPage, $finished ? 'finished' : 'reading');
             $book['current_unit'] = $newPage;
         } else {
-            if (empty($chapters)) {
-                throw new \InvalidArgumentException('chapters es requerido (array de numeros de capitulo).');
+            if (empty($markChapters) && empty($unmarkChapters)) {
+                throw new \InvalidArgumentException('chapters o unchapters es requerido (array de numeros de capitulo).');
             }
 
-            [$newBitmask, $unitsRead] = self::orChapters($book['progress_bitmask'], $chapters);
+            [$newBitmask, $unitsRead] = self::setChapters($book['progress_bitmask'], $markChapters ?? [], $unmarkChapters);
             $finished = (self::countSetBits($newBitmask) === self::BIBLE_TOTAL_CHAPTERS);
             self::updateBitmask($db, $bookId, $newBitmask, $finished ? 'finished' : 'reading');
             $book['progress_bitmask'] = $newBitmask;

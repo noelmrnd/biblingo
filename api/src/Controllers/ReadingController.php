@@ -82,13 +82,14 @@ class ReadingController {
     private const VALID_REACTIONS = ['loved', 'thoughtful', 'peaceful', 'challenged', 'moved'];
 
     /**
-     * $newPage/$chapters: avance opcional del libro activo, registrado en la MISMA
-     * transaccion que la racha (atomico — si el avance es invalido, no se marca la
-     * racha ni se guarda nada). Si el usuario no tiene libro activo, se ignoran.
+     * $newPage/$chapters/$unchapters: avance (o correccion) opcional del libro
+     * activo, registrado en la MISMA transaccion que la racha (atomico — si el
+     * avance es invalido, no se marca la racha ni se guarda nada). Si el usuario
+     * no tiene libro activo, se ignoran.
      * Para avance adicional el mismo dia DESPUES de ya haber leido hoy, ver
      * BookController::updateProgress en su lugar (no repite la racha/reaccion).
      */
-    public static function logReading(string $userId, ?string $reaction = null, ?int $newPage = null, ?array $chapters = null) {
+    public static function logReading(string $userId, ?string $reaction = null, ?int $newPage = null, ?array $chapters = null, array $unchapters = []) {
         if ($reaction !== null && !in_array($reaction, self::VALID_REACTIONS, true)) {
             sendJsonResponse(['error' => 'reaction invalida.'], 400);
         }
@@ -158,7 +159,7 @@ class ReadingController {
                 $bookFinished = false;
                 $activeBook = BookEntity::findActiveByUserForUpdate($db, $userId);
                 if ($activeBook) {
-                    $progress = BookEntity::applyProgress($db, $activeBook, $newPage, $chapters);
+                    $progress = BookEntity::applyProgress($db, $activeBook, $newPage, $chapters, $unchapters);
                     $unitsRead = $progress['units_read'];
                     $bookId = $progress['book_id'];
                     $bookFinished = $progress['finished'];

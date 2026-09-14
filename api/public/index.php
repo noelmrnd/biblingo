@@ -72,7 +72,8 @@ $routes = [
         $reaction = !empty($input['reaction']) ? (string)$input['reaction'] : null;
         $newPage = isset($input['current_page']) ? (int)$input['current_page'] : null;
         $chapters = is_array($input['chapters'] ?? null) ? array_map('intval', $input['chapters']) : null;
-        ReadingController::logReading($userId, $reaction, $newPage, $chapters);
+        $unchapters = is_array($input['unchapters'] ?? null) ? array_map('intval', $input['unchapters']) : [];
+        ReadingController::logReading($userId, $reaction, $newPage, $chapters, $unchapters);
     },
 
     'GET /api/friends' => fn() => FriendController::getFriends($userId),
