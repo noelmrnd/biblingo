@@ -135,7 +135,6 @@ export const BADGE_GROUPS = [
     image: stickerFollowing,
     description: 'Personas a las que sigues en Libringo.',
     items: [
-      { id: 'following_1', threshold: 1, label: 'Primer amigo' },
       { id: 'following_5', threshold: 5, label: 'Sigues a 5' },
       { id: 'following_20', threshold: 20, label: 'Explorador social' },
       { id: 'following_50', threshold: 50, label: 'Gran explorador' },

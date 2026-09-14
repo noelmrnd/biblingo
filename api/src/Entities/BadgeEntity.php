@@ -20,7 +20,6 @@ class BadgeEntity {
         ['id' => 'streak_100',        'category' => 'streak',   'threshold' => 100],
         ['id' => 'streak_365',        'category' => 'streak',   'threshold' => 365],
         ['id' => 'streak_730',        'category' => 'streak',   'threshold' => 730],
-        ['id' => 'following_1',       'category' => 'following', 'threshold' => 1],
         ['id' => 'following_5',       'category' => 'following', 'threshold' => 5],
         ['id' => 'following_20',      'category' => 'following', 'threshold' => 20],
         ['id' => 'following_50',      'category' => 'following', 'threshold' => 50],
