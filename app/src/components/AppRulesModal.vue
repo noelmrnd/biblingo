@@ -17,7 +17,7 @@
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Racha:</strong>
           es la cantidad de días seguidos en los que has registrado una lectura.
-          Si termina el día y no la registras, tu racha se pierde y vuelve a 0.
+          Si termina el día y no la registras, tu racha se pierde y vuelve a cero.
         </p>
       </div>
 
@@ -26,16 +26,13 @@
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Protectores de racha:</strong>
           evitan que pierdas tu racha si un día no lees.
-          Ganas 1 por cada 7 días de lectura, hasta acumular 2.
+          Ganas 1 por cada 7 días de lectura, hasta acumular {{ MAX_STREAK_FREEZES }}.
           <span class="text-brand-freeze-light">
             <template v-if="atFreezeLimit">
-              Ya tienes el máximo de {{ MAX_STREAK_FREEZES }} protectores.
-            </template>
-            <template v-else-if="nextFreezeText">
-              Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar un protector.
+              Ya tienes el máximo.
             </template>
             <template v-else>
-              Sigue leyendo para conseguir uno.
+              Te {{ nextFreezeText === 1 ? 'falta 1 lectura' : `faltan ${nextFreezeText} lecturas` }} para ganar uno.
             </template>
           </span>
         </p>
@@ -74,13 +71,11 @@ const props = defineProps({
 
 defineEmits(['close']);
 
-// Mismo cadencia/tope que el backend (ver ReadingController::FREEZE_EVERY_DAYS
-// y ::MAX_STREAK_FREEZES) para mostrar cuánto falta para el próximo protector.
 const FREEZE_EVERY_DAYS = 7;
 const MAX_STREAK_FREEZES = 2;
 const atFreezeLimit = computed(() => props.streakFreezes >= MAX_STREAK_FREEZES);
 const nextFreezeText = computed(() => {
-  if (!props.streakCount || atFreezeLimit.value) return null;
+  if (atFreezeLimit.value) return null;
   return FREEZE_EVERY_DAYS - (props.streakCount % FREEZE_EVERY_DAYS);
 });
 </script>
