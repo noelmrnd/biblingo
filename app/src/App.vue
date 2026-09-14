@@ -107,7 +107,12 @@ const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle
 const scheduleReminderForUser = async (user) => {
   if (user.notification_prefs?.daily_reminder === false) return;
   const savedTime = (await StorageService.get('reminder_time')) || user.reminder_time || '20:00';
-  NotificationService.schedule7DayBurst(savedTime, user.streak_count, user.has_read_today || false, user.streak_freezes || 0, user.current_book_title || null);
+  NotificationService.schedule7DayBurst(
+    savedTime, user.streak_count,
+    user.has_read_today || false,
+    user.streak_freezes || 0,
+    user.current_book_title || null,
+  );
 };
 
 const onLoginSuccess = async (user, token) => {
@@ -130,13 +135,14 @@ const onLoginSuccess = async (user, token) => {
 const currentUserId = computed(() => currentUser.value?.id);
 watch(currentUserId, (id) => {
   if (id) {
-    NotificationService.setPushNavigationHandlers(
+    NotificationService.setNotificationNavigationHandlers(
       (followerId) => followerId
         ? router.push({ name: 'friend-profile', params: { id: followerId } })
         : router.push({ name: 'friends' }),
+      () => router.push({ name: 'dashboard' }),
       () => router.push({ name: 'dashboard' })
     );
-    NotificationService.initPushNotifications(id).catch((e) => {
+    NotificationService.registerPushNotifications(id).catch((e) => {
       console.warn('No se pudo inicializar notificaciones push:', e.message);
     });
     AnalyticsService.setUser(id).catch(() => {});
@@ -148,7 +154,8 @@ const onUserUpdated = (updatedUser) => {
 };
 
 const onLogout = async () => {
-  await NotificationService.unregisterPushToken();
+  await NotificationService.cleanupOnLogout();
+
   // Revoca el token en el servidor (best-effort): si falla igual se limpia la
   // sesion local, no tiene sentido dejar al usuario atrapado sin poder salir.
   try {
@@ -164,10 +171,7 @@ const onLogout = async () => {
 };
 
 const onDeleteAccount = async () => {
-  // Antes de borrar la cuenta: el token todavia es valido aca. Una vez que el
-  // servidor marca status='deleted' el token se invalida de inmediato, asi que
-  // desregistrar el push despues dispararia un 401 y el logout forzado por error.
-  await NotificationService.unregisterPushToken();
+  await NotificationService.cleanupOnLogout();
 
   try {
     await ApiService.deleteAccount();

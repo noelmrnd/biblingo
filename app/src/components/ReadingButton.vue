@@ -194,9 +194,6 @@ const handleReactionConfirmed = async ({ reaction, progress }) => {
         }
       }
 
-      // Caso 2: Limpiar las notificaciones locales entregadas y el badge solo tras haber leído
-      await NotificationService.clearLocalNotifications();
-
       // Efecto Confeti 🎉 (mas grande y en varias rafagas si gano alguna medalla,
       // para que se sienta distinto a un dia cualquiera)
       if (res.new_badges?.length > 0) {
@@ -221,11 +218,16 @@ const handleReactionConfirmed = async ({ reaction, progress }) => {
         });
       }
 
-      // Programar ráfaga de 7 días de notificaciones locales (pasando true porque ya leyó hoy),
-      // solo si el usuario no apagó la categoria "Recordatorio de lectura".
+      await NotificationService.clearDeliveredLocalNotifications();
       if (props.user.notification_prefs?.daily_reminder !== false) {
         const savedTime = (await StorageService.get('reminder_time')) || props.user.reminder_time || '20:00';
-        NotificationService.schedule7DayBurst(savedTime, res.streak_count, true, 0, activeBook.value?.title || null);
+        NotificationService.schedule7DayBurst(
+          savedTime,
+          res.streak_count,
+          true,
+          0,
+          activeBook.value?.title || null,
+        );
       }
 
       emit('reading-logged', {

@@ -87,7 +87,7 @@ const loadReadingStatus = async () => {
     if (updated) {
       hasReadToday.value = updated.has_read_today;
       if (updated.has_read_today) {
-        NotificationService.clearLocalNotifications();
+        NotificationService.clearDeliveredLocalNotifications();
       }
     }
     return updated;

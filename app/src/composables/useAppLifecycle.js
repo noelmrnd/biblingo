@@ -10,19 +10,16 @@ export function useAppLifecycle({ onDeepLinkInvite }) {
   const listenerHandles = [];
 
   const init = async () => {
-    // Caso 1: Quitar notificaciones Push entregadas al abrir la app
-    NotificationService.clearPushNotifications();
+    NotificationService.clearDeliveredPushNotifications();
+    NotificationService.attachListeners();
 
     // Escuchar cuando la app regresa a primer plano desde segundo plano
     const appStateHandle = await CapApp.addListener('appStateChange', ({ isActive }) => {
       if (isActive) {
-        NotificationService.clearPushNotifications();
+        NotificationService.clearDeliveredPushNotifications();
       }
     });
     listenerHandles.push(appStateHandle);
-
-    // Inicializar listeners de notificaciones locales
-    NotificationService.attachLocalListeners();
 
     // Inicializar receptor de enlaces de invitación (Deep Links & Cold Start)
     const deepLinkHandle = await DeepLinkService.initListener(async (username) => {

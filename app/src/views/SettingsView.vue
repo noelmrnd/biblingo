@@ -377,11 +377,17 @@ const saveNotificationPrefs = async () => {
   emit('user-updated', { ...props.user, notification_prefs: { ...notificationPrefs }, reminder_time: reminderTime.value });
 
   if (notificationPrefs.daily_reminder) {
-    await NotificationService.requestPermissions();
-    await NotificationService.initPushNotifications(props.user.id);
-    await NotificationService.schedule7DayBurst(reminderTime.value, props.user.streak_count, props.user.has_read_today || false, props.user.streak_freezes || 0, activeBook.value?.title || props.user.current_book_title || null);
+    await NotificationService.requestLocalPermissions();
+    await NotificationService.registerPushNotifications(props.user.id);
+    await NotificationService.schedule7DayBurst(
+      reminderTime.value,
+      props.user.streak_count,
+      props.user.has_read_today || false,
+      props.user.streak_freezes || 0,
+      activeBook.value?.title || props.user.current_book_title || null,
+    );
   } else {
-    await NotificationService.cancelReminders();
+    await NotificationService.cancelLocalReminders();
   }
 };
 
@@ -425,7 +431,12 @@ const testingNotification = ref(false);
 const triggerTestNotification = async () => {
   testingNotification.value = true;
   try {
-    await NotificationService.sendTestNotification(3);
+    const granted = await NotificationService.requestLocalPermissions();
+    if (!granted) {
+      ToastService.error('Permiso de notificaciones denegado en los ajustes del dispositivo.');
+      return;
+    }
+    await NotificationService.sendLocalTestNotification(3);
   } finally {
     setTimeout(() => {
       testingNotification.value = false;

@@ -4,106 +4,64 @@ import { Capacitor } from '@capacitor/core';
 import { ApiService } from './api';
 import { StorageService } from './storage';
 import { ToastService } from './toast';
-import { HapticsService } from './haptics';
 
 const pushState = { userId: null, onNewFollowerTapped: null, onNudgeTapped: null };
-let pushListenersRegistered = false;
-let localListenersRegistered = false;
-
-async function registerPushListeners() {
-  if (!Capacitor.isNativePlatform() || pushListenersRegistered) return;
-  pushListenersRegistered = true;
-
-  // Escuchar registro exitoso de token FCM / APNs
-  await PushNotifications.addListener('registration', async (token) => {
-    if (token && token.value) {
-      const pushToken = token.value;
-      const platform = Capacitor.getPlatform() || 'ios';
-
-      console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
-
-      try {
-        const savedToken = await StorageService.get('push_token');
-        const savedUserId = await StorageService.get('push_user_id');
-
-        // Enviar a la API únicamente si el token o el usuario activo cambiaron
-        if (savedToken === pushToken && String(savedUserId) === String(pushState.userId)) {
-          console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
-          return;
-        }
-
-        await ApiService.registerPushToken(pushToken, platform);
-        await StorageService.set('push_token', pushToken);
-        await StorageService.set('push_user_id', pushState.userId);
-        console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
-      } catch (err) {
-        console.warn('Error al enviar el push token a la API:', err.message);
-      }
-    }
-  });
-
-  // Escuchar posibles errores de registro
-  await PushNotifications.addListener('registrationError', (error) => {
-    console.warn('Error en registro de Push Notifications:', error);
-  });
-
-  // Escuchar cuando llega una notificación Push estando la app en primer plano.
-  // No se muestra Toast aca: el payload de FCMService incluye un bloque
-  // 'notification' (no es data-only), asi que Android ya la muestra solo en
-  // la barra de estado aunque la app este abierta — un Toast manual aca
-  // duplicaba el aviso.
-  await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-    console.log('[PushReceived]', notification);
-    HapticsService.light();
-  });
-
-  // Escuchar al tocar una notificación Push desde la barra de estado. El destino
-  // depende del tipo: un nuevo seguidor lleva a SU perfil (el ranking solo muestra
-  // a quienes yo sigo, no a quienes me siguen a mi, asi que ahi no aparece), un
-  // toque lleva a inicio (la accion pedida es leer hoy, no mirar el ranking).
-  await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
-    console.log('[PushActionPerformed]', notificationAction);
-    const data = notificationAction.notification?.data;
-    if (data?.type === 'new_follower') {
-      pushState.onNewFollowerTapped?.(data.user_id);
-    } else if (data?.type === 'nudge') {
-      pushState.onNudgeTapped?.();
-    }
-  });
-}
+let onReadingReminderTapped = null;
+let listenersRegistered = false;
 
 export const NotificationService = {
   /**
-   * Solicita permisos de notificación al usuario (locales y push).
+   * Registra a donde navegar al tocar cada tipo de notificacion (push y local).
+   * Separado de registerPushNotifications para que llamarlo desde otro lado sin
+   * router (ej. Ajustes) no pise estos callbacks con undefined.
    */
-  async requestPermissions() {
+  setNotificationNavigationHandlers(onNewFollowerTapped, onNudgeTapped, onReadingReminderTappedHandler) {
+    pushState.onNewFollowerTapped = onNewFollowerTapped;
+    pushState.onNudgeTapped = onNudgeTapped;
+    onReadingReminderTapped = onReadingReminderTappedHandler;
+  },
+
+  /**
+   * Muestra el prompt de permiso de notificaciones LOCALES. Usar solo desde una
+   * accion explicita del usuario (activar recordatorio en Ajustes/Onboarding,
+   * boton de prueba) — nunca desde una reprogramacion silenciosa en background,
+   * el prompt del SO no debe aparecer sin que el usuario lo haya pedido.
+   */
+  async requestLocalPermissions() {
     if (!Capacitor.isNativePlatform()) return true;
 
     try {
-      const localStatus = await LocalNotifications.requestPermissions();
-      const pushStatus = await PushNotifications.requestPermissions();
-      return localStatus.display === 'granted' && pushStatus.receive === 'granted';
+      const status = await LocalNotifications.requestPermissions();
+      return status.display === 'granted';
     } catch (e) {
-      console.warn('Error al solicitar permisos de notificación:', e);
+      console.warn('Error al solicitar permisos de notificación local:', e);
       return false;
     }
   },
 
   /**
-   * Registra a donde navegar al tocar cada tipo de notificacion push. Separado
-   * de initPushNotifications para que llamarlo desde otro lado sin router (ej.
-   * Ajustes) no pise estos callbacks con undefined.
+   * Consulta el permiso de notificaciones LOCALES sin mostrar el prompt del SO.
+   * Usar en reprogramaciones silenciosas (login, tras registrar una lectura):
+   * si el permiso no esta otorgado, simplemente no se programa nada.
    */
-  setPushNavigationHandlers(onNewFollowerTapped, onNudgeTapped) {
-    pushState.onNewFollowerTapped = onNewFollowerTapped;
-    pushState.onNudgeTapped = onNudgeTapped;
+  async checkLocalPermissions() {
+    if (!Capacitor.isNativePlatform()) return true;
+
+    try {
+      const status = await LocalNotifications.checkPermissions();
+      return status.display === 'granted';
+    } catch (e) {
+      console.warn('Error al consultar permisos de notificación local:', e);
+      return false;
+    }
   },
 
   /**
-   * Inicializa el registro de notificaciones Push, solicita permisos,
-   * escucha eventos de registro y envía el token a la API del servidor.
+   * Solicita permiso push y registra el dispositivo (token) para el usuario dado.
+   * Asume que attachListeners ya corrio (los listeners deben estar puestos
+   * antes de que llegue el evento 'registration' con el token).
    */
-  async initPushNotifications(userId) {
+  async registerPushNotifications(userId) {
     if (!Capacitor.isNativePlatform() || !userId) return;
 
     pushState.userId = userId;
@@ -116,8 +74,6 @@ export const NotificationService = {
       }
 
       await PushNotifications.register();
-
-      await registerPushListeners();
     } catch (e) {
       console.warn('Error al inicializar Push Notifications:', e);
     }
@@ -129,6 +85,9 @@ export const NotificationService = {
    * El recordatorio de HOY (si corresponde) usa un mensaje de urgencia real segun si
    * queda o no un protector de racha, en vez del mismo mensaje generico de siempre —
    * es el unico dia en que perder la racha es una amenaza inminente, no hipotetica.
+   * Solo consulta el permiso (nunca lo pide) — si el usuario no lo otorgo, no
+   * programa nada en silencio. El caller que activa el recordatorio por primera
+   * vez es responsable de pedirlo antes con requestLocalPermissions().
    */
   async schedule7DayBurst(
     reminderTimeStr = '20:00',
@@ -139,15 +98,15 @@ export const NotificationService = {
   ) {
     if (!Capacitor.isNativePlatform()) {
       console.log(`[Web Demo] Recordatorio de 7 días programado a las ${reminderTimeStr} (Ya leyó hoy: ${hasReadToday})`);
-      return;
+      return true;
     }
 
+    const granted = await this.checkLocalPermissions();
+    if (!granted) return false;
+
     try {
-      // Cancelar todas las notificaciones pendientes previas
-      const pending = await LocalNotifications.getPending();
-      if (pending.notifications && pending.notifications.length > 0) {
-        await LocalNotifications.cancel(pending);
-      }
+      // Cancelar todas las notificaciones pendientes previas antes de reprogramar
+      await this.cancelLocalReminders();
 
       const [hoursStr, minutesStr] = reminderTimeStr.split(':');
       const hours = parseInt(hoursStr, 10) || 20;
@@ -244,8 +203,10 @@ export const NotificationService = {
 
       await LocalNotifications.schedule({ notifications });
       console.log(`Ráfaga de notificaciones programada (hoy incluido: ${includeToday}, última llamada hoy: ${includeTodayLastChance}).`);
+      return true;
     } catch (e) {
       console.error('Error al programar ráfaga de notificaciones:', e);
+      return false;
     }
   },
 
@@ -260,24 +221,7 @@ export const NotificationService = {
   },
 
   /**
-   * Cancela cualquier recordatorio diario ya programado (pendiente de dispararse),
-   * sin tocar el token push. Se usa al apagar la categoria "Recordatorio de lectura"
-   * en Ajustes.
-   */
-  async cancelReminders() {
-    if (!Capacitor.isNativePlatform()) return;
-    try {
-      const pending = await LocalNotifications.getPending();
-      if (pending.notifications && pending.notifications.length > 0) {
-        await LocalNotifications.cancel(pending);
-      }
-    } catch (e) {
-      console.warn('Error al cancelar recordatorios programados:', e.message || e);
-    }
-  },
-
-  /**
-   * Elimina el token push de la API y limpia el almacenamiento de notificaciones al cerrar sesión.
+   * Elimina el token push de la API y limpia el almacenamiento local del token.
    */
   async unregisterPushToken() {
     try {
@@ -290,13 +234,6 @@ export const NotificationService = {
 
       await StorageService.remove('push_token');
       await StorageService.remove('push_user_id');
-
-      if (Capacitor.isNativePlatform()) {
-        const pending = await LocalNotifications.getPending();
-        if (pending.notifications && pending.notifications.length > 0) {
-          await LocalNotifications.cancel(pending);
-        }
-      }
       console.log('[PushNotifications] Token desregistrado exitosamente.');
     } catch (e) {
       console.warn('Error al desregistrar push token:', e.message || e);
@@ -304,44 +241,15 @@ export const NotificationService = {
   },
 
   /**
-   * Configura listeners para notificaciones locales (cuando la app está abierta o se interactúa).
-   * Idempotente: se llama tanto al iniciar la app como desde sendTestNotification.
-   */
-  async attachLocalListeners() {
-    if (!Capacitor.isNativePlatform() || localListenersRegistered) return;
-    localListenersRegistered = true;
-
-    try {
-      await LocalNotifications.addListener('localNotificationReceived', (notification) => {
-        console.log('[LocalNotificationReceived]', notification);
-        HapticsService.light();
-      });
-
-      await LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
-        console.log('[LocalNotificationActionPerformed]', notificationAction);
-      });
-    } catch (e) {
-      console.warn('Error al configurar listeners de notificaciones locales:', e);
-    }
-  },
-
-  /**
    * Programa una notificación local de prueba tras N segundos (por defecto 3s).
    */
-  async sendTestNotification(delaySeconds = 3) {
+  async sendLocalTestNotification(delaySeconds = 3) {
     if (!Capacitor.isNativePlatform()) {
       ToastService.info(`[Simulación Web] 🔔 Notificación en ${delaySeconds} segundos: "¡Las notificaciones locales funcionan! 🎉"`);
       return true;
     }
 
     try {
-      await this.attachLocalListeners();
-      const localStatus = await LocalNotifications.requestPermissions();
-      if (localStatus.display !== 'granted') {
-        ToastService.error('Permiso de notificaciones denegado en los ajustes del dispositivo.');
-        return false;
-      }
-
       const scheduleDate = new Date(Date.now() + delaySeconds * 1000);
       const notifId = Math.floor(10000 + Math.random() * 90000);
 
@@ -369,10 +277,37 @@ export const NotificationService = {
   },
 
   /**
-   * Caso 1: Limpia las notificaciones Push remotas entregadas (ej. toques de amigos).
+   * Desregistra el push y cancela recordatorios locales pendientes. Se usa al
+   * cerrar sesion o eliminar la cuenta: en ambos casos no tiene sentido seguir
+   * notificando a un usuario que ya no esta logueado en este dispositivo.
+   */
+  async cleanupOnLogout() {
+    await this.unregisterPushToken();
+    await this.cancelLocalReminders();
+  },
+
+  /**
+   * Cancela cualquier recordatorio diario ya programado (pendiente de dispararse),
+   * sin tocar el token push. Se usa al apagar la categoria "Recordatorio de lectura"
+   * en Ajustes.
+   */
+  async cancelLocalReminders() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      if (pending.notifications && pending.notifications.length > 0) {
+        await LocalNotifications.cancel(pending);
+      }
+    } catch (e) {
+      console.warn('Error al cancelar recordatorios programados:', e.message || e);
+    }
+  },
+
+  /**
+   * Limpia las notificaciones Push remotas entregadas (ej. toques de amigos).
    * Se invoca al abrir la app o regresar a ella desde segundo plano.
    */
-  async clearPushNotifications() {
+  async clearDeliveredPushNotifications() {
     if (!Capacitor.isNativePlatform()) return;
     try {
       await PushNotifications.removeAllDeliveredNotifications();
@@ -383,10 +318,10 @@ export const NotificationService = {
   },
 
   /**
-   * Caso 2: Limpia las notificaciones locales entregadas y resetea el badge del icono a 0.
-   * Se invoca únicamente tras haber completado la lectura del día.
+   * Limpia las notificaciones locales entregadas (borra tambien el badge del
+   * icono como efecto colateral). Se invoca tras completar la lectura del dia.
    */
-  async clearLocalNotifications() {
+  async clearDeliveredLocalNotifications() {
     if (!Capacitor.isNativePlatform()) return;
     try {
       await LocalNotifications.removeAllDeliveredNotifications();
@@ -394,5 +329,80 @@ export const NotificationService = {
     } catch (e) {
       console.warn('Error al limpiar notificaciones locales:', e.message || e);
     }
-  }
+  },
+
+  /**
+   * Engancha listeners de eventos push y locales (token recibido, notificacion
+   * tocada, etc). No depende de userId ni de permiso, se puede llamar apenas
+   * arranca la app (ver useAppLifecycle). Idempotente.
+   */
+  async attachListeners() {
+    if (!Capacitor.isNativePlatform() || listenersRegistered) return;
+    listenersRegistered = true;
+
+    // Escuchar registro exitoso de token FCM / APNs
+    await PushNotifications.addListener('registration', async (token) => {
+      if (token && token.value) {
+        const pushToken = token.value;
+        const platform = Capacitor.getPlatform() || 'ios';
+
+        console.log(`[PushNotifications] Token recibido (${platform}):`, pushToken);
+
+        try {
+          const savedToken = await StorageService.get('push_token');
+          const savedUserId = await StorageService.get('push_user_id');
+
+          // Enviar a la API únicamente si el token o el usuario activo cambiaron
+          if (savedToken === pushToken && String(savedUserId) === String(pushState.userId)) {
+            console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
+            return;
+          }
+
+          await ApiService.registerPushToken(pushToken, platform);
+          await StorageService.set('push_token', pushToken);
+          await StorageService.set('push_user_id', pushState.userId);
+          console.log('[PushNotifications] Token sincronizado exitosamente con la API.');
+        } catch (err) {
+          console.warn('Error al enviar el push token a la API:', err.message);
+        }
+      }
+    });
+
+    // Escuchar posibles errores de registro
+    await PushNotifications.addListener('registrationError', (error) => {
+      console.warn('Error en registro de Push Notifications:', error);
+    });
+
+    // Escuchar cuando llega una notificación Push estando la app en primer plano.
+    // No se muestra Toast aca: el payload de FCMService incluye un bloque
+    // 'notification' (no es data-only), asi que Android ya la muestra solo en
+    // la barra de estado aunque la app este abierta — un Toast manual aca
+    // duplicaba el aviso.
+    await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      console.log('[PushReceived]', notification);
+    });
+
+    // Escuchar al tocar una notificación Push desde la barra de estado. El destino
+    // depende del tipo: un nuevo seguidor lleva a SU perfil (el ranking solo muestra
+    // a quienes yo sigo, no a quienes me siguen a mi, asi que ahi no aparece), un
+    // toque lleva a inicio (la accion pedida es leer hoy, no mirar el ranking).
+    await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
+      console.log('[PushActionPerformed]', notificationAction);
+      const data = notificationAction.notification?.data;
+      if (data?.type === 'new_follower') {
+        pushState.onNewFollowerTapped?.(data.user_id);
+      } else if (data?.type === 'nudge') {
+        pushState.onNudgeTapped?.();
+      }
+    });
+
+    await LocalNotifications.addListener('localNotificationReceived', (notification) => {
+      console.log('[LocalNotificationReceived]', notification);
+    });
+
+    await LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
+      console.log('[LocalNotificationActionPerformed]', notificationAction);
+      onReadingReminderTapped?.();
+    });
+  },
 };
