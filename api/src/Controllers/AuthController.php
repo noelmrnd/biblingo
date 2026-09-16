@@ -200,6 +200,56 @@ class AuthController {
     }
 
     /**
+     * Login por email/password. No hay password en BD: se compara contraseña
+     * DEMO_EMAIL_LOGIN_ADDRESS/DEMO_EMAIL_LOGIN_PASSWORD en env, que apuntan a una cuenta
+     * ya existente (creada de antemano via login social normal).
+     */
+    public static function handleEmailAuth() {
+        $input = getJsonInput();
+        $email    = trim((string)($input['email'] ?? ''));
+        $password = (string)($input['password'] ?? '');
+        $platform = $input['platform'] ?? 'web';
+        $rawTz    = $input['timezone'] ?? ($_SERVER['HTTP_X_TIMEZONE'] ?? 'UTC');
+        $timezone = DateUtils::getSafeDateTimeZone($rawTz)->getName();
+
+        if (getEnvVar('DEMO_EMAIL_LOGIN_ENABLED') !== 'true') {
+            sendJsonResponse(['error' => 'Credenciales incorrectas.'], 401);
+        }
+
+        $loginEmail    = getEnvVar('DEMO_EMAIL_LOGIN_ADDRESS');
+        $loginPassword = getEnvVar('DEMO_EMAIL_LOGIN_PASSWORD');
+
+        if ($loginEmail === '' || $loginPassword === '') {
+            sendJsonResponse(['error' => 'Credenciales incorrectas.'], 401);
+        }
+
+        if (!hash_equals($loginEmail, $email) || !hash_equals($loginPassword, $password)) {
+            sendJsonResponse(['error' => 'Credenciales incorrectas.'], 401);
+        }
+
+        $db = getDbConnection();
+        $user = UserEntity::findByEmail($db, $loginEmail);
+
+        if (!$user) {
+            sendJsonResponse(['error' => 'Credenciales incorrectas.'], 401);
+        }
+        if ($user['status'] === UserEntity::STATUS_BANNED || $user['status'] === UserEntity::STATUS_DELETED) {
+            sendJsonResponse(['error' => 'Esta cuenta no está disponible.'], 403);
+        }
+
+        $userId = (string)$user['id'];
+        UserEntity::updateLoginInfo($db, $userId, $platform, $timezone);
+
+        $authToken = Auth::issueToken($userId);
+
+        sendJsonResponse([
+            'success' => true,
+            'token'   => $authToken,
+            'user'    => self::buildUserPayload($db, $userId),
+        ]);
+    }
+
+    /**
      * Cierra sesion revocando el token Bearer usado en esta request. Con
      * {"all": true} revoca todos los tokens del usuario (todos los dispositivos).
      */

@@ -48,7 +48,7 @@ export async function request(endpoint, options = {}) {
     });
     const data = await response.json();
     if (!response.ok) {
-      if (response.status === 401 && endpoint !== '/auth/social') {
+      if (response.status === 401 && endpoint !== '/auth/social' && endpoint !== '/auth/email') {
         unauthorizedHandler?.();
       }
       throw new Error(data.error || 'Error de conexión con la API');
@@ -66,6 +66,14 @@ export const ApiService = {
     return request('/auth/social', {
       method: 'POST',
       body: JSON.stringify({ timezone: deviceTimezone, ...payload })
+    });
+  },
+
+  async emailLogin(email, password, platform) {
+    const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    return request('/auth/email', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, platform, timezone: deviceTimezone })
     });
   },
 

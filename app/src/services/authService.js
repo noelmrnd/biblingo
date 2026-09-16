@@ -101,6 +101,13 @@ export const AuthService = {
   },
 
   /**
+   * Login con correo y contraseña.
+   */
+  async loginWithEmail(email, password) {
+    return await ApiService.emailLogin(email, password, Capacitor.getPlatform() || 'web');
+  },
+
+  /**
    * Login de desarrollo local (permite probar sin configurar OAuth en Google/Apple).
    */
   async devLogin(name = 'Lector Dev') {

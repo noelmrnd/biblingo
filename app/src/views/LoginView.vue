@@ -50,6 +50,9 @@
           <span>Continuar con Google</span>
         </button>
 
+        <!-- Login con correo -->
+        <EmailLoginButton @login-success="(user, token) => emit('login-success', user, token)" />
+
         <!-- Panel de Desarrollo Local (Vite Dev / Localhost) -->
         <div v-if="IS_DEV" class="pt-4 border-t border-slate-800 space-y-3">
           <div class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
@@ -85,6 +88,7 @@
 import { ref } from 'vue';
 import { Wrench } from '@lucide/vue';
 import AppButton from '@/components/AppButton.vue';
+import EmailLoginButton from '@/components/EmailLoginButton.vue';
 import { AuthService } from '@/services/authService';
 import { IS_DEV, APP_CONFIG } from '@/constants';
 

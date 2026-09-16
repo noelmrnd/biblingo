@@ -48,7 +48,7 @@ $input = getJsonInput();
 // Rutas publicas que no requieren sesion (el login todavia no tiene token que mandar).
 // Se comparan por "METODO /ruta", igual que la tabla de rutas real de abajo, para que
 // agregar otro metodo/handler bajo el mismo path no quede exento de auth por accidente.
-$publicRoutes = ['POST /api/auth/social'];
+$publicRoutes = ['POST /api/auth/social', 'POST /api/auth/email'];
 
 // El resto de rutas exige "Authorization: Bearer <token>". $userId ya NO se toma del
 // cliente (query/body) para saber quien hace la peticion — antes cualquiera podia
@@ -59,6 +59,7 @@ $userId = in_array("$method $requestUri", $publicRoutes, true) ? null : Auth::re
 // que le corresponden de $_GET/$input y llama al controller.
 $routes = [
     'POST /api/auth/social' => fn() => AuthController::handleSocialAuth(),
+    'POST /api/auth/email' => fn() => AuthController::handleEmailAuth(),
     'GET /api/auth/me' => fn() => AuthController::me($userId),
     'POST /api/auth/logout' => fn() => AuthController::logout($userId),
 
