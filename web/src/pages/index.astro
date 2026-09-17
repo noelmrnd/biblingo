@@ -2,11 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout
-  title="Libringo - Muy pronto"
-  description="Libringo: lectura entre amigos. Muy pronto disponible. Síguenos en Instagram y TikTok para no perderte el lanzamiento."
-  ogDescription="Lectura entre amigos. Muy pronto disponible. Síguenos para no perderte el lanzamiento."
+  title="Libringo - Lectura entre amigos"
+  description="Construye un hábito diario de lectura con Libringo: lectura entre amigos. Mantén tu racha de días, compite con amigos y no leas nunca más en soledad."
+  ogDescription="Lectura entre amigos. Mantén viva tu racha de días, compite con tus amigos y disfruta de la lectura."
 >
   <Fragment slot="head">
+    <meta name="apple-itunes-app" content="app-id=6808078003" />
     <style>
       .teaser {
         display: flex;
@@ -19,55 +20,24 @@ import Layout from '../layouts/Layout.astro';
         max-width: 560px;
         margin: 0 auto;
       }
-      .teaser-logo {
-        justify-content: center;
-        margin-bottom: 28px;
-      }
       .teaser-mascot {
         width: 200px;
         height: auto;
-        margin: 0 auto 20px;
+        margin: 0 auto 40px;
         display: block;
       }
-      .teaser-badge {
-        display: inline-block;
-        margin-bottom: 20px;
-      }
-      .teaser-social {
-        display: flex;
-        gap: 16px;
-        justify-content: center;
-        margin-top: 36px;
-        flex-wrap: wrap;
-      }
-      .teaser-social a {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 14px 24px;
-        border-radius: 999px;
-        background: #182030;
-        border: 1px solid #2b384e;
-        color: #fff;
-        font-weight: 600;
-        text-decoration: none;
-        transition: border-color 0.2s ease, transform 0.2s ease;
-      }
-      .teaser-social a:hover {
-        border-color: #58cc02;
-        transform: translateY(-2px);
-      }
-      .teaser-social svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-      }
-      .features-closing {
-        margin-top: 40px;
-        font-size: 18px;
-        font-style: italic;
-        color: #cbd5e1;
-      }
+      //.streak-demo {
+      //  display: inline-flex;
+      //  align-items: center;
+      //  gap: 10px;
+      //  background: #1f293d;
+      //  border: 1px solid #2b384e;
+      //  border-radius: 999px;
+      //  padding: 10px 20px;
+      //  margin-bottom: 28px;
+      //  font-weight: 800;
+      //  font-size: 15px;
+      //}
     </style>
   </Fragment>
 
@@ -75,34 +45,88 @@ import Layout from '../layouts/Layout.astro';
     <div class="container">
       <div class="teaser-inner">
         <img src="/assets/mascot-teaser.png" alt="Mascota de Libringo celebrando" class="teaser-mascot" />
-        <div class="teaser-badge badge" style="margin-bottom: 2rem">🔥 Muy pronto en iOS y Android</div>
-        <h1 class="hero-title">Libringo: lectura entre amigos.</h1>
-        <div class="hero-subtitle">
+        <!--<div class="streak-demo">-->
+        <!--  <span>🔥</span>-->
+        <!--  <span>Descarga las apps</span>-->
+        <!--</div>-->
+        <h1 class="hero-title">Libringo</h1>
+        <h1 class="hero-subtitle">Lectura entre amigos</h1>
+        <div class="hero-description">
           <p>
-            Libringo te ayuda a mantener el hábito de la lectura de una forma divertida, como si fuera un juego.
+            Convierte la lectura en un hábito diario de forma divertida, como si fuera un juego.
             Recibe recordatorios, conserva tu racha y compártela con tus amigos para motivarse y avanzar juntos.
-          </p>
-          <p style="margin-top: 1rem;">
-            Síguenos para enterarte en cuanto Libringo esté disponible.
-            <span style="font-weight: 600">Si eres de los primeros podrás tomar la delantera en el ranking de rachas. 🔥</span>
           </p>
         </div>
 
-        <div class="teaser-social">
-          <a href="https://www.instagram.com/libringoapp" target="_blank" rel="noopener noreferrer" aria-label="Seguinos en Instagram">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C8.74 0 8.333.014 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.014 8.333 0 8.74 0 12s.014 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.986 8.74 24 12 24s3.667-.014 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.014-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.014 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm6.406-11.845c-.796 0-1.44.645-1.44 1.44s.644 1.44 1.44 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        <div class="hero-buttons" id="descargar" style="justify-content: center; margin-top: 32px;">
+          <a href="https://apps.apple.com/app/id6808078003" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Descargar en App Store">
+            <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.9.04-2.02.6-2.66 1.34-.57.65-1.07 1.71-.93 2.74 1.01.08 2.06-.5 2.67-1.21z"/>
             </svg>
-            <span>Instagram</span>
+            <div class="store-badge-text">
+              <span class="store-subtitle">Descárgalo en el</span>
+              <span class="store-title">App Store</span>
+            </div>
           </a>
-          <a href="https://www.tiktok.com/@libringo" target="_blank" rel="noopener noreferrer" aria-label="Seguinos en TikTok">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.02 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.31 1.38V7.3s-1.88.09-3.25-1.48z"/>
+          <a href="https://play.google.com/store/apps/details?id=com.libringo.app" target="_blank" rel="noopener noreferrer" class="store-badge" aria-label="Disponible en Google Play">
+            <svg class="store-icon" viewBox="0 0 24 24">
+              <path fill="#00C3FF" d="M3.6 1.9C3.2 2.3 3 2.9 3 3.7v16.6c0 .8.2 1.4.6 1.8l.1.1 9.4-9.4v-.2L3.7 1.8l-.1.1z"/>
+              <path fill="#FFC800" d="M16.2 15.7l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.5 0 2.1l-3.7 2.1-.1.1z"/>
+              <path fill="#FF3A44" d="M13.1 12.6l-9.5 9.5c.5.5 1.3.6 2.2.1l10.4-6-3.1-3.6z"/>
+              <path fill="#00E676" d="M13.1 12.4l3.1-3.5-10.4-6c-.9-.5-1.7-.4-2.2.1l9.5 9.4z"/>
             </svg>
-            <span>TikTok</span>
+            <div class="store-badge-text">
+              <span class="store-subtitle">Disponible en</span>
+              <span class="store-title">Google Play</span>
+            </div>
           </a>
         </div>
       </div>
     </div>
   </section>
+
+  <!--<section id="features" class="features">-->
+  <!--  <div class="container text-center">-->
+  <!--    <h2 class="section-title">Todo lo que necesitas para no dejar de leer</h2>-->
+  <!--    <p class="section-subtitle">Libringo combina hábito, gamificación y amigos para que la lectura no se quede en buenas intenciones.</p>-->
+  <!--    <div class="benefits-grid">-->
+  <!--      <div class="benefit-card span-4">-->
+  <!--        <div class="benefit-glow" style="background: #FF740A;"></div>-->
+  <!--        <div class="benefit-icon" style="background: rgba(255,116,10,0.15); color: #FF740A;">🔥</div>-->
+  <!--        <div>-->
+  <!--          <h3>Racha diaria de lectura</h3>-->
+  <!--          <p>Cada día que lees suma a tu racha. Míralo crecer y siente el impulso de no romperla.</p>-->
+  <!--        </div>-->
+  <!--      </div>-->
+
+  <!--      <div class="benefit-card">-->
+  <!--        <div class="benefit-glow" style="background: #38bdf8;"></div>-->
+  <!--        <div class="benefit-icon" style="background: rgba(56,189,248,0.15); color: #38bdf8;">❄️</div>-->
+  <!--        <h3>Protectores de racha</h3>-->
+  <!--        <p>¿Un día se te complicó? Un protector congela tu racha para que no se pierda tu progreso.</p>-->
+  <!--      </div>-->
+
+  <!--      <div class="benefit-card">-->
+  <!--        <div class="benefit-glow" style="background: #1D6CED;"></div>-->
+  <!--        <div class="benefit-icon" style="background: rgba(29,108,237,0.15); color: #1D6CED;">👥</div>-->
+  <!--        <h3>Amigos y ranking</h3>-->
+  <!--        <p>Agrega amigos con un enlace de invitación y comparen quién tiene la mejor racha.</p>-->
+  <!--      </div>-->
+
+  <!--      <div class="benefit-card">-->
+  <!--        <div class="benefit-glow" style="background: #4EC313;"></div>-->
+  <!--        <div class="benefit-icon" style="background: rgba(78,195,19,0.15); color: #4EC313;">📖</div>-->
+  <!--        <h3>Progreso a tu ritmo</h3>-->
+  <!--        <p>Registra tu libro y lleva el avance por número de página o por capítulo leído.</p>-->
+  <!--      </div>-->
+
+  <!--      <div class="benefit-card">-->
+  <!--        <div class="benefit-glow" style="background: #F59E0B;"></div>-->
+  <!--        <div class="benefit-icon" style="background: rgba(245,158,11,0.15); color: #F59E0B;">🔔</div>-->
+  <!--        <h3>Recordatorios a tu hora</h3>-->
+  <!--        <p>Una ráfaga inteligente de notificaciones te avisa sin saturarte si ya leíste.</p>-->
+  <!--      </div>-->
+  <!--    </div>-->
+  <!--  </div>-->
+  <!--</section>-->
 </Layout>

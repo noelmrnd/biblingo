@@ -7,7 +7,12 @@
     <div class="max-w-md w-full flex flex-col items-center z-10 space-y-8">
       <!-- Logo y Mascota -->
       <div class="w-32 h-32 flex items-center justify-center">
-        <img src="/assets/logo-256.png" alt="Libringo Logo" class="w-full h-full object-contain select-none animate-bounce-short drop-shadow-2xl" />
+        <img
+          src="/assets/logo-256.png"
+          alt="Libringo Logo"
+          class="w-full h-full object-contain select-none animate-bounce-short drop-shadow-2xl"
+          style="-webkit-transform: translateZ(0); backface-visibility: hidden; -webkit-backface-visibility: hidden;"
+        />
       </div>
 
       <!-- Título y Eslogan -->

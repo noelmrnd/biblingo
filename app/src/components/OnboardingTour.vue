@@ -66,13 +66,15 @@
             </p>
           </div>
 
-          <div class="w-full text-left">
+          <div class="w-full min-w-0 text-left">
             <label class="text-sm font-semibold text-slate-400">Hora del recordatorio</label>
-            <input
-              v-model="reminderTime"
-              type="time"
-              class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white focus:outline-none focus:border-brand-green"
-            />
+            <div class="mt-1 w-full min-w-0 overflow-hidden rounded-xl bg-slate-950/60 border border-slate-800 focus-within:border-brand-green">
+              <input
+                v-model="reminderTime"
+                type="time"
+                class="w-full min-w-0 box-border bg-transparent px-4 py-3 text-white focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 
