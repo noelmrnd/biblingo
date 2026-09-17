@@ -105,14 +105,11 @@ const onLoginSuccess = async (user, token) => {
   markFreshLoad();
   // ToastService.success(`¡Hola, ${user.display_name}! 👋`);
   AnalyticsService.logEvent('login');
-
-  // Procesar invitación pendiente si existía
-  await resolvePendingInvite(user);
 };
 
-// Punto único de inicialización de notificaciones: se dispara solo cuando cambia
-// el id de sesión (login, restauración de sesión) — no en cada actualización de
-// perfil/recordatorio.
+// Punto único de inicialización de notificaciones (y de invitación pendiente): se
+// dispara solo cuando cambia el id de sesión (login, restauración de sesión) — no
+// en cada actualización de perfil/recordatorio.
 const currentUserId = computed(() => currentUser.value?.id);
 watch(currentUserId, async (id) => {
   if (!id) return;
@@ -135,6 +132,8 @@ watch(currentUserId, async (id) => {
   // onLoginSuccess/onMounted evita duplicar la llamada, y corre DESPUES de
   // activar los permisos arriba, sin la carrera de chequear antes de otorgar.
   NotificationService.scheduleReminderForUser(currentUser.value);
+
+  resolvePendingInvite(currentUser.value);
 
   AnalyticsService.setUser(id).catch(() => {});
 });
@@ -215,11 +214,6 @@ onMounted(async () => {
     clearUser();
   } finally {
     isInitializing.value = false;
-  }
-
-  if (currentUser.value && currentUser.value.id) {
-    // Procesar invitación pendiente guardada si existe sesión activa
-    await resolvePendingInvite(currentUser.value);
   }
 });
 

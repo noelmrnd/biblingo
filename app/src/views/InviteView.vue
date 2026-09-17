@@ -4,7 +4,7 @@
       <img src="/assets/logo-256.png" alt="Libringo" class="w-18 h-18 rounded-2xl" />
       <div class="space-y-3">
         <h1 v-if="inviterName" class="text-2xl font-bold">¡{{ inviterName }} te invitó a leer! 📖</h1>
-        <h1 v-else class="text-2xl font-bold">Libringo se usa desde la app</h1>
+        <h1 v-else class="text-2xl font-bold">¡Te han invitado a leer!</h1>
         <p class="text-slate-400 text-base leading-relaxed">
           Descarga <b>Libringo</b> en tu móvil para construir tu racha de lectura y competir con tus amigos.
         </p>
@@ -49,30 +49,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref, watch} from 'vue';
 import { ApiService } from '@/services/api';
-import { useCurrentUser } from '@/composables/useCurrentUser';
-import { useInviteFlow, friendAddedRedirect } from '@/composables/useInviteFlow';
 
-// Ruta /invite/:username (ver router/index.js): unico punto que procesa la
-// invitacion en Web. En Nativo un link asi nunca navega el WebView hasta aca
-// (el OS intercepta el Universal/App Link como appUrlOpen antes de que el
-// WebView lo cargue, ver DeepLinkService) — esta vista es exclusiva de Web.
 const props = defineProps({
   username: { type: String, required: true }
 });
 
-const router = useRouter();
-const { user: currentUser } = useCurrentUser();
 const inviterName = ref(null);
 
-const { processInvite } = useInviteFlow({
-  getCurrentUser: () => currentUser.value,
-  onFriendAdded: friendAddedRedirect(router)
-});
-
-onMounted(async () => {
+watch(() => props.username, async () => {
   try {
     const res = await ApiService.getPublicInviteProfile(props.username);
     if (res.success) {
@@ -81,9 +67,5 @@ onMounted(async () => {
   } catch (e) {
     // Sin nombre de quien invito, se muestra el mensaje generico de siempre.
   }
-
-  // Si hay sesion (raro en Web, pero posible) sigue al usuario de una vez;
-  // si no, guarda la invitacion pendiente para cuando instale la app y entre.
-  await processInvite(props.username, currentUser.value);
-});
+}, { immediate: true });
 </script>
