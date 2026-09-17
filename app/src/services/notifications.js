@@ -10,23 +10,12 @@ let onReadingReminderTapped = null;
 let listenersRegistered = false;
 
 export const NotificationService = {
-  /**
-   * Registra a donde navegar al tocar cada tipo de notificacion (push y local).
-   * Separado de registerPushNotifications para que llamarlo desde otro lado sin
-   * router (ej. Ajustes) no pise estos callbacks con undefined.
-   */
   setNotificationNavigationHandlers(onNewFollowerTapped, onNudgeTapped, onReadingReminderTappedHandler) {
     pushState.onNewFollowerTapped = onNewFollowerTapped;
     pushState.onNudgeTapped = onNudgeTapped;
     onReadingReminderTapped = onReadingReminderTappedHandler;
   },
 
-  /**
-   * Muestra el prompt de permiso de notificaciones LOCALES. Usar solo desde una
-   * accion explicita del usuario (activar recordatorio en Ajustes/Onboarding,
-   * boton de prueba) — nunca desde una reprogramacion silenciosa en background,
-   * el prompt del SO no debe aparecer sin que el usuario lo haya pedido.
-   */
   async requestLocalPermissions() {
     if (!Capacitor.isNativePlatform()) return true;
 
@@ -39,11 +28,6 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Consulta el permiso de notificaciones LOCALES sin mostrar el prompt del SO.
-   * Usar en reprogramaciones silenciosas (login, tras registrar una lectura):
-   * si el permiso no esta otorgado, simplemente no se programa nada.
-   */
   async checkLocalPermissions() {
     if (!Capacitor.isNativePlatform()) return true;
 
@@ -56,11 +40,6 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Solicita permiso push y registra el dispositivo (token) para el usuario dado.
-   * Asume que attachListeners ya corrio (los listeners deben estar puestos
-   * antes de que llegue el evento 'registration' con el token).
-   */
   async registerPushNotifications(userId) {
     if (!Capacitor.isNativePlatform() || !userId) return;
 
@@ -79,16 +58,27 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Programar ráfaga de 7 días de notificaciones locales.
-   * Si ya se leyó hoy o la hora de hoy ya pasó, comienza a notificar a partir de mañana.
-   * El recordatorio de HOY (si corresponde) usa un mensaje de urgencia real segun si
-   * queda o no un protector de racha, en vez del mismo mensaje generico de siempre —
-   * es el unico dia en que perder la racha es una amenaza inminente, no hipotetica.
-   * Solo consulta el permiso (nunca lo pide) — si el usuario no lo otorgo, no
-   * programa nada en silencio. El caller que activa el recordatorio por primera
-   * vez es responsable de pedirlo antes con requestLocalPermissions().
-   */
+  async activateNotifications(userId) {
+    const localGranted = await this.requestLocalPermissions();
+    await this.registerPushNotifications(userId);
+    return localGranted;
+  },
+
+  async reactivateIfPermitted(userId) {
+    if (Capacitor.isNativePlatform() && userId) {
+      pushState.userId = userId;
+      try {
+        const pushStatus = await PushNotifications.checkPermissions();
+        if (pushStatus.receive === 'granted') {
+          await PushNotifications.register();
+        }
+      } catch (e) {
+        console.warn('Error al verificar permisos push:', e);
+      }
+    }
+    return this.checkLocalPermissions();
+  },
+
   async schedule7DayBurst(
     reminderTimeStr = '20:00',
     currentStreak = 1,
@@ -102,18 +92,18 @@ export const NotificationService = {
     }
 
     const granted = await this.checkLocalPermissions();
-    if (!granted) return false;
+    if (!granted) {
+      await this.cancelLocalReminders();
+      return false;
+    }
 
     try {
-      // Cancelar todas las notificaciones pendientes previas antes de reprogramar
       await this.cancelLocalReminders();
 
       const [hoursStr, minutesStr] = reminderTimeStr.split(':');
       const hours = parseInt(hoursStr, 10) || 20;
       const minutes = parseInt(minutesStr, 10) || 0;
 
-      // Segundo recordatorio ("última llamada") a hora fija cerca del fin del día,
-      // independiente de la hora elegida por el usuario para el primero.
       const LAST_CHANCE_HOUR = 22;
       const LAST_CHANCE_MINUTE = 30;
 
@@ -121,15 +111,12 @@ export const NotificationService = {
       const todayReminderTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
       const todayLastChanceTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), LAST_CHANCE_HOUR, LAST_CHANCE_MINUTE, 0);
 
-      // Incluir el día de hoy únicamente si el usuario NO ha leído hoy Y la hora del recordatorio es en el futuro
       const includeToday = !hasReadToday && todayReminderTime.getTime() > now.getTime();
       const includeTodayLastChance = !hasReadToday && todayLastChanceTime.getTime() > now.getTime();
       const startOffset = includeToday ? 0 : 1;
       const endOffset = startOffset + 6;
 
       const streakText = currentStreak + ' ' + (currentStreak === 0 ? 'día' : 'días');
-      // Con libro activo, cada mensaje lo menciona por nombre (mas personalizado que
-      // el generico "tu libro"/"tu lectura"); sin libro, cae al texto original.
       const book = (bookTitle || '').trim();
 
       const notifications = [];
@@ -182,7 +169,6 @@ export const NotificationService = {
         });
       }
 
-      // Segundo recordatorio del día ("última llamada"), a hora fija, mismo rango de 7 días.
       const startOffsetLC = includeTodayLastChance ? 0 : 1;
       const endOffsetLC = startOffsetLC + 6;
       for (let dayOffset = startOffsetLC; dayOffset <= endOffsetLC; dayOffset++) {
@@ -210,19 +196,25 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Guarda la hora de recordatorio diario en storage + perfil (sin reprogramar la
-   * ráfaga: cada llamador decide cuándo y con qué datos reprogramar). Usado tanto
-   * en el Onboarding como en Ajustes.
-   */
+  async scheduleReminderForUser(user) {
+    if (!user || user.notification_prefs?.daily_reminder === false) {
+      await this.cancelLocalReminders();
+      return false;
+    }
+    const savedTime = (await StorageService.get('reminder_time')) || user.reminder_time || '20:00';
+    return this.schedule7DayBurst(
+      savedTime, user.streak_count,
+      user.has_read_today || false,
+      user.streak_freezes || 0,
+      user.current_book_title || null,
+    );
+  },
+
   async persistReminderTime(reminderTimeStr) {
     await StorageService.set('reminder_time', reminderTimeStr);
     await ApiService.updateProfile({ reminder_time: reminderTimeStr });
   },
 
-  /**
-   * Elimina el token push de la API y limpia el almacenamiento local del token.
-   */
   async unregisterPushToken() {
     try {
       const savedToken = await StorageService.get('push_token');
@@ -240,9 +232,6 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Programa una notificación local de prueba tras N segundos (por defecto 3s).
-   */
   async sendLocalTestNotification(delaySeconds = 3) {
     if (!Capacitor.isNativePlatform()) {
       ToastService.info(`[Simulación Web] 🔔 Notificación en ${delaySeconds} segundos: "¡Las notificaciones locales funcionan! 🎉"`);
@@ -276,21 +265,12 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Desregistra el push y cancela recordatorios locales pendientes. Se usa al
-   * cerrar sesion o eliminar la cuenta: en ambos casos no tiene sentido seguir
-   * notificando a un usuario que ya no esta logueado en este dispositivo.
-   */
   async cleanupOnLogout() {
     await this.unregisterPushToken();
     await this.cancelLocalReminders();
+    pushState.userId = null;
   },
 
-  /**
-   * Cancela cualquier recordatorio diario ya programado (pendiente de dispararse),
-   * sin tocar el token push. Se usa al apagar la categoria "Recordatorio de lectura"
-   * en Ajustes.
-   */
   async cancelLocalReminders() {
     if (!Capacitor.isNativePlatform()) return;
     try {
@@ -303,10 +283,6 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Limpia las notificaciones Push remotas entregadas (ej. toques de amigos).
-   * Se invoca al abrir la app o regresar a ella desde segundo plano.
-   */
   async clearDeliveredPushNotifications() {
     if (!Capacitor.isNativePlatform()) return;
     try {
@@ -317,10 +293,6 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Limpia las notificaciones locales entregadas (borra tambien el badge del
-   * icono como efecto colateral). Se invoca tras completar la lectura del dia.
-   */
   async clearDeliveredLocalNotifications() {
     if (!Capacitor.isNativePlatform()) return;
     try {
@@ -331,18 +303,17 @@ export const NotificationService = {
     }
   },
 
-  /**
-   * Engancha listeners de eventos push y locales (token recibido, notificacion
-   * tocada, etc). No depende de userId ni de permiso, se puede llamar apenas
-   * arranca la app (ver useAppLifecycle). Idempotente.
-   */
   async attachListeners() {
     if (!Capacitor.isNativePlatform() || listenersRegistered) return;
     listenersRegistered = true;
 
-    // Escuchar registro exitoso de token FCM / APNs
     await PushNotifications.addListener('registration', async (token) => {
       if (token && token.value) {
+        if (!pushState.userId) {
+          console.log('[PushNotifications] Token recibido sin usuario activo (logout en curso), se descarta.');
+          return;
+        }
+
         const pushToken = token.value;
         const platform = Capacitor.getPlatform() || 'ios';
 
@@ -352,7 +323,6 @@ export const NotificationService = {
           const savedToken = await StorageService.get('push_token');
           const savedUserId = await StorageService.get('push_user_id');
 
-          // Enviar a la API únicamente si el token o el usuario activo cambiaron
           if (savedToken === pushToken && String(savedUserId) === String(pushState.userId)) {
             console.log('[PushNotifications] El token ya está sincronizado para este usuario.');
             return;
@@ -368,24 +338,14 @@ export const NotificationService = {
       }
     });
 
-    // Escuchar posibles errores de registro
     await PushNotifications.addListener('registrationError', (error) => {
       console.warn('Error en registro de Push Notifications:', error);
     });
 
-    // Escuchar cuando llega una notificación Push estando la app en primer plano.
-    // No se muestra Toast aca: el payload de FCMService incluye un bloque
-    // 'notification' (no es data-only), asi que Android ya la muestra solo en
-    // la barra de estado aunque la app este abierta — un Toast manual aca
-    // duplicaba el aviso.
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
       console.log('[PushReceived]', notification);
     });
 
-    // Escuchar al tocar una notificación Push desde la barra de estado. El destino
-    // depende del tipo: un nuevo seguidor lleva a SU perfil (el ranking solo muestra
-    // a quienes yo sigo, no a quienes me siguen a mi, asi que ahi no aparece), un
-    // toque lleva a inicio (la accion pedida es leer hoy, no mirar el ranking).
     await PushNotifications.addListener('pushNotificationActionPerformed', (notificationAction) => {
       console.log('[PushActionPerformed]', notificationAction);
       const data = notificationAction.notification?.data;

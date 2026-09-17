@@ -6,12 +6,26 @@ import { NotificationService } from '@/services/notifications';
  * Registra los listeners globales de ciclo de vida de la app: notificaciones push,
  * retorno a primer plano y deep links de invitación.
  */
-export function useAppLifecycle({ onDeepLinkInvite }) {
+export function useAppLifecycle({ router, onDeepLinkInvite }) {
   const listenerHandles = [];
 
   const init = async () => {
+    // No depende del usuario logueado (solo del router), asi que se setea una
+    // sola vez aca en vez de repetirse en cada cambio de sesion.
+    NotificationService.setNotificationNavigationHandlers(
+      (followerId) => followerId
+        ? router.push({ name: 'friend-profile', params: { id: followerId } })
+        : router.push({ name: 'friends' }),
+      () => router.push({ name: 'dashboard' }),
+      () => router.push({ name: 'dashboard' })
+    );
+
     NotificationService.clearDeliveredPushNotifications();
-    NotificationService.attachListeners();
+    // Debe esperarse: init() (y por lo tanto App.vue) necesita garantizar que
+    // el listener 'registration' ya esta puesto antes de que currentUser
+    // dispare registerPushNotifications, o el token nativo llega sin nadie
+    // escuchando y se pierde.
+    await NotificationService.attachListeners();
 
     // Escuchar cuando la app regresa a primer plano desde segundo plano
     const appStateHandle = await CapApp.addListener('appStateChange', ({ isActive }) => {

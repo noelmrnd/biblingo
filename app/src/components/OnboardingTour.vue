@@ -197,6 +197,7 @@ import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
 import { useCurrentUser } from '@/composables/useCurrentUser';
 import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES, MIN_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
+import { TOUR_SEEN_KEY } from '@/constants';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
 import tourStep2 from '@/assets/tour/tour-step-2.png';
@@ -205,7 +206,6 @@ import tourStep4 from '@/assets/tour/tour-step-4.png';
 
 const router = useRouter();
 const { user } = useCurrentUser();
-const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
 const isOpen = ref(false);
 const currentStep = ref(0);
 
@@ -312,7 +312,9 @@ const finishTour = async () => {
   }
 
   try {
-    await NotificationService.requestLocalPermissions();
+    // Pide local y push juntos (ver activateNotifications): es la primera vez
+    // que el usuario ve el prompt de cualquiera de los dos, aca en contexto.
+    await NotificationService.activateNotifications(user.value?.id);
     await NotificationService.persistReminderTime(reminderTime.value);
     await NotificationService.schedule7DayBurst(
       reminderTime.value,
@@ -366,6 +368,19 @@ const hasRealActivity = (u) => u?.days_read || u?.streak_count || u?.pages_read;
 const checkTourStatus = async () => {
   if (hasRealActivity(user.value)) {
     await StorageService.set(TOUR_SEEN_KEY, true);
+    // App.vue ya corrio su watch y no activo nada (el flag todavia no existia en
+    // ese momento) — se activa aca para no dejar a este usuario sin notificaciones
+    // por la carrera entre ambos checks. Si el permiso local recien se otorga aca,
+    // hay que reprogramar la rafaga: el intento original en App.vue ya la habia
+    // encontrado sin otorgar y no queda ningun otro disparador que la reintente.
+    try {
+      const localGranted = await NotificationService.activateNotifications(user.value?.id);
+      if (localGranted) {
+        NotificationService.scheduleReminderForUser(user.value);
+      }
+    } catch (e) {
+      console.warn('No se pudo inicializar notificaciones:', e.message);
+    }
     return;
   }
 

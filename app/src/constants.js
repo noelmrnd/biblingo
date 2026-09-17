@@ -19,6 +19,11 @@ export const getAppleConfig = (platform) => {
   };
 };
 
+// Clave de storage global: si ya se vio/completo el tour de onboarding. App.vue
+// la usa para decidir si ya puede pedir el permiso de push (usuarios existentes)
+// o si debe esperar a que OnboardingTour lo pida en su propio contexto (usuarios nuevos).
+export const TOUR_SEEN_KEY = 'has_seen_onboarding_tour';
+
 export const APP_CONFIG = {
   name: 'Libringo',
   appDomain: 'app.libringo.com',

@@ -70,7 +70,7 @@ import { AnalyticsService } from './services/analytics';
 import { useInviteFlow } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
-import {APP_CONFIG} from "@/constants.js";
+import {APP_CONFIG, TOUR_SEEN_KEY} from "@/constants.js";
 
 const router = useRouter();
 const { user: currentUser, clearUser, markFreshLoad } = useCurrentUser();
@@ -98,22 +98,9 @@ const { processInvite, resolvePendingInvite } = useInviteFlow({
 });
 
 const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle({
+  router,
   onDeepLinkInvite: (code) => processInvite(code, currentUser.value)
 });
-
-// Reprograma la rafaga de 7 dias con los datos ya frescos del login/inicio de
-// sesion (streak_count, has_read_today, reminder_time), en vez de esperar a
-// que DashboardView monte — asi corre sin importar en que tab entre primero.
-const scheduleReminderForUser = async (user) => {
-  if (user.notification_prefs?.daily_reminder === false) return;
-  const savedTime = (await StorageService.get('reminder_time')) || user.reminder_time || '20:00';
-  NotificationService.schedule7DayBurst(
-    savedTime, user.streak_count,
-    user.has_read_today || false,
-    user.streak_freezes || 0,
-    user.current_book_title || null,
-  );
-};
 
 const onLoginSuccess = async (user, token) => {
   // Guardar el token antes de exponer currentUser: al asignarlo se monta
@@ -122,31 +109,40 @@ const onLoginSuccess = async (user, token) => {
   await UserService.saveToken(token);
   currentUser.value = user;
   markFreshLoad();
-  ToastService.success(`¡Hola, ${user.display_name}! 👋`);
-  scheduleReminderForUser(user);
+  // ToastService.success(`¡Hola, ${user.display_name}! 👋`);
   AnalyticsService.logEvent('login');
 
   // Procesar invitación pendiente si existía
   await resolvePendingInvite(user);
 };
 
-// Punto único de inicialización de push: se dispara solo cuando cambia el id de sesión
-// (login, restauración de sesión) — no en cada actualización de perfil/recordatorio.
+// Punto único de inicialización de notificaciones: se dispara solo cuando cambia
+// el id de sesión (login, restauración de sesión) — no en cada actualización de
+// perfil/recordatorio.
 const currentUserId = computed(() => currentUser.value?.id);
-watch(currentUserId, (id) => {
-  if (id) {
-    NotificationService.setNotificationNavigationHandlers(
-      (followerId) => followerId
-        ? router.push({ name: 'friend-profile', params: { id: followerId } })
-        : router.push({ name: 'friends' }),
-      () => router.push({ name: 'dashboard' }),
-      () => router.push({ name: 'dashboard' })
-    );
-    NotificationService.registerPushNotifications(id).catch((e) => {
-      console.warn('No se pudo inicializar notificaciones push:', e.message);
-    });
-    AnalyticsService.setUser(id).catch(() => {});
+watch(currentUserId, async (id) => {
+  if (!id) return;
+
+  // Los permisos (local + push, ver activateNotifications) se piden con contexto
+  // durante el onboarding (ver OnboardingTour.finishTour/checkTourStatus), no aca
+  // sin explicacion. Si el tour ya se vio (usuario existente) no hay onboarding
+  // que los pida, asi que se activan normalmente en cada login.
+  const tourSeen = await StorageService.get(TOUR_SEEN_KEY);
+  if (tourSeen) {
+    try {
+      await NotificationService.reactivateIfPermitted(id);
+    } catch (e) {
+      console.warn('No se pudo inicializar notificaciones:', e.message);
+    }
   }
+
+  // Este watch corre en los mismos 2 momentos en que currentUserId pasa a tener
+  // valor (login nuevo, restauracion de sesion) — programar aca en vez de en
+  // onLoginSuccess/onMounted evita duplicar la llamada, y corre DESPUES de
+  // activar los permisos arriba, sin la carrera de chequear antes de otorgar.
+  NotificationService.scheduleReminderForUser(currentUser.value);
+
+  AnalyticsService.setUser(id).catch(() => {});
 });
 
 const onUserUpdated = (updatedUser) => {
@@ -206,13 +202,19 @@ onMounted(async () => {
   setUnauthorizedHandler(forceLogout);
   AnalyticsService.init().catch(() => {});
 
+  // Registrar listeners globales (push, retorno a primer plano, deep links) ANTES
+  // de restaurar la sesion: asignar currentUser.value dispara el watch de abajo,
+  // que puede llamar a registerPushNotifications ya en esta misma func. Si
+  // attachListeners (adentro de initAppLifecycle) no corrio todavia, el listener
+  // 'registration' no esta puesto y el token que devuelve el SDK nativo se pierde.
+  await initAppLifecycle();
+
   // Si hay token guardado, reconstruye el usuario completo pidiendolo al servidor
   // (no se cachea el objeto user en disco) y sincroniza timezone si cambió.
   try {
     currentUser.value = await UserService.initSession();
     if (currentUser.value) {
       markFreshLoad();
-      scheduleReminderForUser(currentUser.value);
     }
   } catch (e) {
     console.warn('No se pudo restaurar la sesión:', e.message);
@@ -220,9 +222,6 @@ onMounted(async () => {
   } finally {
     isInitializing.value = false;
   }
-
-  // Registrar listeners globales: push, retorno a primer plano, deep links
-  await initAppLifecycle();
 
   if (currentUser.value && currentUser.value.id) {
     // Procesar invitación pendiente guardada si existe sesión activa
