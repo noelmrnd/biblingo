@@ -71,6 +71,14 @@ export const NotificationService = {
         const pushStatus = await PushNotifications.checkPermissions();
         if (pushStatus.receive === 'granted') {
           await PushNotifications.register();
+        } else {
+          // Solo desregistrar si habia un token guardado de una sesion anterior con
+          // permiso otorgado: evita pegarle a la API en cada apertura de la app
+          // cuando el permiso ya estaba denegado (no hay nada que limpiar).
+          const savedToken = await StorageService.get('push_token');
+          if (savedToken) {
+            await this.unregisterPushToken();
+          }
         }
       } catch (e) {
         console.warn('Error al verificar permisos push:', e);
@@ -153,7 +161,7 @@ export const NotificationService = {
             ? `No tienes protectores de racha. ¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`
             : `¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`;
         } else {
-          const msgIndex = Math.abs(dayOffset) % messages.length;
+          const msgIndex = (dayOffset - startOffset) % messages.length;
           body = messages[msgIndex];
         }
 
