@@ -145,7 +145,14 @@ class AuthController {
 
     /**
      * Genera un username disponible a partir del display name: base + sufijo
-     * numerico random de 3 digitos si la base (o un intento previo) ya esta tomada.
+     * numerico random si la base (o un intento previo) ya esta tomada.
+     *
+     * Rango del sufijo: 90000 combinaciones (5 digitos). Con solo 900 (3 digitos)
+     * las bases genericas ("lector_apple", "lector_google" — usuarios que no
+     * comparten su nombre real con el proveedor) chocaban tan seguido que, ya
+     * cerca de unos cientos de cuentas con esa misma base, los 10 reintentos
+     * fallaban y el signup tiraba 500. VARCHAR(30) en `username` deja de sobra
+     * espacio para el sufijo mas largo.
      */
     private static function generateUsername(\PDO $db, string $displayName): string {
         $baseUsername = slugifyUsername($displayName);
@@ -154,11 +161,11 @@ class AuthController {
         $attempts = 0;
         while (UserEntity::usernameTaken($db, $username)) {
             $attempts++;
-            if ($attempts > 10) {
+            if ($attempts > 20) {
                 throw new \RuntimeException('No se pudo generar un username disponible.');
             }
-            $suffix = random_int(100, 999);
-            $username = $baseUsername . $suffix;
+            $suffix = random_int(10000, 99999);
+            $username = $baseUsername . '_' . $suffix;
         }
 
         return $username;
