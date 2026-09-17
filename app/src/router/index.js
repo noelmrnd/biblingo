@@ -4,6 +4,7 @@ import FriendsView from '@/views/tabs/FriendsTabView.vue';
 import FriendProfileView from '@/views/FriendProfileView.vue';
 import ProfileView from '@/views/tabs/ProfileTabView.vue';
 import SettingsView from '@/views/SettingsView.vue';
+import InviteView from '@/views/InviteView.vue';
 
 const routes = [
   // meta.keepAlive: App.vue lo usa para armar el include de <keep-alive> a
@@ -14,8 +15,8 @@ const routes = [
   { path: '/friends/:id', name: 'friend-profile', component: FriendProfileView, props: true },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { keepAlive: true } },
   { path: '/profile/settings', name: 'profile-settings', component: SettingsView },
-  // Cualquier ruta no reconocida (ej. /invite/CODIGO en web) cae al dashboard.
-  // DeepLinkService ya captura la URL original al cargar el módulo, antes de este redirect.
+  { path: '/invite/:username', name: 'invite', component: InviteView, props: true },
+  // Cualquier otra ruta no reconocida cae al dashboard.
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 

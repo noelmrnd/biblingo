@@ -5,6 +5,20 @@ import { ToastService } from '@/services/toast';
 const PENDING_INVITE_KEY = 'pending_invite_username';
 
 /**
+ * onFriendAdded compartido por App.vue e InviteView.vue: tras seguir al que invito,
+ * navega a su perfil (o al listado de amigos si por algun motivo no vino el id).
+ */
+export function friendAddedRedirect(router) {
+  return (friend) => {
+    if (friend?.id) {
+      router.push({ name: 'friend-profile', params: { id: friend.id } });
+    } else {
+      router.push({ name: 'friends' });
+    }
+  };
+}
+
+/**
  * Maneja el flujo de invitaciones por username: procesa inmediatamente si hay sesión,
  * o guarda el username pendiente para procesarlo después del login/registro.
  */
@@ -26,7 +40,7 @@ export function useInviteFlow({ getCurrentUser, onFriendAdded }) {
     // Si no hay sesión iniciada, almacenar para procesar después del login/registro
     if (!user || !user.id) {
       await StorageService.set(PENDING_INVITE_KEY, username);
-      ToastService.info(`Invitación (@${username}) guardada. Inicia sesión para conectar con tu amigo.`);
+      // ToastService.info(`Invitación (@${username}) guardada. Inicia sesión para conectar con tu amigo.`);
       return;
     }
 

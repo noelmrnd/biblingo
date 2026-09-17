@@ -9,9 +9,9 @@
     <!-- Modal de Celebracion para Logros -->
     <BadgeCelebrationModal />
 
-    <!-- app.libringo.com abierto desde un navegador normal (no la WebView nativa):
-         mostrar la invitación a descargar la app en vez de la app web/login. -->
-    <GetAppView v-if="isBrowserOnAppDomain" />
+    <router-view v-if="!Capacitor.isNativePlatform() && router.currentRoute.value.name === 'invite'" />
+
+    <GetAppView v-else-if="isBrowserOnAppDomain" />
 
     <!-- Splash mientras se resuelve la sesión guardada, evita el parpadeo hacia Login -->
     <div v-else-if="isInitializing" class="flex-1 flex items-center justify-center">
@@ -67,7 +67,7 @@ import { NotificationService } from './services/notifications';
 import { StorageService } from './services/storage';
 import { ApiService, setUnauthorizedHandler } from './services/api';
 import { AnalyticsService } from './services/analytics';
-import { useInviteFlow } from './composables/useInviteFlow';
+import { useInviteFlow, friendAddedRedirect } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
 import {APP_CONFIG, TOUR_SEEN_KEY} from "@/constants.js";
@@ -88,13 +88,7 @@ const isBrowserOnAppDomain = !Capacitor.isNativePlatform() && window.location.ho
 
 const { processInvite, resolvePendingInvite } = useInviteFlow({
   getCurrentUser: () => currentUser.value,
-  onFriendAdded: (friend) => {
-    if (friend?.id) {
-      router.push({ name: 'friend-profile', params: { id: friend.id } });
-    } else {
-      router.push({ name: 'friends' });
-    }
-  }
+  onFriendAdded: friendAddedRedirect(router),
 });
 
 const { init: initAppLifecycle, cleanup: cleanupAppLifecycle } = useAppLifecycle({

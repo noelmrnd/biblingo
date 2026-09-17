@@ -61,6 +61,10 @@ export async function request(endpoint, options = {}) {
 }
 
 export const ApiService = {
+  async getPublicInviteProfile(username) {
+    return request(`/public/invite?username=${encodeURIComponent(username)}`);
+  },
+
   async socialLogin(payload) {
     const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     return request('/auth/social', {

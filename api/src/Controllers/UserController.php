@@ -13,6 +13,25 @@ use Libringo\Utils\StreakUtils;
 
 class UserController {
     /**
+     * Endpoint publico (sin auth, ver $publicRoutes en index.php) para que la landing
+     * web (GetAppView) personalice el mensaje de invitacion con el nombre de quien
+     * invito. Expone solo el display_name, nada mas (ni email, ni stats, ni id real).
+     */
+    public static function getPublicInviteProfile(string $username) {
+        $db = getDbConnection();
+        $user = UserEntity::findByUsername($db, $username);
+
+        if (!$user) {
+            sendJsonResponse(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        sendJsonResponse([
+            'success'      => true,
+            'display_name' => $user['display_name'],
+        ]);
+    }
+
+    /**
      * Datos minimos que necesita la pantalla de Ajustes (Datos de perfil): nada de
      * racha, seguidores ni historial, a diferencia de getFriendProfile.
      */
