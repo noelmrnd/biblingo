@@ -119,32 +119,34 @@
             </p>
           </div>
 
-          <div class="w-full space-y-3 text-left">
-            <div>
-              <label class="text-sm font-semibold text-slate-400">Nombre del libro</label>
-              <input
-                v-model="bookTitle"
-                type="text"
-                autocapitalize="words"
-                placeholder="Ej. El Principito"
-                class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
-              />
+          <div class="w-full text-left">
+            <div class="flex flex-row gap-4 w-full">
+              <div class="grow">
+                <label class="text-sm font-semibold text-slate-400">Nombre del libro</label>
+                <input
+                  v-model="bookTitle"
+                  type="text"
+                  autocapitalize="words"
+                  placeholder="Ej. El Principito"
+                  class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
+                />
+              </div>
+              <div v-if="bookTitle.trim() !== '' && !isBookConfigBible" style="width: 100px">
+                <label class="text-sm font-semibold text-slate-400">Páginas</label>
+                <input
+                  v-model="bookTotalPages"
+                  type="number"
+                  :min="MIN_BOOK_TOTAL_PAGES"
+                  :max="MAX_BOOK_TOTAL_PAGES"
+                  :placeholder="DEFAULT_BOOK_TOTAL_PAGES"
+                  class="no-spinner mt-1 w-full rounded-xl bg-slate-950/60 border px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
+                  :class="pagesError ? 'border-rose-500/60 focus:border-rose-500' : 'border-slate-800 focus:border-brand-green'"
+                />
+              </div>
             </div>
 
-            <div v-if="bookTitle.trim() !== '' && !isBookConfigBible">
-              <label class="text-sm font-semibold text-slate-400">Número de páginas</label>
-              <input
-                v-model="bookTotalPages"
-                type="number"
-                :min="MIN_BOOK_TOTAL_PAGES"
-                :max="MAX_BOOK_TOTAL_PAGES"
-                placeholder="Ej. 120"
-                class="mt-1 w-full rounded-xl bg-slate-950/60 border px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
-                :class="pagesError ? 'border-rose-500/60 focus:border-rose-500' : 'border-slate-800 focus:border-brand-green'"
-              />
-              <p v-if="pagesError" class="mt-1 text-sm text-rose-400 font-medium">{{ pagesError }}</p>
-            </div>
-            <p v-else-if="bookTitle.trim() !== ''" class="text-sm text-slate-400">
+            <p v-if="pagesError" class="mt-1 text-sm text-rose-400 font-medium">{{ pagesError }}</p>
+            <p v-if="bookTitle.trim() !== '' && isBookConfigBible" class="text-sm text-slate-400 mt-1">
               Podrás llevar el registro de tu lectura por capítulos.
             </p>
           </div>
@@ -198,7 +200,7 @@ import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
 import { keyboardHeight } from '@/utils/keyboard';
 import { useCurrentUser } from '@/composables/useCurrentUser';
-import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES, MIN_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
+import { isBibleTitle,  detectTrackingMode,  MAX_BOOK_TOTAL_PAGES,  MIN_BOOK_TOTAL_PAGES,  DEFAULT_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 import { TOUR_SEEN_KEY } from '@/constants';
 
 import tourStep1 from '@/assets/tour/tour-step-1.png';
@@ -251,13 +253,13 @@ const savingBook = ref(false);
 
 const isBookConfigBible = computed(() => isBibleTitle(bookTitle.value));
 
-// El paso de libro es siempre opcional: nunca bloquea el avance del tour, sin
-// importar que tan a medias haya quedado el titulo/paginas. finishTour decide
-// con isBookConfigComplete si hay suficiente para registrar el libro o no. Solo
-// se evalua al finalizar (no es reactivo/computed porque nada mas lo necesita).
+// Paginas vacias no bloquean: se usa DEFAULT_BOOK_TOTAL_PAGES (ver
+// resolvedBookTotalPages), igual que el placeholder ya sugiere. Solo si el
+// usuario escribio un numero fuera de rango se considera invalido.
 const isBookConfigComplete = () => {
   if (bookTitle.value.trim() === '') return false;
   if (isBookConfigBible.value) return true;
+  if (bookTotalPages.value === '') return true;
   const pages = Number(bookTotalPages.value);
   return pages >= MIN_BOOK_TOTAL_PAGES && pages <= MAX_BOOK_TOTAL_PAGES;
 };
@@ -324,9 +326,11 @@ const finishTour = async () => {
   const title = bookTitle.value.trim();
   const registeredBook = isBookConfigComplete();
   if (registeredBook) {
+    const resolvedBookTotalPages = bookTotalPages.value === '' ? DEFAULT_BOOK_TOTAL_PAGES : Number(bookTotalPages.value);
+
     savingBook.value = true;
     try {
-      await ApiService.createBook(title, detectTrackingMode(title), isBookConfigBible.value ? null : Number(bookTotalPages.value));
+      await ApiService.createBook(title, detectTrackingMode(title), isBookConfigBible.value ? null : resolvedBookTotalPages);
     } catch (e) {
       // No bloquea el onboarding: el usuario puede registrar su libro despues desde su perfil.
       ToastService.error(e.message || 'No se pudo guardar tu libro, podrás agregarlo después.');

@@ -74,6 +74,19 @@ html {
   scrollbar-width: none;
 }
 
+/* Oculta las flechas nativas de incremento/decremento en el input de páginas */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+
 /* Áreas seguras iOS (Safe Area Insets + Relleno Base) */
 .pt-safe {
   padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));

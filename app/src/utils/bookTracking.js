@@ -12,6 +12,7 @@ export const MAX_BOOK_TOTAL_PAGES = 2000;
 // Mismo minimo que BookController::MIN_TOTAL_PAGES (un total muy bajo infla
 // el % de avance a casi 100% con una sola lectura).
 export const MIN_BOOK_TOTAL_PAGES = 10;
+export const DEFAULT_BOOK_TOTAL_PAGES = 120;
 
 // Frases que activan el modo bitmask (capitulos no lineales, ej. Biblia).
 // Match flexible (sin acentos/mayusculas) para no exigirle al usuario escribir
