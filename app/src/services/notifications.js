@@ -161,7 +161,7 @@ export const NotificationService = {
             ? `No tienes protectores de racha. ¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`
             : `¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`;
         } else {
-          const msgIndex = (dayOffset - startOffset) % messages.length;
+          const msgIndex = Math.abs(dayOffset) % messages.length;
           body = messages[msgIndex];
         }
 
