@@ -1,8 +1,9 @@
 <template>
   <Transition name="tour-fade">
-    <div 
-      v-if="isOpen" 
+    <div
+      v-if="isOpen"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-hidden select-none"
+      :style="keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined"
     >
       <!-- Fondo con gradientes de luz ambiental -->
       <div 
@@ -195,6 +196,7 @@ import { StorageService } from '@/services/storage';
 import { ToastService } from '@/services/toast';
 import { ApiService } from '@/services/api';
 import { NotificationService } from '@/services/notifications';
+import { keyboardHeight } from '@/utils/keyboard';
 import { useCurrentUser } from '@/composables/useCurrentUser';
 import { isBibleTitle, detectTrackingMode, MAX_BOOK_TOTAL_PAGES, MIN_BOOK_TOTAL_PAGES } from '@/utils/bookTracking';
 import { TOUR_SEEN_KEY } from '@/constants';
@@ -283,8 +285,30 @@ const blockOnInvalidBookConfig = () => {
   return false;
 };
 
-const nextStep = () => {
+const nextStep = async () => {
   if (currentStepData.value.type === 'book-config' && blockOnInvalidBookConfig()) return;
+
+  if (currentStepData.value.type === 'reminder-time') {
+    // Pide local y push juntos (ver activateNotifications) justo al elegir la
+    // hora: es el momento con mas contexto para el prompt, en vez de al final
+    // del tour despues de 2 pasos mas sin relacion. Repetir la llamada al ir y
+    // volver a este paso no reabre el prompt del OS (ya respondido una vez),
+    // asi que no hace falta guardar un flag para evitarlo.
+    try {
+      const localGranted = await NotificationService.activateNotifications(user.value?.id);
+      if (!localGranted) {
+        ToastService.info('No activaste las notificaciones. Podrás activarlas luego desde Ajustes.');
+      }
+    } catch (e) {
+      console.warn('No se pudo activar notificaciones:', e.message || e);
+    }
+    try {
+      await NotificationService.persistReminderTime(reminderTime.value);
+    } catch (e) {
+      console.warn('No se pudo guardar el horario de recordatorio:', e.message || e);
+    }
+  }
+
   if (currentStep.value < steps.length - 1) {
     currentStep.value++;
   }
@@ -312,10 +336,8 @@ const finishTour = async () => {
   }
 
   try {
-    // Pide local y push juntos (ver activateNotifications): es la primera vez
-    // que el usuario ve el prompt de cualquiera de los dos, aca en contexto.
-    await NotificationService.activateNotifications(user.value?.id);
-    await NotificationService.persistReminderTime(reminderTime.value);
+    // Permiso y hora ya se pidieron/guardaron al salir del paso reminder-time
+    // (ver nextStep); aca solo falta programar la rafaga con el libro ya conocido.
     await NotificationService.schedule7DayBurst(
       reminderTime.value,
       0,
