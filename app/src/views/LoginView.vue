@@ -56,7 +56,7 @@
         </button>
 
         <!-- Login con correo -->
-        <EmailLoginButton @login-success="(user, token) => emit('login-success', user, token)" />
+        <!--<EmailLoginButton @login-success="(user, token) => emit('login-success', user, token)" />-->
 
         <!-- Panel de Desarrollo Local (Vite Dev / Localhost) -->
         <div v-if="IS_DEV" class="pt-4 border-t border-slate-800 space-y-3">
