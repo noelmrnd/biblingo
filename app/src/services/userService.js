@@ -1,5 +1,6 @@
 import { StorageService } from './storage';
 import { ApiService, saveAuthToken, clearAuthToken, getAuthToken } from './api';
+import { TOUR_SEEN_KEY } from '@/constants';
 
 /**
  * El usuario completo ya no se cachea en disco — solo el token de auth. Al
@@ -37,6 +38,7 @@ export const UserService = {
   async clearSession() {
     await StorageService.remove('push_token');
     await StorageService.remove('push_user_id');
+    await StorageService.remove(TOUR_SEEN_KEY);
     await clearAuthToken();
   }
 };
