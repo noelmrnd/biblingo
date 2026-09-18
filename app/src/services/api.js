@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { StorageService } from './storage';
+import { getDeviceTimezone } from '@/utils/timezone';
 
 export { API_BASE_URL };
 
@@ -66,7 +67,7 @@ export const ApiService = {
   },
 
   async socialLogin(payload) {
-    const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const deviceTimezone = getDeviceTimezone();
     return request('/auth/social', {
       method: 'POST',
       body: JSON.stringify({ timezone: deviceTimezone, ...payload })
@@ -74,7 +75,7 @@ export const ApiService = {
   },
 
   async emailLogin(email, password, platform) {
-    const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const deviceTimezone = getDeviceTimezone();
     return request('/auth/email', {
       method: 'POST',
       body: JSON.stringify({ email, password, platform, timezone: deviceTimezone })

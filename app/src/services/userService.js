@@ -1,6 +1,7 @@
 import { StorageService } from './storage';
 import { ApiService, saveAuthToken, clearAuthToken, getAuthToken } from './api';
 import { TOUR_SEEN_KEY } from '@/constants';
+import { getDeviceTimezone } from '@/utils/timezone';
 
 /**
  * El usuario completo ya no se cachea en disco — solo el token de auth. Al
@@ -17,7 +18,7 @@ export const UserService = {
     if (!res.success) return null;
 
     // Sincronizar zona horaria si cambió con respecto a la guardada en el perfil del usuario
-    const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const deviceTz = getDeviceTimezone();
     if (res.user.timezone !== deviceTz) {
       try {
         await ApiService.updateProfile({ timezone: deviceTz });
