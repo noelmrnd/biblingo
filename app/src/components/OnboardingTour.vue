@@ -119,37 +119,13 @@
             </p>
           </div>
 
-          <div class="w-full text-left">
-            <div class="flex flex-row gap-4 w-full">
-              <div class="grow">
-                <label class="text-sm font-semibold text-slate-400">Nombre del libro</label>
-                <input
-                  v-model="bookTitle"
-                  type="text"
-                  autocapitalize="words"
-                  placeholder="Ej. El Principito"
-                  class="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-green"
-                />
-              </div>
-              <div v-if="bookTitle.trim() !== '' && !isBookConfigBible" style="width: 100px">
-                <label class="text-sm font-semibold text-slate-400">Páginas</label>
-                <input
-                  v-model="bookTotalPages"
-                  type="number"
-                  :min="MIN_BOOK_TOTAL_PAGES"
-                  :max="MAX_BOOK_TOTAL_PAGES"
-                  :placeholder="DEFAULT_BOOK_TOTAL_PAGES"
-                  class="no-spinner mt-1 w-full rounded-xl bg-slate-950/60 border px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none"
-                  :class="pagesError ? 'border-rose-500/60 focus:border-rose-500' : 'border-slate-800 focus:border-brand-green'"
-                />
-              </div>
-            </div>
-
-            <p v-if="pagesError" class="mt-1 text-sm text-rose-400 font-medium">{{ pagesError }}</p>
-            <p v-if="bookTitle.trim() !== '' && isBookConfigBible" class="text-sm text-slate-400 mt-1">
-              Podrás llevar el registro de tu lectura por capítulos.
-            </p>
-          </div>
+          <BookTitlePagesInput
+            :title="bookTitle"
+            :pages="bookTotalPages"
+            :pages-error="pagesError"
+            @update:title="bookTitle = $event"
+            @update:pages="bookTotalPages = $event"
+          />
         </div>
 
         <!-- Footer: Botones de Acción -->
@@ -188,6 +164,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppButton from './AppButton.vue';
 import IconButton from './IconButton.vue';
+import BookTitlePagesInput from './BookTitlePagesInput.vue';
 import {
   ChevronRight,
   ChevronLeft,
@@ -215,28 +192,28 @@ const currentStep = ref(0);
 
 const steps = [
   {
-    title: 'Tu racha diaria',
-    description: 'Cada día que lees aumentas tu racha. Si dejas pasar un día sin leer, tu racha se congelará.',
+    title: 'Crea tu racha',
+    description: 'Lee todos los días para hacer crecer tu racha. Si un día no lees, tu racha se congelará.',
     ambientColor: 'bg-brand-flame',
     image: tourStep1
   },
   {
     type: 'reminder-time',
-    title: 'Protege tu hábito',
-    description: 'Elige la hora de tu recordatorio diario. Te avisaremos para que no olvides leer y mantengas tu racha.',
+    title: 'No olvides leer',
+    description: 'Te enviaremos un recordatorio diario para ayudarte a mantener tu hábito y tu racha.',
     ambientColor: 'bg-brand-purple',
     image: tourStep3
   },
   {
     type: 'book-config',
     title: '¿Qué estás leyendo?',
-    description: 'Registra tu libro para llevar tu avance mientras lees. Puedes cambiarlo cuando quieras.',
+    description: 'Elige un libro para registrar tu avance diario y ver cómo progresa tu lectura.',
     ambientColor: 'bg-brand-green',
     image: tourStep4
   },
   {
     title: 'Lee con tus amigos',
-    description: 'Invita a tus amigos a leer. Compartan su progreso y compitan en el ranking de rachas.',
+    description: 'Invita a tus amigos, compartan su progreso y comparen sus rachas en el ranking.',
     ambientColor: 'bg-brand-blue',
     image: tourStep2
   },
@@ -246,7 +223,8 @@ const currentStepData = computed(() => steps[currentStep.value]);
 // Paso "reminder-time": hora elegida para el recordatorio diario de lectura.
 const reminderTime = ref('20:00');
 
-// Paso 5 (book-config): registro opcional del libro activo.
+// Paso 5 (book-config): registro opcional del libro activo. Los presets de
+// titulo/paginas viven en BookTitlePagesInput.
 const bookTitle = ref('');
 const bookTotalPages = ref('');
 const savingBook = ref(false);

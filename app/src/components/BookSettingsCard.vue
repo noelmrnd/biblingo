@@ -36,17 +36,14 @@
     </div>
 
     <!-- Sin libro activo: nada que perder, inputs directos. -->
-    <div v-else class="space-y-3">
-      <AppFormField label="Nombre del libro">
-        <AppTextInput v-model="newBookTitle" autocapitalize="words" placeholder="Ej. El Principito" />
-      </AppFormField>
-
-      <AppFormField v-if="!isNewBookBible" label="Número de páginas">
-        <AppTextInput v-model="newBookTotalPages" type="number" :min="MIN_BOOK_TOTAL_PAGES" :max="MAX_BOOK_TOTAL_PAGES" placeholder="Ej. 120" />
-      </AppFormField>
-      <p v-else class="text-sm text-slate-400">
-        Podrás llevar el registro de tu lectura por capítulos.
-      </p>
+    <div v-else class="space-y-6">
+      <BookTitlePagesInput
+        ref="bookFormRef"
+        :title="newBookTitle"
+        :pages="newBookTotalPages"
+        @update:title="newBookTitle = $event"
+        @update:pages="newBookTotalPages = $event"
+      />
 
       <AppButton
         color="green"
@@ -126,8 +123,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { BookOpen } from '@lucide/vue';
 import ExpandableCard from './ExpandableCard.vue';
 import AppButton from './AppButton.vue';
-import AppFormField from './AppFormField.vue';
-import AppTextInput from './AppTextInput.vue';
+import BookTitlePagesInput from './BookTitlePagesInput.vue';
 import AppToggle from './AppToggle.vue';
 import ConfirmActionModal from './ConfirmActionModal.vue';
 import AppModal from './AppModal.vue';
@@ -147,6 +143,7 @@ const { user, mergeUser } = useCurrentUser();
 const isExpanded = ref(false);
 const newBookTitle = ref('');
 const newBookTotalPages = ref('');
+const bookFormRef = ref(null);
 const saveBookAction = useAsyncAction();
 const removeBookAction = useAsyncAction();
 
@@ -189,6 +186,7 @@ const saveNewBook = async () => {
   setActiveBook(res.book);
   newBookTitle.value = '';
   newBookTotalPages.value = '';
+  bookFormRef.value?.reset();
 };
 
 const confirmRemoveBook = async () => {
