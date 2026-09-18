@@ -273,6 +273,15 @@ export const ApiService = {
     });
   },
 
+  // has_new + lista de quien te siguio desde la ultima vez que se marco leida.
+  async getActivity() {
+    return request('/friends/activity');
+  },
+
+  async checkActivity() {
+    return request('/friends/activity/check', { method: 'POST' });
+  },
+
   // Revoca el token de esta sesion (o todos con everywhere=true) en el servidor.
   async logout(everywhere = false) {
     return request('/auth/logout', {

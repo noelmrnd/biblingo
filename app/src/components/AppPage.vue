@@ -13,6 +13,19 @@
 
         <button
           type="button"
+          @click="() => { HapticsService.light(); isActivityModalOpen = true; }"
+          class="relative p-2 -mr-1 text-slate-300 hover:text-white cursor-pointer"
+          aria-label="Actividad reciente"
+        >
+          <Bell class="w-5 h-5 stroke-[2.5]" />
+          <span
+            v-if="hasNewActivity"
+            class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-brand-flame border-2 border-brand-dark"
+          ></span>
+        </button>
+
+        <button
+          type="button"
           @click="() => { HapticsService.light(); isRulesModalOpen = true; }"
           class="flex items-center gap-5 p-2 cursor-pointer"
           aria-label="Cómo funciona la racha"
@@ -61,16 +74,24 @@
       :streak-freezes="streakFreezes"
       @close="isRulesModalOpen = false"
     />
+
+    <ActivityModal
+      v-if="appHeader"
+      :is-open="isActivityModalOpen"
+      @close="isActivityModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onActivated, onDeactivated } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, ShieldCheck, Flame } from '@lucide/vue';
+import { ArrowLeft, ShieldCheck, Flame, Bell } from '@lucide/vue';
 import { keyboardHeight } from '@/utils/keyboard';
 import { useCurrentUser } from '@/composables/useCurrentUser';
+import { useActivity } from '@/composables/useActivity';
 import AppRulesModal from './AppRulesModal.vue';
+import ActivityModal from './ActivityModal.vue';
 import { HapticsService } from '@/services/haptics';
 
 const props = defineProps({
@@ -87,6 +108,26 @@ const props = defineProps({
 const router = useRouter();
 const { user } = useCurrentUser();
 const isRulesModalOpen = ref(false);
+const isActivityModalOpen = ref(false);
+const { hasNew: hasNewActivity, refresh: refreshActivity } = useActivity();
+
+if (props.appHeader) {
+  onMounted(() => refreshActivity());
+}
+
+let reopenActivityModal = false;
+onDeactivated(() => {
+  if (isActivityModalOpen.value) {
+    isActivityModalOpen.value = false;
+    reopenActivityModal = true;
+  }
+});
+onActivated(() => {
+  if (reopenActivityModal) {
+    reopenActivityModal = false;
+    isActivityModalOpen.value = true;
+  }
+});
 
 const goBack = () => {
   if (props.backWhenAvailable && window.history.state?.back) {

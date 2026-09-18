@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS users (
     pages_read INT NOT NULL DEFAULT 0,
     show_current_book BOOLEAN NOT NULL DEFAULT TRUE,
     show_reading_progress BOOLEAN NOT NULL DEFAULT TRUE,
+    last_activity_at TIMESTAMP NULL,
+    last_activity_check TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

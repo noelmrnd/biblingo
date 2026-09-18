@@ -107,7 +107,32 @@ class FollowEntity {
     public static function insertFollow(\PDO $db, string $id, string $followerId, string $followedId): bool {
         $stmt = $db->prepare("INSERT IGNORE INTO follows (id, follower_id, followed_id) VALUES (?, ?, ?)");
         $stmt->execute([$id, $followerId, $followedId]);
-        return $stmt->rowCount() > 0;
+        $inserted = $stmt->rowCount() > 0;
+
+        if ($inserted) {
+            $db->prepare("UPDATE users SET last_activity_at = NOW() WHERE id = ?")->execute([$followedId]);
+        }
+
+        return $inserted;
+    }
+
+    /** Devuelve ultimos $limit follows de $userId en cualquier direccion. */
+    public static function fetchRecentActivity(\PDO $db, string $userId, int $limit = 20): array {
+        $stmt = $db->prepare("
+            SELECT u.id, u.display_name, u.username, f.created_at, 'follow_received' AS type
+            FROM follows f
+            JOIN users u ON u.id = f.follower_id
+            WHERE f.followed_id = ? AND u.status = 'active'
+            UNION ALL
+            SELECT u.id, u.display_name, u.username, f.created_at, 'follow_sent' AS type
+            FROM follows f
+            JOIN users u ON u.id = f.followed_id
+            WHERE f.follower_id = ? AND u.status = 'active'
+            ORDER BY created_at DESC
+            LIMIT " . (int)$limit . "
+        ");
+        $stmt->execute([$userId, $userId]);
+        return $stmt->fetchAll();
     }
 
     public static function deleteFollow(\PDO $db, string $followerId, string $followedId): void {

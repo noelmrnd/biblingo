@@ -418,6 +418,40 @@ class FriendController {
         ]);
     }
 
+    /**
+     * Feed simple de "te siguieron recientemente" (siempre los ultimos, leidos
+     * o no) + flag has_new segun last_activity_at (se actualiza en cada follow
+     * recibido, ver FollowEntity::insertFollow) vs last_activity_check (ultima
+     * vez que se marco el feed como leido).
+     */
+    public static function getActivity(string $userId) {
+        $db = getDbConnection();
+
+        $row = UserEntity::getActivityRow($db, $userId);
+        $lastCheck = $row['last_activity_check'] ?? null;
+
+        $recent = FollowEntity::fetchRecentActivity($db, $userId);
+
+        sendJsonResponse([
+            'success'  => true,
+            'has_new'  => !empty($row['last_activity_at']) && (empty($lastCheck) || $row['last_activity_at'] > $lastCheck),
+            'activity' => array_map(fn($r) => [
+                'id'           => (string)$r['id'],
+                'display_name' => $r['display_name'],
+                'username'     => $r['username'],
+                'created_at'   => $r['created_at'],
+                'type'         => $r['type'], // 'follow_received': te siguio. 'follow_sent': lo seguiste.
+            ], $recent),
+        ]);
+    }
+
+    /** Marca la actividad como leida (llamar cuando el usuario abre el feed). */
+    public static function checkActivity(string $userId) {
+        $db = getDbConnection();
+        UserEntity::markActivityChecked($db, $userId);
+        sendJsonResponse(['success' => true]);
+    }
+
     public static function isFollowing(\PDO $db, string $followerId, string $followedId): bool {
         return FollowEntity::isFollowing($db, $followerId, $followedId);
     }

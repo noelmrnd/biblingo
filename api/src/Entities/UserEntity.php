@@ -198,6 +198,18 @@ class UserEntity {
         return $stmt->fetch();
     }
 
+    /** last_activity_at: ultimo follow recibido. last_activity_check: ultima vez que se leyo el feed de actividad. */
+    public static function getActivityRow(\PDO $db, string $userId): array|false {
+        $stmt = $db->prepare("SELECT last_activity_at, last_activity_check FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        return $stmt->fetch();
+    }
+
+    public static function markActivityChecked(\PDO $db, string $userId): void {
+        $stmt = $db->prepare("UPDATE users SET last_activity_check = NOW() WHERE id = ?");
+        $stmt->execute([$userId]);
+    }
+
     public static function getSettingsRow(\PDO $db, string $userId): array|false {
         $stmt = $db->prepare("SELECT display_name, username, email, timezone, reminder_time, show_current_book, show_reading_progress FROM users WHERE id = ?");
         $stmt->execute([$userId]);

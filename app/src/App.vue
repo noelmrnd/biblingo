@@ -70,10 +70,12 @@ import { AnalyticsService } from './services/analytics';
 import { useInviteFlow, friendAddedRedirect } from './composables/useInviteFlow';
 import { useAppLifecycle } from './composables/useAppLifecycle';
 import { useCurrentUser } from './composables/useCurrentUser';
+import { useActivity } from './composables/useActivity';
 import {APP_CONFIG, TOUR_SEEN_KEY} from "@/constants.js";
 
 const router = useRouter();
 const { user: currentUser, clearUser, markFreshLoad } = useCurrentUser();
+const { reset: resetActivity } = useActivity();
 const tourRef = ref(null);
 const isInitializing = ref(true);
 
@@ -153,6 +155,7 @@ const onLogout = async () => {
     console.warn('No se pudo revocar la sesión en el servidor:', e.message);
   }
   clearUser();
+  resetActivity();
   await UserService.clearSession();
   AnalyticsService.setUser(null).catch(() => {});
   router.push({ name: 'dashboard' });
@@ -170,6 +173,7 @@ const onDeleteAccount = async () => {
   }
 
   clearUser();
+  resetActivity();
   await UserService.clearSession();
   router.push({ name: 'dashboard' });
   ToastService.info('Tu cuenta fue eliminada.');
@@ -183,6 +187,7 @@ const forceLogout = async () => {
   forcingLogout = true;
   try {
     clearUser();
+    resetActivity();
     await UserService.clearSession();
     router.push({ name: 'dashboard' });
     ToastService.error('Tu sesión expiró. Inicia sesión de nuevo.');

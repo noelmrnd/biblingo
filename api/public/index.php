@@ -108,6 +108,8 @@ $routes = [
     'POST /api/friends/follow' => fn() => FriendController::follow($userId),
     'POST /api/friends/unfollow' => fn() => FriendController::unfollow($userId),
     'POST /api/friends/nudge' => fn() => FriendController::nudgeFriend($userId),
+    'GET /api/friends/activity' => fn() => FriendController::getActivity($userId),
+    'POST /api/friends/activity/check' => fn() => FriendController::checkActivity($userId),
 
     'GET /api/blocks' => fn() => BlockController::listBlocked($userId),
     'POST /api/blocks' => fn() => BlockController::blockUser($userId),
