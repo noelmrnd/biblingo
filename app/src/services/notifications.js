@@ -124,29 +124,52 @@ export const NotificationService = {
       const startOffset = includeToday ? 0 : 1;
       const endOffset = startOffset + 6;
 
-      const streakText = currentStreak + ' ' + (currentStreak === 0 ? 'día' : 'días');
+      // Con racha en 0 no hay nada que "romper" todavia — mensajes de invitar
+      // a empezar, no de proteger algo que no existe (ver hasStreak abajo).
+      const hasStreak = currentStreak > 0;
+      const streakText = currentStreak + ' ' + (currentStreak === 1 ? 'día' : 'días');
       const book = (bookTitle || '').trim();
 
       const notifications = [];
       const messages = book
-        ? [
-            `¡No rompas tu racha de ${streakText}! 📖🔥 "${book}" te espera.`,
-            `Dedica 5 minutos a "${book}" hoy y sigue haciendo crecer tu hábito. 📚`,
-            `¡Un capítulo de "${book}" al día marca la diferencia! ✨`,
-            `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡Sigue con "${book}"! 🔥`,
-            `"${book}" te espera. Lee 5 minutos hoy. 📕`,
-            '¡Completa tu semana perfecta de lectura! 🎯',
-            `¡Mantén viva tu racha de lectura! Avanza en "${book}" hoy. 🌟`
-          ]
-        : [
-            `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
-            'Dedica 5 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
-            '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
-            `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
-            'El conocimiento te espera. Lee 5 minutos hoy. 📕',
-            '¡Completa tu semana perfecta de lectura! 🎯',
-            '¡Mantén viva tu racha de lectura! Registra tu progreso hoy. 🌟'
-          ];
+        ? (hasStreak
+          ? [
+              `¡No rompas tu racha de ${streakText}! 📖🔥 "${book}" te espera.`,
+              `Dedica 5 minutos a "${book}" hoy y sigue haciendo crecer tu hábito. 📚`,
+              `¡Un capítulo de "${book}" al día marca la diferencia! ✨`,
+              `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡Sigue con "${book}"! 🔥`,
+              `"${book}" te espera. Lee 5 minutos hoy. 📕`,
+              '¡Completa tu semana perfecta de lectura! 🎯',
+              `¡Mantén viva tu racha de lectura! Avanza en "${book}" hoy. 🌟`
+            ]
+          : [
+              `¡Empieza hoy tu racha de lectura! 📖🔥 "${book}" te espera.`,
+              `Dedica 5 minutos a "${book}" hoy y arranca tu hábito de lectura. 📚`,
+              `¡Un capítulo de "${book}" al día marca la diferencia! ✨`,
+              `Tu primer día de racha está a tu alcance. ¡Empieza con "${book}"! 🔥`,
+              `"${book}" te espera. Lee 5 minutos hoy. 📕`,
+              '¡Empieza tu semana perfecta de lectura! 🎯',
+              `¡Arranca tu racha de lectura! Avanza en "${book}" hoy. 🌟`
+            ])
+        : (hasStreak
+          ? [
+              `¡No rompas tu racha de ${streakText}! 📖🔥 Tu libro te espera.`,
+              'Dedica 5 minutos a leer hoy y sigue haciendo crecer tu hábito. 📚',
+              '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
+              `Racha protegida: ${currentStreak + 1} días a tu alcance. ¡A leer! 🔥`,
+              'El conocimiento te espera. Lee 5 minutos hoy. 📕',
+              '¡Completa tu semana perfecta de lectura! 🎯',
+              '¡Mantén viva tu racha de lectura! Registra tu progreso hoy. 🌟'
+            ]
+          : [
+              '¡Empieza hoy tu racha de lectura! 📖🔥 Tu libro te espera.',
+              'Dedica 5 minutos a leer hoy y arranca tu hábito de lectura. 📚',
+              '¡Un capítulo al día marca la diferencia! Entra a Libringo. ✨',
+              'Tu primer día de racha está a tu alcance. ¡A leer! 🔥',
+              'El conocimiento te espera. Lee 5 minutos hoy. 📕',
+              '¡Empieza tu semana perfecta de lectura! 🎯',
+              '¡Arranca tu racha de lectura! Registra tu progreso hoy. 🌟'
+            ]);
 
       for (let dayOffset = startOffset; dayOffset <= endOffset; dayOffset++) {
         const scheduleDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0);
@@ -155,11 +178,16 @@ export const NotificationService = {
         let title = '📖 Libringo: Recordatorio diario';
         let body;
         if (isTodayReminder) {
-          title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
           const urgentBook = book ? ` "${book}"` : '';
-          body = freezesAvailable === 0
-            ? `No tienes protectores de racha. ¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`
-            : `¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`;
+          if (hasStreak) {
+            title = freezesAvailable === 0 ? '⚠️ Tu racha está en riesgo' : '🧊 No arriesgues tu racha';
+            body = freezesAvailable === 0
+              ? `No tienes protectores de racha. ¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`
+              : `¡Lee${urgentBook} ahora para no perder tu racha de ${streakText}!`;
+          } else {
+            title = '📖 Empieza tu racha hoy';
+            body = `¡Lee${urgentBook} ahora y arranca tu racha de lectura!`;
+          }
         } else {
           const msgIndex = Math.abs(dayOffset) % messages.length;
           body = messages[msgIndex];
@@ -184,9 +212,13 @@ export const NotificationService = {
         notifications.push({
           id: 2000 + dayOffset,
           title: '⏰ Última llamada de hoy',
-          body: book
-            ? `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Sigue leyendo "${book}"! 📖`
-            : `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Registra tu lectura! 📖`,
+          body: hasStreak
+            ? (book
+              ? `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Sigue leyendo "${book}"! 📖`
+              : `El día se acaba y aún puedes salvar tu racha de ${streakText}. ¡Registra tu lectura! 📖`)
+            : (book
+              ? `El día se acaba y aún puedes empezar tu racha. ¡Lee "${book}"! 📖`
+              : 'El día se acaba y aún puedes empezar tu racha. ¡Registra tu lectura! 📖'),
           schedule: { at: scheduleDate },
           sound: 'beep.wav',
           badge: 1,
