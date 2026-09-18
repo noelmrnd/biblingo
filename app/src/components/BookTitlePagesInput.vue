@@ -7,7 +7,7 @@
         type="button"
         @click="selectPreset(preset)"
         :class="selectedTitle === preset.title ? 'bg-brand-blue text-white border-brand-blue' : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'"
-        class="px-3 py-1.5 rounded-full border text-sm font-semibold cursor-pointer transition-colors"
+        class="px-3 py-1.5 rounded-full border text-sm font-medium cursor-pointer transition-colors"
       >
         {{ preset.title }}
       </button>
@@ -15,34 +15,32 @@
         type="button"
         @click="selectPreset(null)"
         :class="selectedTitle === null ? 'bg-brand-blue text-white border-brand-blue' : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'"
-        class="px-3 py-1.5 rounded-full border text-sm font-semibold cursor-pointer transition-colors"
+        class="px-3 py-1.5 rounded-full border text-sm font-medium cursor-pointer transition-colors"
       >
         Otro
       </button>
     </div>
 
-    <div v-if="selectedTitle === null" class="flex flex-row gap-4 w-full mt-2">
+    <div v-if="selectedTitle === null" class="flex flex-row gap-2 w-full mt-3">
       <div class="grow">
-        <label class="text-sm font-semibold text-slate-400">Nombre</label>
         <AppTextInput
           :model-value="title"
           @update:model-value="$emit('update:title', $event)"
-          autocapitalize="words"
+          autocapitalize="sentences"
           placeholder="Nombre del libro"
-          class="mt-1"
+          class="grow"
         />
       </div>
       <div v-if="title.trim() !== '' && !isBible" style="width: 100px">
-        <label class="text-sm font-semibold text-slate-400">Páginas</label>
         <AppTextInput
+          style="width: 100px"
           :model-value="pages"
           @update:model-value="$emit('update:pages', $event)"
           type="number"
           :min="MIN_BOOK_TOTAL_PAGES"
           :max="MAX_BOOK_TOTAL_PAGES"
-          :placeholder="String(DEFAULT_BOOK_TOTAL_PAGES)"
+          placeholder="Páginas"
           :input-class="['no-spinner', pagesError ? '!border-rose-500/60' : '']"
-          class="mt-1"
         />
       </div>
     </div>
@@ -86,9 +84,12 @@ const isBible = computed(() => isBibleTitle(props.title));
 const selectedTitle = ref(BOOK_PRESETS.some((p) => p.title === props.title) ? props.title : undefined);
 
 const selectPreset = (preset) => {
-  selectedTitle.value = preset ? preset.title : null;
-  emit('update:title', preset ? preset.title : '');
-  emit('update:pages', preset ? String(preset.pages) : '');
+  const newTitle = preset ? preset.title : null;
+  const deselecting = selectedTitle.value === newTitle;
+
+  selectedTitle.value = deselecting ? undefined : newTitle;
+  emit('update:title', preset && !deselecting ? preset.title : '');
+  emit('update:pages', preset && !deselecting ? String(preset.pages) : '');
 };
 
 // Para que el padre pueda volver a "nada elegido" tras guardar (ver

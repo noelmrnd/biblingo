@@ -133,7 +133,7 @@
           <AppButton
             v-if="currentStep < steps.length - 1"
             @click="nextStep"
-            color="green"
+            :color="currentStepData.type === 'book-config' && bookTitle.trim() === '' ? 'blue' : 'green'"
             block
             :text="currentStepData.type === 'book-config' && bookTitle.trim() === '' ? 'Registrar más tarde' : 'Siguiente'"
             :icon="ChevronRight"
@@ -206,8 +206,8 @@ const steps = [
   },
   {
     type: 'book-config',
-    title: '¿Qué estás leyendo?',
-    description: 'Elige un libro para registrar tu avance diario y ver cómo progresa tu lectura.',
+    title: '¿Qué libro estás leyendo?',
+    description: 'Elige un libro para registrar tu avance diario. Estos son los más populares entre los usuarios.',
     ambientColor: 'bg-brand-green',
     image: tourStep4
   },
