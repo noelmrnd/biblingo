@@ -51,7 +51,8 @@
         <BellRing class="w-5 h-5 text-brand-nudge stroke-[2.5] shrink-0 mt-1" />
         <p class="text-slate-300 text-base font-medium">
           <strong class="text-white font-bold">Toques:</strong>
-          son recordatorios que puedes enviar a las personas que sigues (y también te siguen) para que no olviden su lectura del día.
+          son recordatorios que puedes enviar a tus amigos para animarlos a leer.
+          Tus amigos son las personas que sigues y que también te siguen.
         </p>
       </div>
     </div>

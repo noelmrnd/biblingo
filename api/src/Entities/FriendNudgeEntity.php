@@ -27,6 +27,10 @@ class FriendNudgeEntity {
     public static function insert(\PDO $db, string $id, string $senderId, string $receiverId, string $date): void {
         $stmt = $db->prepare("INSERT INTO friend_nudges (id, sender_id, receiver_id, nudge_date) VALUES (?, ?, ?, ?)");
         $stmt->execute([$id, $senderId, $receiverId, $date]);
+
+        // Igual que FollowEntity::insertFollow: marca al receptor con actividad
+        // nueva para que le aparezca el badge en el feed (ver fetchRecentActivity).
+        $db->prepare("UPDATE users SET last_activity_at = NOW() WHERE id = ?")->execute([$receiverId]);
     }
 
     /** Total de toques que el usuario envio en su vida (no por dia, acumulado). */

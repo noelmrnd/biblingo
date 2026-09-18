@@ -419,10 +419,11 @@ class FriendController {
     }
 
     /**
-     * Feed simple de "te siguieron recientemente" (siempre los ultimos, leidos
-     * o no) + flag has_new segun last_activity_at (se actualiza en cada follow
-     * recibido, ver FollowEntity::insertFollow) vs last_activity_check (ultima
-     * vez que se marco el feed como leido).
+     * Feed simple de "te siguieron"/"te dieron un toque" recientemente (siempre
+     * los ultimos, leidos o no) + flag has_new segun last_activity_at (se
+     * actualiza en cada follow o toque recibido, ver FollowEntity::insertFollow
+     * y FriendNudgeEntity::insert) vs last_activity_check (ultima vez que se
+     * marco el feed como leido).
      */
     public static function getActivity(string $userId) {
         $db = getDbConnection();
@@ -440,7 +441,7 @@ class FriendController {
                 'display_name' => $r['display_name'],
                 'username'     => $r['username'],
                 'created_at'   => $r['created_at'],
-                'type'         => $r['type'], // 'follow_received': te siguio. 'follow_sent': lo seguiste.
+                'type'         => $r['type'],
             ], $recent),
         ]);
     }

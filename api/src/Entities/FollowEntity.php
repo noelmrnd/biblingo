@@ -116,22 +116,33 @@ class FollowEntity {
         return $inserted;
     }
 
-    /** Devuelve ultimos $limit follows de $userId en cualquier direccion. */
-    public static function fetchRecentActivity(\PDO $db, string $userId, int $limit = 20): array {
-        $stmt = $db->prepare("
-            SELECT u.id, u.display_name, u.username, f.created_at, 'follow_received' AS type
+    /** Devuelve ultimos $limit follows + toques (friend_nudges) de $userId en cualquier direccion. */
+    public static function fetchRecentActivity(\PDO $db, string $userId, int $limit = 50): array {
+        $sqlFollowReceived = "SELECT u.id, u.display_name, u.username, f.created_at, 'follow_received' AS type
             FROM follows f
             JOIN users u ON u.id = f.follower_id
-            WHERE f.followed_id = ? AND u.status = 'active'
-            UNION ALL
-            SELECT u.id, u.display_name, u.username, f.created_at, 'follow_sent' AS type
+            WHERE f.followed_id = ? AND u.status = 'active'";
+        $sqlFollowSent = "SELECT u.id, u.display_name, u.username, f.created_at, 'follow_sent' AS type
             FROM follows f
             JOIN users u ON u.id = f.followed_id
-            WHERE f.follower_id = ? AND u.status = 'active'
-            ORDER BY created_at DESC
-            LIMIT " . (int)$limit . "
-        ");
-        $stmt->execute([$userId, $userId]);
+            WHERE f.follower_id = ? AND u.status = 'active'";
+        $sqlNudgeReceived = "SELECT u.id, u.display_name, u.username, n.created_at, 'nudge_received' AS type
+            FROM friend_nudges n
+            JOIN users u ON u.id = n.sender_id
+            WHERE n.receiver_id = ? AND u.status = 'active'";
+        $sqlNudgeSent = "SELECT u.id, u.display_name, u.username, n.created_at, 'nudge_sent' AS type
+            FROM friend_nudges n
+            JOIN users u ON u.id = n.receiver_id
+            WHERE n.sender_id = ? AND u.status = 'active'";
+
+        $stmt = $db->prepare(
+            $sqlFollowReceived
+            . " UNION ALL " . $sqlFollowSent
+            . " UNION ALL " . $sqlNudgeReceived
+            . " UNION ALL " . $sqlNudgeSent
+            . " ORDER BY created_at DESC LIMIT " . $limit
+        );
+        $stmt->execute([$userId, $userId, $userId, $userId]);
         return $stmt->fetchAll();
     }
 

@@ -33,17 +33,18 @@
                 class="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 transition-colors cursor-pointer text-left"
               >
                 <div
-                  :class="a.type === 'follow_received' ? 'bg-brand-green/15' : 'bg-brand-blue/15'"
+                  :class="activityIconBgClass(a.type)"
                   class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 >
-                  <UserRoundPlus
-                    :class="a.type === 'follow_received' ? 'text-brand-green' : 'text-brand-blue'"
+                  <component
+                    :is="isNudge(a.type) ? BellRing : UserRoundPlus"
+                    :class="activityIconTextClass(a.type)"
                     class="w-5 h-5 stroke-[2.5]"
                   />
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-white font-semibold truncate">
-                    {{ a.type === 'follow_received' ? `${a.display_name} empezó a seguirte` : `Empezaste a seguir a ${a.display_name}` }}
+                    {{ activityLabel(a) }}
                   </p>
                   <p class="text-slate-400 text-sm">{{ relativeLabel(a.created_at) }}</p>
                 </div>
@@ -59,7 +60,7 @@
 <script setup>
 import { watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { X, Bell, UserRoundPlus } from '@lucide/vue';
+import { X, Bell, UserRoundPlus, BellRing } from '@lucide/vue';
 import IconButton from './IconButton.vue';
 import AppSpinner from './AppSpinner.vue';
 import { useActivity } from '@/composables/useActivity';
@@ -82,6 +83,29 @@ watch(() => props.isOpen, (open) => {
 });
 
 const onClose = () => emit('close');
+
+const isNudge = (type) => type === 'nudge_received' || type === 'nudge_sent';
+const isReceived = (type) => type === 'follow_received' || type === 'nudge_received';
+
+const activityIconBgClass = (type) => {
+  if (isNudge(type)) return isReceived(type) ? 'bg-brand-nudge/15' : 'bg-brand-nudge-dark/15';
+  return isReceived(type) ? 'bg-brand-green/15' : 'bg-brand-blue/15';
+};
+
+const activityIconTextClass = (type) => {
+  if (isNudge(type)) return isReceived(type) ? 'text-brand-nudge' : 'text-brand-nudge-dark';
+  return isReceived(type) ? 'text-brand-green' : 'text-brand-blue';
+};
+
+const activityLabel = (a) => {
+  switch (a.type) {
+    case 'follow_received': return `${a.display_name} empezó a seguirte`;
+    case 'follow_sent': return `Empezaste a seguir a ${a.display_name}`;
+    case 'nudge_received': return `${a.display_name} te dio un toque`;
+    case 'nudge_sent': return `Le diste un toque a ${a.display_name}`;
+    default: return '';
+  }
+};
 
 const openProfile = (id) => {
   HapticsService.light();
